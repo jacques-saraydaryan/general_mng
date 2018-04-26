@@ -1,0 +1,7 @@
+GeneralManager:
+  config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
+  #current_scenario: 'COCKTAIL_PARTY'
+  current_scenario: 'TEST_NAVIG'
+  
+
+  
