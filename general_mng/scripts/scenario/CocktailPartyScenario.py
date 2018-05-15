@@ -8,6 +8,7 @@ import actionlib
 
 from AbstractScenarioBus import AbstractScenarioBus
 from AbstractScenarioAction import AbstractScenarioAction
+from AbstractScenario import AbstractScenario
 from map_manager.srv import getitP_service
 from robocup_msgs.msg import gm_bus_msg
 
@@ -18,7 +19,7 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 
 
 
-class CocktailPartyScenario(AbstractScenarioBus,AbstractScenarioAction):
+class CocktailPartyScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -36,7 +37,7 @@ class CocktailPartyScenario(AbstractScenarioBus,AbstractScenarioAction):
 
         #FIXME wait the service ?
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
-        self.initScenario()
+        #self.initScenario()
 
 
     def startScenario(self):
@@ -86,7 +87,7 @@ class CocktailPartyScenario(AbstractScenarioBus,AbstractScenarioAction):
             self.waitResultTimeout(self.AND_OPERATOR,1)
 
     def initScenario(self):
-
+        AbstractScenarioAction.configure_intern(self)
         try:
             for it in self._config.it_list:
                 itPoint = self._getPoint_service(it)

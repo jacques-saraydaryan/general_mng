@@ -1,7 +1,14 @@
 GeneralManager:
   config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
   #current_scenario: 'COCKTAIL_PARTY'
-  current_scenario: 'TEST_NAVIG'
+  #current_scenario: 'TEST_NAVIG'
+  #current_scenario: 'DOOR_OPENED_NAVIG'
+  current_scenario: 'TEST_DIALOGUE'
+  current_scenario: 'TEST_COCKTAIL_PARTY_V1'
+  
+  
+
+  
   
 
   

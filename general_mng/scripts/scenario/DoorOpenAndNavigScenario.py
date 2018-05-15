@@ -21,7 +21,7 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 
 
 
-class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class DoorOpenAndNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -44,7 +44,7 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
     def startScenario(self):
         rospy.loginfo("")
         rospy.loginfo("######################################")
-        rospy.loginfo("Starting the TestNavigScenario Scenario...")
+        rospy.loginfo("Starting the DoorOpenAndNavigScenario Scenario...")
         rospy.loginfo("######################################")
         
         #TOO make the logic of the scenario
@@ -55,29 +55,17 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
         #    y=random.uniform(0, 5.18)-1.59
         #    self.sendNavOrderActionToPt("NP","CRRCloseToGoal",x,y,60.0)
 
-
-        self.sendNavOrderAction("NP","CRRCloseToGoal","A_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","B_R",60.0)
         self.sendNavOrderAction("NP","CRRCloseToGoal","C_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","D_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","E_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","F_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","E_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","G_R",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","H_R",60.0)
 
-        self.sendNavOrderAction("NP","CRRCloseToGoal","I_R",60.0)
-
-        self.sendTtsOrderAction("TTS","Hello I Am an action text to speech","NO_WAIT_END","English",60.0)
 
 
     def gmBusListener(self,msg): 
         if self._status == self.WAIT_ACTION_STATUS:
            self.checkActionStatus(msg)
 
-
     def initScenario(self):
         AbstractScenarioAction.configure_intern(self)
+
 
 
 

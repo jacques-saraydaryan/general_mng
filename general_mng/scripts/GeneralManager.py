@@ -8,6 +8,11 @@ from std_msgs.msg import String
  
 from scenario.CocktailPartyScenario import CocktailPartyScenario
 from scenario.TestNavigScenario import TestNavigScenario
+from scenario.DoorOpenAndNavigScenario import DoorOpenAndNavigScenario
+from scenario.TestDialogueScenario import TestDialogueScenario
+from scenario.TestCocktailPartyV1Scenario import TestCocktailPartyV1Scenario
+
+from pepper_door_open_detector.srv import MinFrontValue
 
 ## COmmand Samples
 # rostopic pub /gm_start std_msgs/String "data: 'START'"
@@ -19,10 +24,14 @@ class GeneralManager:
     _scenarioMap={}
     _currentScenario=None
     START_STATUS="START"
-
+    PENDING_STATUS="PENDING"
+    #FIXME ADD ROS PARAM
+    OPEN_DOOR_MIN_DISTANCE=0.8
+    _current_status=PENDING_STATUS
     def __init__(self):
         rospy.init_node('general_manager')       
         self.configure()
+        self.waitDoorOpened()
         pass
 
     #######################################################################
@@ -30,6 +39,7 @@ class GeneralManager:
     #######################################################################
     def configure(self):
         self._start_sub = rospy.Subscriber("gm_start", String, self.gmStartCallback)
+        self._start_pub =rospy.Publisher("/gm_start", String, queue_size=1)
 
         #load face files form data directory
         self.CONFIG_FOLDER=rospy.get_param('GeneralManager/config_folder')
@@ -47,9 +57,16 @@ class GeneralManager:
 
         self._scenarioMap["COCKTAIL_PARTY"]=CocktailPartyScenario(currentConfig)
         self._scenarioMap["TEST_NAVIG"]=TestNavigScenario(currentConfig)
+        self._scenarioMap["DOOR_OPENED_NAVIG"]=DoorOpenAndNavigScenario(currentConfig)
+        self._scenarioMap["TEST_DIALOGUE"]=TestDialogueScenario(currentConfig)
+        self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
+
+        
+        
 
         try:
             self._currentScenario=self._scenarioMap[self.CURRENT_SCENARIO]
+            self._currentScenario.initScenario()
         except Exception as e:
              rospy.logerr("Unable Load SCENARIO Object: %s" % e)
        
@@ -59,7 +76,10 @@ class GeneralManager:
             rospy.logwarn("Current Scenario is not ready (maybe not currently loaded), unable to start scenario...")
             return
         else:
-            self._currentScenario.startScenario()
+            if self._currentScenario._configurationReady:
+                 self._currentScenario.startScenario()
+            else:
+                 rospy.logwarn("Current Scenario is not ready, wait minutes and try again...") 
 
     #######################################################################
     #######                LOAD Scenario config.                     ######
@@ -78,12 +98,40 @@ class GeneralManager:
             return jsonObject
 
 
+    def waitDoorOpened(self):
+        ## wait for min front value service to detect door opening
+        try:
+            rospy.wait_for_service('/min_front_value_srv',5)
+            
+            rospy.loginfo("end service min_front_value_srv wait time")
+            self._getMinFrontDist = rospy.ServiceProxy('min_front_value_srv', MinFrontValue)
+        except Exception as e:
+            rospy.logerr("Service min_front_value_srv call failed: %s" % e)
+            return
+        
+        ## check the min front value at a given frequency
+        rate = rospy.Rate(2) # 2hz
+        current_distance=0.0
+        while not rospy.is_shutdown() and current_distance < self.OPEN_DOOR_MIN_DISTANCE:
+            result=self._getMinFrontDist()
+            current_distance=result.value
+            rate.sleep()
+        rospy.loginfo("************ DOOR IS OPENED, START SCENARIO ****************")
+        self._start_pub.publish("START")
+
+
+
+
     def gmStartCallback(self,msg):
+        if self._current_status == self.START_STATUS:
+            rospy.loginfo('SCENARIO IS ALREADY STARTED...')
+            return
         rospy.loginfo('START CMD: '+msg.data)
         if msg.data == self.START_STATUS:
+            self._current_status=self.START_STATUS
             self.execute()
- 
-
+            self._current_status=self.PENDING_STATUS
+            rospy.loginfo('-----------------------------------END CURRENT SCENARIO-----------------------')
 
 if __name__ == '__main__':
     

@@ -45,14 +45,7 @@ class AbstractScenarioBus:
         self._gm_sub = rospy.Subscriber("/gm_bus_answer", gm_bus_msg, self.gmBusListener)
         self._config=config
         self._operatorCheckFunctionMap={self.AND_OPERATOR:self.checkAndOperator,self.OR_OPERATOR:self.checkOrOperator,self.NONE_OPERATOR:self.checkNoneOperator}
-
-
-    @abstractmethod
-    def startScenario(self): pass
-
-    @abstractmethod
-    def initScenario(self): pass
-
+    
     @abstractmethod
     def gmBusListener(self,msg): pass
 
