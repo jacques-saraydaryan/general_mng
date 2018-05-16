@@ -16,7 +16,7 @@ from robocup_msgs.msg import gm_bus_msg
 
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
-from pepper_pose_for_nav.srv import FixHeadAtPosition
+from pepper_pose_for_nav.srv import MoveHeadAtPosition
 
 
 
@@ -26,8 +26,9 @@ class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
     _severalActionPending={}
     _oneActionPending=None
-    HEAD_FOR_SPEECH_POSE=-0.3
-    HEAD_FOR_NAV_POSE= 0.5
+    HEAD_PITCH_FOR_SPEECH_POSE=-0.3
+    HEAD_PITCH_FOR_NAV_POSE= 0.5
+    HEAD_YAW_CENTER=0.0
 
     def __init__(self,config):
         AbstractScenarioBus.__init__(self,config)
@@ -45,11 +46,11 @@ class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
 
         try:
-            rospy.wait_for_service('/fix_head_pose_srv',5)
-            rospy.loginfo("end service fix_head_pose_srv wait time")
-            self._fixHeadPose = rospy.ServiceProxy('fix_head_pose_srv', FixHeadAtPosition)
+            rospy.wait_for_service('/move_head_pose_srv',5)
+            rospy.loginfo("end service move_head_pose_srv wait time")
+            self._fixHeadPose = rospy.ServiceProxy('move_head_pose_srv', FixHeadAtPosition)
         except Exception as e:
-            rospy.logerr("Service fix_head_pose_srv call failed: %s" % e)
+            rospy.logerr("Service move_head_pose_srv call failed: %s" % e)
             return
 
 
@@ -60,22 +61,22 @@ class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         rospy.loginfo("######################################")
         
         #TOO make the logic of the scenario
-        self.fixheadPose(self.HEAD_FOR_SPEECH_POSE)
+        self.fixheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,HEAD_YAW_CENTER,True)
         rospy.sleep(2.0)
         orderState1,result1=self.sendDialogueOrderAction("Cocktail/ScenarioStart","",60.0)
         rospy.sleep(5.0)
              
-        self.fixheadPose(self.HEAD_FOR_NAV_POSE)
+        self.fixheadPose(self.HEAD_PITCH_FOR_NAV_POSE,HEAD_YAW_CENTER,True)
 
         orderState2=self.sendNavOrderAction("NP","CRRCloseToGoal","G_R",60.0)
         #rospy.loginfo("-------> OK, wait 20s")
         #rospy.sleep(20.0)
 
-        self.fixheadPose(self.HEAD_FOR_SPEECH_POSE)
+        self.fixheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,HEAD_YAW_CENTER,True)
 
         orderState3,result3=self.sendDialogueOrderAction("Cocktail/OrdersStart","Cocktail/OrdersFinish",60.0*3)
 
-        self.fixheadPose(self.HEAD_FOR_NAV_POSE)
+        self.fixheadPose(self.HEAD_PITCH_FOR_NAV_POSE,HEAD_YAW_CENTER,True)
         
         
         orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","E_R",60.0)
@@ -101,11 +102,11 @@ class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         self._enableTtsAction=False
         AbstractScenarioAction.configure_intern(self)
 
-    def fixheadPose(self,value):
+    def fixheadPose(self,pitch_value,yaw_value,track):
         try:
-            self._fixHeadPose = rospy.ServiceProxy('fix_head_pose_srv', FixHeadAtPosition)
-            result=self._fixHeadPose(value)
+            self._fixHeadPose = rospy.ServiceProxy('move_head_pose_srv', FixHeadAtPosition)
+            result=self._fixHeadPose(pitch_value,yaw_value,track)
         except Exception as e:
-            rospy.logerr("Service fix_head_pose_srv call failed: %s" % e)
+            rospy.logerr("Service move_head_pose_srv call failed: %s" % e)
             return
         
