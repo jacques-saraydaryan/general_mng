@@ -22,7 +22,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 
 
 
-class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -59,27 +59,32 @@ class TestCocktailPartyV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         rospy.loginfo("######################################")
         rospy.loginfo("Starting the TEST_COCKTAIL_PARTY_V1 Scenario...")
         rospy.loginfo("######################################")
+
+
+        #FOR TEST ONLY TO REMOVE
+        orderState0,result0=self.addInPepperMemory("AAAA/BBB/CCC/Data",'{"id"=0,"value":["a","c","b"]}',5.0)
+        #END TO REMOVE
         
         #TOO make the logic of the scenario
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,HEAD_YAW_CENTER,True)
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
         rospy.sleep(2.0)
         orderState1,result1=self.sendDialogueOrderAction("Cocktail/ScenarioStart","",60.0)
         rospy.sleep(5.0)
              
-        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,HEAD_YAW_CENTER,True)
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
 
-        orderState2=self.sendNavOrderAction("NP","CRRCloseToGoal","G_R",60.0)
+        orderState2=self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
         #rospy.loginfo("-------> OK, wait 20s")
         #rospy.sleep(20.0)
 
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,HEAD_YAW_CENTER,True)
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
 
         orderState3,result3=self.sendDialogueOrderAction("Cocktail/OrdersStart","Cocktail/OrdersFinish",60.0*3)
 
-        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,HEAD_YAW_CENTER,True)
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
         
         
-        orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","E_R",60.0)
+        orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","G",60.0)
         
         #rospy.loginfo("-------> OK, wait 20s")
         #rospy.sleep(20.0)

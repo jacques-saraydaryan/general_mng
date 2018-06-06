@@ -21,7 +21,7 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 
 
 
-class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class TestHoomanoScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -44,7 +44,7 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
     def startScenario(self):
         rospy.loginfo("")
         rospy.loginfo("######################################")
-        rospy.loginfo("Starting the TestNavigScenario Scenario...")
+        rospy.loginfo("Starting the TestHoomanoScenario Scenario...")
         rospy.loginfo("######################################")
         
         #TOO make the logic of the scenario
@@ -55,30 +55,31 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
         #    y=random.uniform(0, 5.18)-1.59
         #    self.sendNavOrderActionToPt("NP","CRRCloseToGoal",x,y,60.0)
 
+        #self.sendNavOrderAction("NP","CRRCloseToGoal","C_R",60.0)
+        #Corrido top
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",-2.58,-2.3,60.0)
 
-        self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","B",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","C",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","D",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","E",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","F",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","G",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","H",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","I",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","J",60.0)
+        #Corrido middle
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",-0.709,0.447,60.0)
 
-        self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
+        #Corrido bottom
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",0.0111,1.9,60.0)
 
-        #self.sendTtsOrderAction("TTS","Hello I Am an action text to speech","NO_WAIT_END","English",60.0)
+
+        #Corrido entrance
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",0.65,0.303,60.0)
+
+
+        self.sendNavOrderAction("NT","","",60.0)
 
 
     def gmBusListener(self,msg): 
         if self._status == self.WAIT_ACTION_STATUS:
            self.checkActionStatus(msg)
 
-
     def initScenario(self):
         AbstractScenarioAction.configure_intern(self)
+
 
 
 

@@ -11,6 +11,9 @@ from scenario.TestNavigScenario import TestNavigScenario
 from scenario.DoorOpenAndNavigScenario import DoorOpenAndNavigScenario
 from scenario.TestDialogueScenario import TestDialogueScenario
 from scenario.TestCocktailPartyV1Scenario import TestCocktailPartyV1Scenario
+from scenario.TestCocktailPartyV2Scenario import TestCocktailPartyV2Scenario
+
+from scenario.TestHoomanoScenario import TestHoomanoScenario
 
 from pepper_door_open_detector.srv import MinFrontValue
 
@@ -60,8 +63,9 @@ class GeneralManager:
         self._scenarioMap["DOOR_OPENED_NAVIG"]=DoorOpenAndNavigScenario(currentConfig)
         self._scenarioMap["TEST_DIALOGUE"]=TestDialogueScenario(currentConfig)
         self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
+        self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
+        self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
 
-        
         
 
         try:

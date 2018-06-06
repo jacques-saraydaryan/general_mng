@@ -55,7 +55,15 @@ class DoorOpenAndNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScen
         #    y=random.uniform(0, 5.18)-1.59
         #    self.sendNavOrderActionToPt("NP","CRRCloseToGoal",x,y,60.0)
 
-        self.sendNavOrderAction("NP","CRRCloseToGoal","C_R",60.0)
+        #self.sendNavOrderAction("NP","CRRCloseToGoal","C_R",60.0)
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",7,7,60.0)
+        self.sendNavOrderAction("NT","","",60.0)
+
+        self.sendNavOrderActionToPt("NP","CRRCloseToGoal",5.3,7,60.0)
+        self.sendNavOrderAction("NT","","",60.0)
+        self.sendNavOrderAction("NT","","",60.0)
+        self.sendNavOrderAction("NT","","",60.0)
+        self.sendNavOrderAction("NT","","",60.0)
 
 
 

@@ -7,7 +7,7 @@ from threading import Timer
 import actionlib
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
-from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal
+from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal,AddInMemoryAction,AddInMemoryGoal
 
 class AbstractScenarioAction:
     _actionNavMng_server=None
@@ -15,6 +15,7 @@ class AbstractScenarioAction:
     _enableNavAction=True
     _enableTtsAction=True
     _enableDialogueAction=True
+    _enableAddInMemoryAction=True
     _configurationReady=False
 
     def __init__(self,config):
@@ -47,6 +48,15 @@ class AbstractScenarioAction:
                     rospy.loginfo("dialogue_hri Connected")
                 else:
                     rospy.logwarn("Unable to connect to dialogue_hri action server")
+            
+            if self._enableAddInMemoryAction:
+                self._actionAddInMemoryHri_server = actionlib.SimpleActionClient('add_in_memory_action', AddInMemoryAction)
+                finished4 = self._actionAddInMemoryHri_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished4:
+                    rospy.loginfo("AddInMemoryHri Connected")
+                else:
+                    rospy.logwarn("Unable to connect to AddInMemoryHri action server")
+
         except Exception as e:
             rospy.loginfo("Unable to connect to action server: %s" % e)
         self._configurationReady=True
@@ -117,3 +127,24 @@ class AbstractScenarioAction:
             self._actionDialogueHri_server.cancel_all_goals()
         # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
         return state,result
+
+
+    def addInPepperMemory(self,memory_location,json_payload,timeout):
+        goalAddInMemory = AddInMemoryGoal()
+        goalAddInMemory.memory_location=memory_location
+        goalAddInMemory.payload=json_payload
+        rospy.loginfo("### ADD IN MEMORY ACTION PENDING : %s",str(goalAddInMemory).replace('\n',', '))
+
+        # send the current goal to the action server
+        self._actionAddInMemoryHri_server.send_goal(goalAddInMemory)
+        # wait action server result
+        finished_before_timeout=self._actionAddInMemoryHri_server.wait_for_result(rospy.Duration.from_sec(timeout))
+        state=self._actionAddInMemoryHri_server.get_state()
+        result=self._actionAddInMemoryHri_server.get_result()
+        rospy.loginfo("###### ADD IN MEMORY ACTION END , State: %s",str(state))
+        # if timeout cancel all goals on the action server
+        if finished_before_timeout:
+            self._actionAddInMemoryHri_server.cancel_all_goals()
+        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+        return state,result
+    
