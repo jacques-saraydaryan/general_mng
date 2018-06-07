@@ -15,6 +15,10 @@
   <build_depend>robocup_msgs</build_depend>
   <build_depend>navigation_manager</build_depend>
   <build_depend>tts_hri</build_depend>
+  <build_depend>dialogue_hri_actions</build_depend>
+  <build_depend>object_management</build_depend>
+
+  
   
   
   <run_depend>rospy</run_depend>
@@ -22,6 +26,8 @@
   <run_depend>robocup_msgs</run_depend>
   <run_depend>navigation_manager</run_depend>
   <run_depend>tts_hri</run_depend>
+  <run_depend>dialogue_hri_actions</run_depend>
+  <run_depend>object_management</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

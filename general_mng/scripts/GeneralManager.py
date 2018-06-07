@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import json
+import yaml
 from collections import namedtuple
 from robocup_msgs.msg import gm_bus_msg
 import threading
@@ -12,6 +13,7 @@ from scenario.DoorOpenAndNavigScenario import DoorOpenAndNavigScenario
 from scenario.TestDialogueScenario import TestDialogueScenario
 from scenario.TestCocktailPartyV1Scenario import TestCocktailPartyV1Scenario
 from scenario.TestCocktailPartyV2Scenario import TestCocktailPartyV2Scenario
+from scenario.SPRV1Scenario import SPRV1Scenario
 
 from scenario.TestHoomanoScenario import TestHoomanoScenario
 
@@ -65,7 +67,7 @@ class GeneralManager:
         self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
         self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
         self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
-
+        self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
         
 
         try:
@@ -92,14 +94,14 @@ class GeneralManager:
         scenarioFile= self.CONFIG_FOLDER+"/"+self.CURRENT_SCENARIO+"_SCENARIO.json"
         rospy.loginfo("Opening scenario configuraiton file: %s" % scenarioFile)
         with open(scenarioFile) as json_data:
-            jsonContent = json.load(json_data)
+            jsonContent = yaml.safe_load(json_data)
             rospy.loginfo("Scenario configuraiton file content: %s" % jsonContent)
-            jsonString=json.dumps(jsonContent)
-            jsonObject = json.loads(jsonString, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            #rospy.loginfo("Scenario configuraiton Object content: %s" % str(jsonObject))
-            rospy.loginfo('name: '+jsonObject.name)
-            rospy.loginfo('description: '+jsonObject.description)
-            return jsonObject
+            #jsonString=json.load(jsonContent)
+            #jsonObject = json.load(jsonString, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            ##rospy.loginfo("Scenario configuraiton Object content: %s" % str(jsonObject))
+            rospy.loginfo('name: '+jsonContent['name'])
+            rospy.loginfo('description: '+jsonContent['description'])
+            return jsonContent
 
 
     def waitDoorOpened(self):

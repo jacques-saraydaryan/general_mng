@@ -29,6 +29,8 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
     HEAD_PITCH_FOR_SPEECH_POSE=-0.3
     HEAD_PITCH_FOR_NAV_POSE= 0.5
     HEAD_YAW_CENTER=0.0
+    DEFAULT_OBJ_LABEL=[]
+    DEFAULT_OBJECT_MEMORY_LOCATION="Robocup/objects"
 
     def __init__(self,config):
         AbstractScenarioBus.__init__(self,config)
@@ -43,6 +45,20 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
         #FIXME wait the service ?
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
+
+        try:
+            self.obj_labels=config['labels']
+        except Exception as e:
+            rospy.logwarn("no config value for obj_label use default:"+str(self.DEFAULT_OBJ_LABEL))
+            self.obj_labels=self.DEFAULT_OBJ_LABEL
+
+        try:
+            self.object_memory_location=config['object_memory_location']
+        except Exception as e:
+            rospy.logwarn("no config value for object_memory_location use default:"+str(self.DEFAULT_OBJECT_MEMORY_LOCATION))
+            self.object_memory_location=self.DEFAULT_OBJECT_MEMORY_LOCATION
+
+            
 
 
         try:
@@ -59,17 +75,7 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         rospy.loginfo("######################################")
         rospy.loginfo("Starting the TEST_COCKTAIL_PARTY_V1 Scenario...")
         rospy.loginfo("######################################")
-
-
-        #FOR TEST ONLY TO REMOVE
-        labels=['pepsi','pepsi max', 'water']
-        orderState0,result0=self.getObjectInFrontRobot(labels,5.0)
-        #END TO REMOVE
-
-        #FOR TEST ONLY TO REMOVE
-        #orderState0,result0=self.addInPepperMemory("AAAA/BBB/CCC/Data",'{"id"=0,"value":["a","c","b"]}',5.0)
-        #END TO REMOVE
-        
+     
         #TOO make the logic of the scenario
         self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
         rospy.sleep(2.0)
@@ -93,6 +99,16 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         
         #rospy.loginfo("-------> OK, wait 20s")
         #rospy.sleep(20.0)
+
+
+        #FOR TEST ONLY TO COMPLETE/MODIFY
+        orderState0,result0=self.getObjectInFrontRobot(self.obj_labels,60.0)
+        rospy.loginfo("#### OBJECT DETECTED ####")
+        rospy.loginfo(result0) 
+        orderState0,result0=self.addInPepperMemory(self.object_memory_location,str(result0.labelList),5.0)
+        #END TO REMOVE
+
+
         orderState5,result5=self.sendDialogueOrderAction("Cocktail/OrdersCheckStart","Cocktail/OrdersCheckFinish",60.0)
         
 
@@ -107,12 +123,13 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
 
     def initScenario(self):
-        self._enableDialogueAction=True
+        
         self._enableNavAction=True
         self._enableTtsAction=False
-        self._enableObjectMngAction=True
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
+        self._enableObjectMngAction=True
+        
         AbstractScenarioAction.configure_intern(self)
 
     def moveheadPose(self,pitch_value,yaw_value,track):

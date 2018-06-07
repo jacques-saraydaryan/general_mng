@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   robocup_msgs
   navigation_manager
   tts_hri
+  dialogue_hri_actions
+  object_management
 )
 
 
