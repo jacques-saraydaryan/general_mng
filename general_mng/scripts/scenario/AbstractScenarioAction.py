@@ -8,6 +8,7 @@ import actionlib
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal,AddInMemoryAction,AddInMemoryGoal
+from object_management.msg import ObjectDetectionAction,ObjectDetectionGoal
 
 class AbstractScenarioAction:
     _actionNavMng_server=None
@@ -16,7 +17,9 @@ class AbstractScenarioAction:
     _enableTtsAction=True
     _enableDialogueAction=True
     _enableAddInMemoryAction=True
+    _enableObjectMngAction=False
     _configurationReady=False
+   
 
     def __init__(self,config):
        pass
@@ -56,6 +59,16 @@ class AbstractScenarioAction:
                     rospy.loginfo("AddInMemoryHri Connected")
                 else:
                     rospy.logwarn("Unable to connect to AddInMemoryHri action server")
+
+
+            if self._enableObjectMngAction:
+                self._actioneObjectMng_server = actionlib.SimpleActionClient('object_detection_action', ObjectDetectionAction)
+                finished5 = self._actioneObjectMng_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished5:
+                    rospy.loginfo("ObjectMng Connected")
+                else:
+                    rospy.logwarn("Unable to connect to ObjectMng action server")
+                
 
         except Exception as e:
             rospy.loginfo("Unable to connect to action server: %s" % e)
@@ -148,3 +161,26 @@ class AbstractScenarioAction:
         # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
         return state,result
     
+
+
+    def getObjectInFrontRobot(self,labels,timeout):
+        goalObjMng = ObjectDetectionGoal()
+        goalObjMng.labels=labels
+       
+        rospy.loginfo("### OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalObjMng).replace('\n',', '))
+
+        # send the current goal to the action server
+        self._actioneObjectMng_server.send_goal(goalObjMng)
+        # wait action server result
+        finished_before_timeout=self._actioneObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+        state=self._actioneObjectMng_server.get_state()
+        result=self._actioneObjectMng_server.get_result()
+        rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION ACTION END , State: %s",str(state))
+        # if timeout cancel all goals on the action server
+        if finished_before_timeout:
+            self._actioneObjectMng_server.cancel_all_goals()
+        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+        return state,result
+
+
+        

@@ -62,7 +62,12 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
 
         #FOR TEST ONLY TO REMOVE
-        orderState0,result0=self.addInPepperMemory("AAAA/BBB/CCC/Data",'{"id"=0,"value":["a","c","b"]}',5.0)
+        labels=['pepsi','pepsi max', 'water']
+        orderState0,result0=self.getObjectInFrontRobot(labels,5.0)
+        #END TO REMOVE
+
+        #FOR TEST ONLY TO REMOVE
+        #orderState0,result0=self.addInPepperMemory("AAAA/BBB/CCC/Data",'{"id"=0,"value":["a","c","b"]}',5.0)
         #END TO REMOVE
         
         #TOO make the logic of the scenario
@@ -105,6 +110,9 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         self._enableDialogueAction=True
         self._enableNavAction=True
         self._enableTtsAction=False
+        self._enableObjectMngAction=True
+        self._enableDialogueAction=True
+        self._enableAddInMemoryAction=True
         AbstractScenarioAction.configure_intern(self)
 
     def moveheadPose(self,pitch_value,yaw_value,track):
