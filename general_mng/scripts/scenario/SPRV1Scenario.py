@@ -75,8 +75,8 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
         self.moveheadPose(self.HEAD_PITCH_FOR_PEOPLE_DETECTION,self.HEAD_YAW_FOR_PEOPLE_DETECTION,True)
         rospy.sleep(2.0)
        
-        #detect people attributes
-        #TODO
+        orderState0,result0=self.detectMetaPeople(30)
+        rospy.loginfo(result0)
 
         #process people attribute to save elts to ALMEMORY
         #TODO
@@ -94,9 +94,10 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
         
         self._enableNavAction=True
         self._enableTtsAction=False
-        self._enableDialogueAction=True
-        self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=True
+        self._enableDialogueAction=False
+        self._enableAddInMemoryAction=False
+        self._enableObjectMngAction=False
+        self._enableMultiplePeopleDetectionAction=True
         
         AbstractScenarioAction.configure_intern(self)
 

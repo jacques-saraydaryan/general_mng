@@ -9,6 +9,7 @@ from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal,AddInMemoryAction,AddInMemoryGoal
 from object_management.msg import ObjectDetectionAction,ObjectDetectionGoal
+from ros_people_mng_actions.msg import ProcessPeopleFromImgAction,ProcessPeopleFromImgGoal
 
 class AbstractScenarioAction:
     _actionNavMng_server=None
@@ -18,7 +19,9 @@ class AbstractScenarioAction:
     _enableDialogueAction=True
     _enableAddInMemoryAction=True
     _enableObjectMngAction=False
+    _enableMultiplePeopleDetectionAction=False
     _configurationReady=False
+    
    
 
     def __init__(self,config):
@@ -68,6 +71,16 @@ class AbstractScenarioAction:
                     rospy.loginfo("ObjectMng Connected")
                 else:
                     rospy.logwarn("Unable to connect to ObjectMng action server")
+
+            
+            if self._enableMultiplePeopleDetectionAction:
+                self._actioneMultiplePeopleDetection_server = actionlib.SimpleActionClient('detect_people_meta_action', ProcessPeopleFromImgAction)
+                finished6 = self._actioneMultiplePeopleDetection_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished6:
+                    rospy.loginfo("MultiplePeopleDetection Connected")
+                else:
+                    rospy.logwarn("Unable to connect to MultiplePeopleDetection action server")
+
                 
 
         except Exception as e:
@@ -175,7 +188,7 @@ class AbstractScenarioAction:
         finished_before_timeout=self._actioneObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
         state=self._actioneObjectMng_server.get_state()
         result=self._actioneObjectMng_server.get_result()
-        rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION ACTION END , State: %s",str(state))
+        rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION END , State: %s",str(state))
         # if timeout cancel all goals on the action server
         if finished_before_timeout:
             self._actioneObjectMng_server.cancel_all_goals()
@@ -183,4 +196,19 @@ class AbstractScenarioAction:
         return state,result
 
 
-        
+    def detectMetaPeople(self,timeout):
+        goalMetaPeople = ProcessPeopleFromImgGoal()
+        rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
+
+        # send the current goal to the action server
+        self._actioneMultiplePeopleDetection_server.send_goal(goalMetaPeople)
+        # wait action server result
+        finished_before_timeout=self._actioneMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
+        state=self._actioneMultiplePeopleDetection_server.get_state()
+        result=self._actioneMultiplePeopleDetection_server.get_result()
+        rospy.loginfo("###### DETECT META PEOPLE ACTION END , State: %s",str(state))
+        # if timeout cancel all goals on the action server
+        if finished_before_timeout:
+            self._actioneMultiplePeopleDetection_server.cancel_all_goals()
+        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+        return state,result
