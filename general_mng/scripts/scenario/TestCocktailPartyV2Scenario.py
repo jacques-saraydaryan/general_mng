@@ -30,7 +30,7 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
     HEAD_PITCH_FOR_NAV_POSE= 0.5
     HEAD_YAW_CENTER=0.0
     DEFAULT_OBJ_LABEL=[]
-    DEFAULT_OBJECT_MEMORY_LOCATION="Robocup/objects"
+    DEFAULT_OBJECT_MEMORY_LOCATION="Cocktail/objects"
 
     def __init__(self,config):
         AbstractScenarioBus.__init__(self,config)
@@ -101,12 +101,11 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         #rospy.sleep(20.0)
 
 
-        #FOR TEST ONLY TO COMPLETE/MODIFY
         orderState0,result0=self.getObjectInFrontRobot(self.obj_labels,60.0)
         rospy.loginfo("#### OBJECT DETECTED ####")
         rospy.loginfo(result0) 
         orderState0,result0=self.addInPepperMemory(self.object_memory_location,str(result0.labelList),5.0)
-        #END TO REMOVE
+        
 
 
         orderState5,result5=self.sendDialogueOrderAction("Cocktail/OrdersCheckStart","Cocktail/OrdersCheckFinish",60.0)
