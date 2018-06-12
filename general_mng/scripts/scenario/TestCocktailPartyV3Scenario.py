@@ -22,7 +22,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 
 
 
-class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -100,6 +100,7 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         ### 4-INFORM NAOQI TO START TO GET COMMAND
         orderState3,result3=self.sendDialogueOrderAction("Cocktail/OrdersStart","Cocktail/OrdersFinish",60.0*3)
 
+        # LOOP 3 Times
         #CALL PEOPLE DESCRIPTION
 
         #GET PEOPLE WITH GREATEST BOUNDING BOX
@@ -107,6 +108,7 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         #ADD IN NAOQI MEMORY
 
         #INFORM NAOQI DETECTION READY
+
 
         ### 5-SET HEAD FOR NAVIGATION
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
