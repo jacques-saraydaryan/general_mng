@@ -173,24 +173,24 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
                
                 self._peopleMetaMap[self.QUESTION_GENDER_MALE]=0
                 self._peopleMetaMap[self.QUESTION_GENDER_FEMALE]=0
-                if person.posture=='Standing':
+                if person.posture=='Standing' or person.posture=='Undefined':
                     self._peopleMetaMap[self.QUESTION_POSE_STANDING]+=1
                     
                 elif person.posture=='Sitting':
                     self._peopleMetaMap[self.QUESTION_POSE_SITTING]+=1
                     
-                elif person.posture=='Lying' or person.posture=='Undefined':
+                elif person.posture=='Lying':
                     self._peopleMetaMap[self.QUESTION_POSE_LYING]+=1
                     
                 if len(person.handPosture)==2:
-                    for i in range(0,1):
-                        if person.handPosture[0] == 'Call' :
+                    for i in range(0,2):
+                        if person.handPosture[i] == 'Call' :
                             self._peopleMetaMap[self.QUESTION_POSE_WAVING]+=1
                             if i == 0:
                                 self._peopleMetaMap[self.QUESTION_POSE_RAISING_LEFT]+=1
                             else:
                                 self._peopleMetaMap[self.QUESTION_POSE_RAISING_RIGHT]+=1
-                        elif person.handPosture[0].find('Pointing')>=0:
+                        elif person.handPosture[i].find('Pointing')>=0:
                             if i == 0:
                                 self._peopleMetaMap[self.QUESTION_POSE_POINTING_RIGHT]+=1
                             else:
@@ -201,7 +201,7 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
                 
                 if person.shirt_color_name=='BLACK':
                     self._peopleMetaMap[self.QUESTION_COLOR_BLACK]+=1
-                elif 'BLEU' in person.shirt_color_name or 'CYAN' in person.shirt_color_name:
+                elif 'BLUE' in person.shirt_color_name or 'CYAN' in person.shirt_color_name:
                     self._peopleMetaMap[self.QUESTION_COLOR_BLUE]+=1
                 elif 'GREEN' in person.shirt_color_name:
                     self._peopleMetaMap[self.QUESTION_COLOR_GREEN]+=1
