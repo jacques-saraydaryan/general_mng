@@ -14,7 +14,7 @@ from scenario.TestDialogueScenario import TestDialogueScenario
 from scenario.TestCocktailPartyV1Scenario import TestCocktailPartyV1Scenario
 from scenario.TestCocktailPartyV2Scenario import TestCocktailPartyV2Scenario
 from scenario.SPRV1Scenario import SPRV1Scenario
-
+from scenario.HelpMeCarryV1Scenario import HelpMeCarryV1Scenario
 from scenario.TestHoomanoScenario import TestHoomanoScenario
 
 from pepper_door_open_detector.srv import MinFrontValue
@@ -68,6 +68,8 @@ class GeneralManager:
         self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
         self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
         self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
+        self._scenarioMap["HELP_ME_CARRY"]=HelpMeCarryV1Scenario(currentConfig)
+        
         
 
         try:
