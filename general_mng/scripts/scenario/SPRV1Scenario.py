@@ -35,6 +35,13 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
     QUESTION_POSE_STANDING='pose_standing'
     QUESTION_POSE_SITTING='pose_sitting'
     QUESTION_POSE_WAVING='pose_waving'
+
+    QUESTION_POSE_RAISING_LEFT='pose_raising_left'
+    QUESTION_POSE_RAISING_RIGHT='pose_raising_right'
+    QUESTION_POSE_POINTING_RIGHT='pose_pointing_right'
+    QUESTION_POSE_POINTING_LEFT='pose_pointing_left'
+    QUESTION_POSE_CROSSING='pose_crossing'
+
     QUESTION_POSE_LYING='pose_lying'
     QUESTION_PEOPLE='people'
     QUESTION_COLOR_RED='color_red'
@@ -81,6 +88,13 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             self.question_memory_location[self.QUESTION_POSE_SITTING]
             self.question_memory_location[self.QUESTION_POSE_LYING]
             self.question_memory_location[self.QUESTION_POSE_WAVING]
+
+            self.question_memory_location[self.QUESTION_POSE_RAISING_LEFT]
+            self.question_memory_location[self.QUESTION_POSE_RAISING_RIGHT]
+            self.question_memory_location[self.QUESTION_POSE_POINTING_RIGHT]
+            self.question_memory_location[self.QUESTION_POSE_POINTING_LEFT]
+            self.question_memory_location[self.QUESTION_POSE_CROSSING]
+
             self.question_memory_location[self.QUESTION_COLOR_BLACK]
             self.question_memory_location[self.QUESTION_COLOR_BLUE]
             self.question_memory_location[self.QUESTION_COLOR_GREEN]
@@ -168,9 +182,22 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
                 elif person.posture=='Lying' or person.posture=='Undefined':
                     self._peopleMetaMap[self.QUESTION_POSE_LYING]+=1
                     
-                    
-                if person.handCall == True:
-                    self._peopleMetaMap[self.QUESTION_POSE_WAVING]+=1
+                if len(person.handPosture)==2:
+                    for i in range(0,1):
+                        if person.handPosture[0] == 'Call' :
+                            self._peopleMetaMap[self.QUESTION_POSE_WAVING]+=1
+                            if i == 0:
+                                self._peopleMetaMap[self.QUESTION_POSE_RAISING_LEFT]+=1
+                            else:
+                                self._peopleMetaMap[self.QUESTION_POSE_RAISING_RIGHT]+=1
+                        elif person.handPosture[0].find('Pointing')>=0:
+                            if i == 0:
+                                self._peopleMetaMap[self.QUESTION_POSE_POINTING_RIGHT]+=1
+                            else:
+                                self._peopleMetaMap[self.QUESTION_POSE_POINTING_LEFT]+=1
+
+                    if person.handPosture[0] == 'Crossed' :
+                        self._peopleMetaMap[self.QUESTION_POSE_CROSSING]+=1
                 
                 if person.shirt_color_name=='BLACK':
                     self._peopleMetaMap[self.QUESTION_COLOR_BLACK]+=1
@@ -190,6 +217,13 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_SITTING],str(self._peopleMetaMap[self.QUESTION_POSE_SITTING]),5.0)
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_LYING],str(self._peopleMetaMap[self.QUESTION_POSE_LYING]),5.0)
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_WAVING],str(self._peopleMetaMap[self.QUESTION_POSE_WAVING]),5.0)
+
+            self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_RAISING_LEFT],str(self._peopleMetaMap[self.QUESTION_POSE_RAISING_LEFT]),5.0)
+            self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_RAISING_RIGHT],str(self._peopleMetaMap[self.QUESTION_POSE_RAISING_RIGHT]),5.0)
+            self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_POINTING_RIGHT],str(self._peopleMetaMap[self.QUESTION_POSE_POINTING_RIGHT]),5.0)
+            self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_POINTING_LEFT],str(self._peopleMetaMap[self.QUESTION_POSE_POINTING_LEFT]),5.0)
+            self.addInPepperMemory(self.question_memory_location[self.QUESTION_POSE_CROSSING],str(self._peopleMetaMap[self.QUESTION_POSE_CROSSING]),5.0)
+
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_COLOR_BLACK],str(self._peopleMetaMap[self.QUESTION_COLOR_BLACK]),5.0)
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_COLOR_BLUE],str(self._peopleMetaMap[self.QUESTION_COLOR_BLUE]),5.0)
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_COLOR_GREEN],str(self._peopleMetaMap[self.QUESTION_COLOR_GREEN]),5.0)
@@ -206,6 +240,13 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
            self._peopleMetaMap[self.QUESTION_POSE_SITTING]=0
            self._peopleMetaMap[self.QUESTION_POSE_LYING]=0
            self._peopleMetaMap[self.QUESTION_POSE_WAVING]=0
+
+           self._peopleMetaMap[self.QUESTION_POSE_RAISING_LEFT]=0
+           self._peopleMetaMap[self.QUESTION_POSE_RAISING_RIGHT]=0
+           self._peopleMetaMap[self.QUESTION_POSE_POINTING_RIGHT]=0
+           self._peopleMetaMap[self.QUESTION_POSE_POINTING_LEFT]=0
+           self._peopleMetaMap[self.QUESTION_POSE_CROSSING]=0
+
            self._peopleMetaMap[self.QUESTION_COLOR_BLACK]=0
            self._peopleMetaMap[self.QUESTION_COLOR_BLUE]=0
            self._peopleMetaMap[self.QUESTION_COLOR_GREEN]=0
