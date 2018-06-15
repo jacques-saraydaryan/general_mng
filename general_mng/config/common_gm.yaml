@@ -6,6 +6,7 @@ GeneralManager:
   #current_scenario: 'DOOR_OPENED_NAVIG'
   #current_scenario: 'TEST_DIALOGUE'
   #current_scenario: 'TEST_COCKTAIL_PARTY_V2'
+  #current_scenario: 'TEST_COCKTAIL_PARTY_V3'
   #current_scenario: 'TEST_HOOMANO'
   current_scenario: 'SPRV1'
   
