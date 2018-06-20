@@ -11,6 +11,9 @@ from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignal
 from object_management.msg import ObjectDetectionAction,ObjectDetectionGoal
 from ros_people_mng_actions.msg import ProcessPeopleFromImgAction,ProcessPeopleFromImgGoal
 
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+
 class AbstractScenarioAction:
     _actionNavMng_server=None
     _actionTtsHri_server=None
@@ -25,7 +28,8 @@ class AbstractScenarioAction:
    
 
     def __init__(self,config):
-       pass
+        self._bridge = CvBridge()
+        pass
 
     def configure_intern(self):
         try:
@@ -89,71 +93,88 @@ class AbstractScenarioAction:
 
 
     def sendNavOrderAction(self,action,mode,itP,timeout):
-        goal = NavMngGoal()
-        goal.action=action
-        goal.itP=itP
-        goal.navstrategy=mode
-        rospy.loginfo("### NAV ACTION PENDING : %s",str(goal).replace('\n',', '))
-        self._actionNavMng_server.send_goal(goal)
-        self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actionNavMng_server.get_state()
-        if state ==4:
-            rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
-        else:
-            rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
-        return state
+        try: 
+            goal = NavMngGoal()
+            goal.action=action
+            goal.itP=itP
+            goal.navstrategy=mode
+            rospy.loginfo("### NAV ACTION PENDING : %s",str(goal).replace('\n',', '))
+            self._actionNavMng_server.send_goal(goal)
+            self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionNavMng_server.get_state()
+            if state ==4:
+                rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
+            else:
+                rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
+            return state
+        except Exception as e:
+             rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
+        return 4
+
     
     def sendNavOrderActionToPt(self,action,mode,x,y,timeout):
-        goal = NavMngGoal()
-        goal.action=action
-        goal.itP=''
-        goal.itP_point.x=x
-        goal.itP_point.y=y
-        goal.navstrategy=mode
-        rospy.loginfo("### NAV ACTION PENDING : %s",str(goal).replace('\n',', '))
-        self._actionNavMng_server.send_goal(goal)
-        self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actionNavMng_server.get_state()
-        if state ==4:
-            rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
-        else:
-            rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
-        return state
+        try:
+            goal = NavMngGoal()
+            goal.action=action
+            goal.itP=''
+            goal.itP_point.x=x
+            goal.itP_point.y=y
+            goal.navstrategy=mode
+            rospy.loginfo("### NAV ACTION PENDING : %s",str(goal).replace('\n',', '))
+            self._actionNavMng_server.send_goal(goal)
+            self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionNavMng_server.get_state()
+            if state ==4:
+                rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
+            else:
+                rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
+            return state
+
+        except Exception as e:
+             rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
+        return 4
 
     def sendTtsOrderAction(self,action,txt,mode,lang,timeout):
-        goalTts = TtsHriGoal()
-        goalTts.action=action
-        goalTts.txt=txt
-        goalTts.mode=mode
-        goalTts.lang=lang
-        rospy.loginfo("### TTS ACTION PENDING : %s",str(goalTts).replace('\n',', '))
-        self._actionTtsHri_server.send_goal(goalTts)
-        self._actionTtsHri_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actionTtsHri_server.get_state()
-        rospy.loginfo("###### TTS ACTION END , State: %s",str(state))
-        return state
+        try:
+            goalTts = TtsHriGoal()
+            goalTts.action=action
+            goalTts.txt=txt
+            goalTts.mode=mode
+            goalTts.lang=lang
+            rospy.loginfo("### TTS ACTION PENDING : %s",str(goalTts).replace('\n',', '))
+            self._actionTtsHri_server.send_goal(goalTts)
+            self._actionTtsHri_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionTtsHri_server.get_state()
+            rospy.loginfo("###### TTS ACTION END , State: %s",str(state))
+            return state
+        except Exception as e:
+             rospy.logwarn("###### TTS ACTION FAILURE , State: %s",str(e))
+        return 4
 
 
     def sendDialogueOrderAction(self,signal_to_emit,signal_to_wait,timeout):
-        goalDialogue = DialogueSendSignalGoal()
-        # signal send to naoqi
-        goalDialogue.signal_to_emit=signal_to_emit
-        # signal on wich action server will wait answer
-        goalDialogue.signal_to_wait=signal_to_wait
-        rospy.loginfo("### DIALOGUE ACTION PENDING : %s",str(goalDialogue).replace('\n',', '))
-        # send the current goal to the action server
-        self._actionDialogueHri_server.send_goal(goalDialogue)
-        # wait action server result
-        finished_before_timeout=self._actionDialogueHri_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actionDialogueHri_server.get_state()
-        result=self._actionDialogueHri_server.get_result()
-        rospy.loginfo("###### DIALOGUE ACTION END , State: %s",str(state))
-        # if timeout cancel all goals on the action server
-        if finished_before_timeout:
-            self._actionDialogueHri_server.cancel_all_goals()
-        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
-        return state,result
-
+        try:
+            goalDialogue = DialogueSendSignalGoal()
+            # signal send to naoqi
+            goalDialogue.signal_to_emit=signal_to_emit
+            # signal on wich action server will wait answer
+            goalDialogue.signal_to_wait=signal_to_wait
+            rospy.loginfo("### DIALOGUE ACTION PENDING : %s",str(goalDialogue).replace('\n',', '))
+            # send the current goal to the action server
+            self._actionDialogueHri_server.send_goal(goalDialogue)
+            # wait action server result
+            finished_before_timeout=self._actionDialogueHri_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionDialogueHri_server.get_state()
+            result=self._actionDialogueHri_server.get_result()
+            rospy.loginfo("###### DIALOGUE ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actionDialogueHri_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state,result
+        except Exception as e:
+             rospy.logwarn("###### TTS ACTION FAILURE , State: %s",str(e))
+        return 4,None
 
     def addInPepperMemory(self,memory_location,json_payload,timeout):
         goalAddInMemory = AddInMemoryGoal()
@@ -177,27 +198,55 @@ class AbstractScenarioAction:
 
 
     def getObjectInFrontRobot(self,labels,timeout):
-        goalObjMng = ObjectDetectionGoal()
-        goalObjMng.labels=labels
-       
-        rospy.loginfo("### OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalObjMng).replace('\n',', '))
+        try:
+            goalObjMng = ObjectDetectionGoal()
+            goalObjMng.labels=labels
+        
+            rospy.loginfo("### OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalObjMng).replace('\n',', '))
 
-        # send the current goal to the action server
-        self._actioneObjectMng_server.send_goal(goalObjMng)
-        # wait action server result
-        finished_before_timeout=self._actioneObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actioneObjectMng_server.get_state()
-        result=self._actioneObjectMng_server.get_result()
-        rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION END , State: %s",str(state))
-        # if timeout cancel all goals on the action server
-        if finished_before_timeout:
-            self._actioneObjectMng_server.cancel_all_goals()
-        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
-        return state,result
+            # send the current goal to the action server
+            self._actioneObjectMng_server.send_goal(goalObjMng)
+            # wait action server result
+            finished_before_timeout=self._actioneObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actioneObjectMng_server.get_state()
+            result=self._actioneObjectMng_server.get_result()
+            rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actioneObjectMng_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state,result
+        except Exception as e:
+             rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
+        return 4,None
 
 
     def detectMetaPeople(self,timeout):
-        goalMetaPeople = ProcessPeopleFromImgGoal()
+        try:
+            goalMetaPeople = ProcessPeopleFromImgGoal()
+            rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
+
+            # send the current goal to the action server
+            self._actioneMultiplePeopleDetection_server.send_goal(goalMetaPeople)
+            # wait action server result
+            finished_before_timeout=self._actioneMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actioneMultiplePeopleDetection_server.get_state()
+            result=self._actioneMultiplePeopleDetection_server.get_result()
+            rospy.loginfo("###### DETECT META PEOPLE ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actioneMultiplePeopleDetection_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state,result
+
+        except Exception as e:
+             rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
+        return 4,None
+
+    def detectMetaPeopleFromImg(self,img_path,timeout):
+        img_loaded1 = cv2.imread(img_path)
+        msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")   
+        goalMetaPeople = ProcessPeopleFromImgGoal(img=msg_im1)
         rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
 
         # send the current goal to the action server

@@ -17,6 +17,9 @@ from scenario.TestCocktailPartyV3Scenario import TestCocktailPartyV3Scenario
 from scenario.SPRV1Scenario import SPRV1Scenario
 from scenario.HelpMeCarryV1Scenario import HelpMeCarryV1Scenario
 from scenario.TestHoomanoScenario import TestHoomanoScenario
+from scenario.InspectionScenario import InspectionScenario
+from scenario.SPRV2Scenario import SPRV2Scenario
+from scenario.GPRSV1Scenario import GPRSV1Scenario
 
 from pepper_door_open_detector.srv import MinFrontValue
 
@@ -61,18 +64,19 @@ class GeneralManager:
              rospy.logwarn("Unable to load config file: %s" % e)
             
 
-        self._scenarioMap["COCKTAIL_PARTY"]=CocktailPartyScenario(currentConfig)
-        self._scenarioMap["TEST_NAVIG"]=TestNavigScenario(currentConfig)
-        self._scenarioMap["DOOR_OPENED_NAVIG"]=DoorOpenAndNavigScenario(currentConfig)
-        self._scenarioMap["TEST_DIALOGUE"]=TestDialogueScenario(currentConfig)
-        self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
-        self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
-        self._scenarioMap["TEST_COCKTAIL_PARTY_V3"]=TestCocktailPartyV3Scenario(currentConfig)
-        self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
-        self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
-        self._scenarioMap["HELP_ME_CARRY"]=HelpMeCarryV1Scenario(currentConfig)
-        
-        
+        #self._scenarioMap["COCKTAIL_PARTY"]=CocktailPartyScenario(currentConfig)
+        #self._scenarioMap["TEST_NAVIG"]=TestNavigScenario(currentConfig)
+        #self._scenarioMap["DOOR_OPENED_NAVIG"]=DoorOpenAndNavigScenario(currentConfig)
+        #self._scenarioMap["TEST_DIALOGUE"]=TestDialogueScenario(currentConfig)
+        #self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
+        #self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
+        #self._scenarioMap["TEST_COCKTAIL_PARTY_V3"]=TestCocktailPartyV3Scenario(currentConfig)
+        #self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
+        #self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
+        #self._scenarioMap["SPRV2"]=SPRV2Scenario(currentConfig)
+        #self._scenarioMap["HELP_ME_CARRY"]=HelpMeCarryV1Scenario(currentConfig)
+        #self._scenarioMap["INSPECTION"]=InspectionScenario(currentConfig)
+        self._scenarioMap["GPRSV1"]=GPRSV1Scenario(currentConfig)
 
         try:
             self._currentScenario=self._scenarioMap[self.CURRENT_SCENARIO]
@@ -120,14 +124,17 @@ class GeneralManager:
             return
         
         ## check the min front value at a given frequency
-        rate = rospy.Rate(2) # 2hz
-        current_distance=0.0
-        while not rospy.is_shutdown() and current_distance < self.OPEN_DOOR_MIN_DISTANCE:
-            result=self._getMinFrontDist()
-            current_distance=result.value
-            rate.sleep()
-        rospy.loginfo("************ DOOR IS OPENED, START SCENARIO ****************")
-        self._start_pub.publish("START")
+        try:
+            rate = rospy.Rate(2) # 2hz
+            current_distance=0.0
+            while not rospy.is_shutdown() and current_distance < self.OPEN_DOOR_MIN_DISTANCE:
+                result=self._getMinFrontDist()
+                current_distance=result.value
+                rate.sleep()
+            rospy.loginfo("************ DOOR IS OPENED, START SCENARIO ****************")
+            self._start_pub.publish("START")
+        except Exception as e:
+            rospy.logwarn(" EXCEPTION ON THE DOOR OPEN SERVICE !!! e:"+str(e))
 
 
 
