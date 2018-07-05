@@ -23,7 +23,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 
 
 
-class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class GPRSV2CPE1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -100,21 +100,21 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
         self._location_room['room_dining_room']='GPRS_PEOPLE_DININGROOM_It0'
         self._location_room['room_bedroom']='GPRS_PEOPLE_BEDROOM_It0'
         self._location_room['room_cooridoor']='GPRS_PEOPLE_ENTRANCE_It0'
-        self._location_room['room_entrance']='GPRS_START_It0'
-        self._location_room['room_exit']='GPRS_PEOPLE_EXIT_It1'
+        self._location_room['room_entrance']='GPRS_PEOPLE_ENTRANCE_It0'
+        self._location_room['room_exit']='GPRS_PEOPLE_ENTRANCE_It0'
 #
         self._location_beacon['beacon_storage_table']='GPRS_OBJECT_KITCHEN_It1'
         self._location_beacon['beacon_bookcase']='GPRS_OBJECT_LIVINGROOM_It1'
-        self._location_beacon['beacon_cupboard']='GPRS_OBJECT_KITCHEN_It0'
+        self._location_beacon['beacon_cupboard']='GPRS_OBJECT_KITCHEN_It1'
         self._location_beacon['beacon_desk']='GPRS_OBJECT_BEDROOM_It1'
-        self._location_beacon['beacon_dinning_table']='GPRS_OBJECT_DININGROOM_It0'
+        self._location_beacon['beacon_dinning_table']='GPRS_PEOPLE_DININGROOM_It0'
         self._location_beacon['beacon_end_table']='GPRS_OBJECT_LIVINGROOM_It0'
-        self._location_beacon['beacon_side_table']='GPRS_OBJECT_BEDROOM_It0'
-        self._location_beacon['beacon_counter']='GPRS_OBJECT_KITCHEN_It2'
-        self._location_beacon['beacon_sink']='GPRS_OBJECT_KITCHEN_It3'
-        self._location_beacon['beacon_couch']='GPRS_OBJECT_LIVINGROOM_It0'
+        self._location_beacon['beacon_side_table']='GPRS_OBJECT_BEDROOM_It1'
+        self._location_beacon['beacon_counter']='GPRS_OBJECT_KITCHEN_It1'
+        self._location_beacon['beacon_sink']='GPRS_OBJECT_KITCHEN_It1'
+        self._location_beacon['beacon_couch']='GPRS_PEOPLE_LIVINGROOM_It0'
         self._location_beacon['beacon_entrance']='GPRS_PEOPLE_ENTRANCE_It0'
-        self._location_beacon['beacon_dishwasher']='GPRS_OBJECT_KITCHEN_It2'
+        self._location_beacon['beacon_dishwasher']='GPRS_OBJECT_KITCHEN_It1'
 
         self._location_beacon_by_rooms_map['room_kitchen']=[]
         self._location_beacon_by_rooms_map['room_living_room']=[]
@@ -168,17 +168,17 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
 
         #self.moveheadFromItInfo('GPRS_START_It0')
 
-        #orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_START_It0",60.0)
-        #orderState01=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_START_It1",60.0)
-        #orderState02=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_START_It2",60.0)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_PEOPLE_ENTRANCE_It0",60.0)
+        orderState01=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_PEOPLE_KITCHEN_It0",60.0)
+        orderState02=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_PEOPLE_DININGROOM_It0",60.0)
         #orderState02=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_START_It3",60.0)
 
 
         #### XX-DETECTION OBJECTS
-        orderState7,result7=self.getObjectInFrontRobot([],60.0)
-        self.sendTtsOrderAction("TTS","I found the"+str(result7.labelList)+" objects !!! Go back to the operator" ,"NO_WAIT_END","English",60.0)
+        #orderState7,result7=self.getObjectInFrontRobot([],60.0)
+        #self.sendTtsOrderAction("TTS","I found the"+str(result7.labelList)+" objects !!! Go back to the operator" ,"NO_WAIT_END","English",60.0)
 
-        return
+
 
         self.sendTtsOrderAction("TTS","Ready to get your order!" ,"NO_WAIT_END","English",60.0)
                 ### 5-INFORM NAOQI TO START TO GET COMMAND

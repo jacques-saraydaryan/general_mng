@@ -28,7 +28,7 @@ class SPRV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
     _severalActionPending={}
     _oneActionPending=None
     _peopleMetaMap=''
-    HEAD_PITCH_FOR_PEOPLE_DETECTION=0.20
+    HEAD_PITCH_FOR_PEOPLE_DETECTION=0.0
     HEAD_YAW_FOR_PEOPLE_DETECTION=0.0
     DEFAULT_QUESTION_LOCATION=[]
     QUESTION_GENDER_MALE='gender_male'
@@ -241,8 +241,8 @@ class SPRV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
     
     def takePicture(self,image_path):
         try:
-            self._activateMoveSound = rospy.ServiceProxy('take_picture_service', TakePicture)
-            result=self._activateMoveSound(image_path)
+            self._takePictureSrv = rospy.ServiceProxy('take_picture_service', TakePicture)
+            result=self._takePictureSrv(image_path)
             return
         except Exception as e:
             rospy.logerr("Service take_picture_service call failed: %s" % e)

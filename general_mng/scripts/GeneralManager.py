@@ -20,6 +20,7 @@ from scenario.TestHoomanoScenario import TestHoomanoScenario
 from scenario.InspectionScenario import InspectionScenario
 from scenario.SPRV2Scenario import SPRV2Scenario
 from scenario.GPRSV1Scenario import GPRSV1Scenario
+from scenario.GPRSV2CPE1Scenario import GPRSV2CPE1Scenario
 
 from pepper_door_open_detector.srv import MinFrontValue
 
@@ -73,10 +74,12 @@ class GeneralManager:
         #self._scenarioMap["TEST_COCKTAIL_PARTY_V3"]=TestCocktailPartyV3Scenario(currentConfig)
         #self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
         #self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
-        #self._scenarioMap["SPRV2"]=SPRV2Scenario(currentConfig)
+        self._scenarioMap["SPRV2"]=SPRV2Scenario(currentConfig)
         #self._scenarioMap["HELP_ME_CARRY"]=HelpMeCarryV1Scenario(currentConfig)
         #self._scenarioMap["INSPECTION"]=InspectionScenario(currentConfig)
         self._scenarioMap["GPRSV1"]=GPRSV1Scenario(currentConfig)
+        self._scenarioMap["GPRSV2CPE"]=GPRSV2CPE1Scenario(currentConfig)
+        
 
         try:
             self._currentScenario=self._scenarioMap[self.CURRENT_SCENARIO]

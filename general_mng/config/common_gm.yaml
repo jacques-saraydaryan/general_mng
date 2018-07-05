@@ -9,9 +9,11 @@ GeneralManager:
   #current_scenario: 'TEST_COCKTAIL_PARTY_V3'
   #current_scenario: 'TEST_HOOMANO'
   #current_scenario: 'SPRV1'
-  #current_scenario: 'SPRV2'
+  current_scenario: 'SPRV2'
   #current_scenario: 'INSPECTION'
-  current_scenario: 'GPRSV1'
+  #current_scenario: 'GPRSV1'
+  #current_scenario: 'GPRSV2CPE'
+  
 
 
   

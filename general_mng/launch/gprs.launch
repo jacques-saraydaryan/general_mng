@@ -1,7 +1,7 @@
 <launch>
   <env name="PYTHONPATH" value="$(env PYTHONPATH)" /> 
 
-  <arg name="nao_ip" default="$(optenv NAO_IP 10.1.124.246)" />
+  <arg name="nao_ip" default="$(optenv NAO_IP 192.168.0.189)" />
   <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
 
 <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
