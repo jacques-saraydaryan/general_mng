@@ -3,7 +3,8 @@
 ## 2. Description
 This package is in charge of managing all capacity block of the architecture 
 ,
-![Sample Face Recognition](img/archi.png "General Architecture") 
+
+<img src="img/archi.png" alt="General Architecture" width="100px" >
 
 The main goal of the general manager is to provide a high level robot scenario description, managing possible retry, timeout, failures, ...
 All scenarios extend abstract scenarios (AbstractScenarioBus, AbstractScenarioAction). These abstractions give the ability to use both topic communication and action call with capacity blocks
