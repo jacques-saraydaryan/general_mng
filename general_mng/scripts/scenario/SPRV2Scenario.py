@@ -17,13 +17,13 @@ from robocup_msgs.msg import gm_bus_msg
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
 from pepper_pose_for_nav.srv import MoveHeadAtPosition
-from dialogue_hri_srvs.srv import MoveSound, MoveTurn
+from dialogue_hri_srvs.srv import MoveSound, MoveTurn, TakePicture
 
 
 
 
 
-class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class SPRV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -95,6 +95,14 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             rospy.logerr("Service activate_move_sound_service call failed: %s" % e)
 
 
+        try:
+            rospy.wait_for_service('take_picture_service',5)
+            rospy.loginfo("end service take_picture_service wait time")
+            self._activateMoveSound = rospy.ServiceProxy('take_picture_service', TakePicture)
+        except Exception as e:
+            rospy.logerr("Service take_picture_service call failed: %s" % e)
+
+
             #return
         self._peopleMetaMap={}
         try:
@@ -134,9 +142,16 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             rospy.loginfo("######################################")
         
             #TOO make the logic of the scenario
-            
-            #Sleep before turning
-            rospy.sleep(5.0)
+
+            self.sendTtsOrderAction("TTS","I will the SPR start in...","NO_WAIT_END","English",60.0)
+            index=10
+            for i in range(0,11):
+                # tell current time 
+                self.sendTtsOrderAction("TTS",str(index),"NO_WAIT_END","English",60.0)
+                index=index-1
+
+                #Sleep before turning
+                rospy.sleep(0.6)
 
             #turn of 180 degre before detecting people
             self.moveTurn(3.14)
@@ -144,25 +159,37 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             # set the head position for detecting people
             self.moveheadPose(self.HEAD_PITCH_FOR_PEOPLE_DETECTION,self.HEAD_YAW_FOR_PEOPLE_DETECTION,True)
             rospy.sleep(2.0)
+
+            #take a picture
+            self.takePicture('/tmp/imageFrontPepper.png')
             
             #Start detecting People
-            orderState0,result0=self.detectMetaPeople(30)
+            orderState0,result0=self.detectMetaPeopleFromImg('/tmp/imageFrontPepper.png',30)
             rospy.loginfo(result0)
 
+            nbOfPeople=0
             if orderState0 == 3:
                 try:
                     #process people attribute to save elts to ALMEMORY
                     self.processResult(result0)
+                    nbOfPeople=len(result0.peopleMetaList.peopleList)
                 except Exception as e:
                     rospy.logwarn(e)
 
             self.moveheadPose(self.HEAD_PITCH_FOR_PEOPLE_DETECTION,self.HEAD_YAW_FOR_PEOPLE_DETECTION,False)
             rospy.sleep(2.0)
 
+            # say the number of people
+            self.sendTtsOrderAction("TTS","In the crowd, i detect "+str(nbOfPeople)+" people","NO_WAIT_END","English",60.0)
+            self.sendTtsOrderAction("TTS","In the crowd, "+str(nbOfPeople-1)+" people are men","NO_WAIT_END","English",60.0)
 
             #Tell pepper process is finished
             orderState5,result5=self.sendDialogueOrderAction("SPR/ProcessPeopleFinished","",5.0)
 
+            self.sendTtsOrderAction("TTS","I use my super power to compute all recognition combinaisons, please wait ...","NO_WAIT_END","English",60.0)
+            # wait
+            rospy.sleep(10.0)
+            self.sendTtsOrderAction("TTS","I am ready to answer to your questions","NO_WAIT_END","English",60.0)
 
             #Activate sound location
             self.activateSoundLocation(True)
@@ -180,10 +207,10 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
     def initScenario(self):
         
         self._enableNavAction=False
-        self._enableTtsAction=False
+        self._enableTtsAction=True
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=False
+        self._enableObjectMngAction=True
         self._enableMultiplePeopleDetectionAction=True
         
         AbstractScenarioAction.configure_intern(self)
@@ -212,6 +239,15 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             rospy.logerr("Service activate_move_sound_service call failed: %s" % e)
             return
     
+    def takePicture(self,image_path):
+        try:
+            self._takePictureSrv = rospy.ServiceProxy('take_picture_service', TakePicture)
+            result=self._takePictureSrv(image_path)
+            return
+        except Exception as e:
+            rospy.logerr("Service take_picture_service call failed: %s" % e)
+            return
+
     def processResult(self,result):
         if len(result.peopleMetaList.peopleList) == 0:
             self.addInPepperMemory(self.question_memory_location[self.QUESTION_PEOPLE],str(0),5.0)

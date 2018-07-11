@@ -21,7 +21,7 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 
 
 
-class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class InspectionScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -44,33 +44,30 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
     def startScenario(self):
         rospy.loginfo("")
         rospy.loginfo("######################################")
-        rospy.loginfo("Starting the TestNavigScenario Scenario...")
+        rospy.loginfo("Starting the InspectionScenario Scenario...")
         rospy.loginfo("######################################")
         
-        #TOO make the logic of the scenario
 
-        #i=0
-        #while i< 100:
-        #    x=random.uniform(0, 4.83)-1.87
-        #    y=random.uniform(0, 5.18)-1.59
-        #    self.sendNavOrderActionToPt("NP","CRRCloseToGoal",x,y,60.0)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It0",60.0)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It1",60.0)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It2",60.0)
+        rospy.sleep(10)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It3",60.0)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It4",60.0)
+        self.sendNavOrderAction("NP","CRRCloseToGoal","INSPECTION_It5",60.0)
 
+        #self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It0",60.0)
+        #self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It1",60.0)
+        #self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It2",60.0)
+        #rospy.sleep(10)
+        #self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It3",60.0)
+        #self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It4",60.0)
 
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It0",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It1",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It2",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It3",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It4",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It5",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It6",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It7",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It8",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It9",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It10",60.0)
-        self.sendNavOrderAction("NP","CRRCloseToGoal","It11",60.0)
+        #for i in range(0,30):
+        #    self.sendNavOrderAction("NP","CleanAndRetry","INSPECTION_It3",60.0)
+        #    rospy.sleep(1)
 
         #self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
-
         #self.sendTtsOrderAction("TTS","Hello I Am an action text to speech","NO_WAIT_END","English",60.0)
 
 
@@ -80,7 +77,11 @@ class TestNavigScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAct
 
 
     def initScenario(self):
+        self._enableNavAction=True
+        self._enableTtsAction=False
+        self._enableDialogueAction=False
+        self._enableAddInMemoryAction=False
+        self._enableObjectMngAction=False
         AbstractScenarioAction.configure_intern(self)
-
 
 

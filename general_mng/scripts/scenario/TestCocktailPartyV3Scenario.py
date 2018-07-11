@@ -22,7 +22,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 
 
 
-class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
+class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction):
 
     _severalActionPending={}
     _oneActionPending=None
@@ -90,19 +90,17 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
 
         ### 3-NAVIGATE TO COMMAND AREA
-        orderState2=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It0",60.0)
-        orderState21=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It1",60.0)
-        orderState22=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It2",60.0)
-        orderState23=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It3",60.0)
+        orderState2=self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
         #rospy.loginfo("-------> OK, wait 20s")
         #rospy.sleep(20.0)
 
-        ### 4-SET HEAD FOR DIALOGUE
+        ### 2-SET HEAD FOR DIALOGUE
         self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
 
-        ### 5-INFORM NAOQI TO START TO GET COMMAND
+        ### 4-INFORM NAOQI TO START TO GET COMMAND
         orderState3,result3=self.sendDialogueOrderAction("Cocktail/OrdersStart","Cocktail/OrdersFinish",60.0*3)
 
+        # LOOP 3 Times
         #CALL PEOPLE DESCRIPTION
 
         #GET PEOPLE WITH GREATEST BOUNDING BOX
@@ -111,53 +109,43 @@ class TestCocktailPartyV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
         #INFORM NAOQI DETECTION READY
 
-        ### 6-SET HEAD FOR NAVIGATION
-        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
 
-        ### 7-NAVIGATE TO BAR TENDER
-        #orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It5",60.0)
-        orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It6",60.0)
+        ### 5-SET HEAD FOR NAVIGATION
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
         
-        ### 8-INFORM NAOQI TO TELL COMMAND TO BAR TENDER
+        ### 6-NAVIGATE TO BAR TENDER
+        orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","G",60.0)
+        
+        ### 7-INFORM NAOQI TO TELL COMMAND TO BAR TENDER
         orderState5,result5=self.sendDialogueOrderAction("Cocktail/OrdersCheckStart","Cocktail/OrdersCheckFinish",60.0*3)
 
-        
-        #### XX-NAVIGATE TO BOTTLE LOCATION
-        #orderState6=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It4",60.0)
-#
-        #### XX-DETECTION OBJECTS
-        #orderState7,result7=self.getObjectInFrontRobot(self.obj_labels,60.0)
-        #rospy.loginfo("#### OBJECT DETECTED ####")
-        #rospy.loginfo(result0)
-#
-        #### XX-ADD OBJECTS INTO NOAQI MEMORY 
-        #orderState8,result8=self.addInPepperMemory(self.object_memory_location,str(result0.labelList),5.0)
 
-        ### 9-INFORM NAOQI THAT PERSON IS FOUND
-        orderState10,result10=self.sendDialogueOrderAction("Cocktail/SearchAndInformStart","",60.0*3)
-        
+         ### 6-NAVIGATE TO BOTTLE LOCATION
+        orderState6=self.sendNavOrderAction("NP","CRRCloseToGoal","H",60.0)
 
-        ### 10 go back to cocktail party
-        orderState23=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It3",60.0)
+        ### 8-DETECTION OBJECTS
+        orderState7,result7=self.getObjectInFrontRobot(self.obj_labels,60.0)
+        rospy.loginfo("#### OBJECT DETECTED ####")
+        rospy.loginfo(result0)
+
+        ### 9-ADD OBJECTS INTO NOAQI MEMORY 
+        orderState8,result8=self.addInPepperMemory(self.object_memory_location,str(result0.labelList),5.0)
 
 
+        ### 11-NAVIGATE TO COMMAND AREA
+        orderState9=self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
+
+        ### 11BIS-INFORM NAOQI THAT ROBOT LOOKING FOR PERSON
+        #orderState3,result3=self.sendDialogueOrderAction("Cocktail/SearchAndInformStart","Cocktail/StopAndInformFinish",60.0*3)
 
 
-        ### 11-INFORM NAOQI THAT PERSON IS FOUND
+        ### 12-INFORM NAOQI THAT PERSON IS FOUND
         orderState10,result10=self.sendDialogueOrderAction("Cocktail/FindAndInformStart","Cocktail/FindAndInformFinish",60.0*3)
 
-        ### 12-Go to bar tender
-        orderState23=self.sendNavOrderAction("NP","CRRCloseToGoal","COCKTAIL_It6",60.0)
-
-        #### 13-INFORM NAOQI TO TELL COMMAND TO BAR TENDER
+        ### 13-INFORM NAOQI TO TELL COMMAND TO BAR TENDER
         orderState11,result11=self.sendDialogueOrderAction("Cocktail/OrdersCorrectionStart","Cocktail/OrdersCorrectionFinish",60.0*3)
 
 
-        #### XX-NAVIGATE TO COMMAND AREA
-        #orderState9=self.sendNavOrderAction("NP","CRRCloseToGoal","A",60.0)
-#
-        #### XXBIS-INFORM NAOQI THAT ROBOT LOOKING FOR PERSON
-        ##orderState3,result3=self.sendDialogueOrderAction("Cocktail/SearchAndInformStart","Cocktail/StopAndInformFinish",60.0*3)
 
 
 
