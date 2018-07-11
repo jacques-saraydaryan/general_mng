@@ -22,7 +22,7 @@ A complete video demonstration is available [here](https://youtu.be/rouCK6CH_eM)
 
 ## 4.  Configuration 
 
-2 launch files are available, both get the configuration from the common_gm.yaml file:
+The common_gm.yaml file:
 ```python
   GeneralManager:
     # folder where json file of your scenario is located
