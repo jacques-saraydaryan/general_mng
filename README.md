@@ -15,7 +15,7 @@ The scenario start if a 'START' is received on the /gm_start topic. Note that th
 ![Sample Face Recognition](img/archi.gif "General Architecture in the robocup context") 
 
 
-A complete video demonstration is available [here] (https://youtu.be/rouCK6CH_eM)
+A complete video demonstration is available [here](https://youtu.be/rouCK6CH_eM)
 
 ## 3. Authors
 * Jacques Saraydaryan
