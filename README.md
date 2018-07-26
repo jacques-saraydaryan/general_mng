@@ -1,7 +1,7 @@
 # 1. general_mng
 
 ## 2. Description
-This package is in charge of managing all capacity block of the architecture 
+This package is in charge of managing all capacity blocks of the architecture 
 ,
 
 <img src="img/archi.png" alt="General Architecture" width="500px" >
