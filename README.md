@@ -21,7 +21,10 @@ A complete video demonstration is available [here](https://youtu.be/rouCK6CH_eM)
 ## 2. Authors
 * Jacques Saraydaryan
 
-## 3.  Configuration 
+## 3. How to quote
+F. Jumel, J. Saraydaryan, R. Leber, L. Matignon, E. Lombardi, C. Wolf and O. Simonin,”Context Aware Robot Architecture, Application to the Robocup@Home Challenge”, RoboCup Symposium 2018
+
+## 4.  Configuration 
 
 The common_gm.yaml file:
 ```python
@@ -33,9 +36,9 @@ The common_gm.yaml file:
   
 ```
 
-## 4.  Scenario creation procedure
+## 5.  Scenario creation procedure
 
-### 4.1 Create a Scenario File
+### 5.1 Create a Scenario File
 Go to the scripts/scenario folder
 Create a new file e.g MyScenario.py
 
