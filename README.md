@@ -1,6 +1,6 @@
-# 1. general_mng
+# general_mng
 
-## 2. Description
+## 1. Description
 This package is in charge of managing all capacity blocks of the architecture 
 ,
 
@@ -18,10 +18,10 @@ The scenario start if a 'START' is received on the /gm_start topic. Note that th
 
 A complete video demonstration is available [here](https://youtu.be/rouCK6CH_eM)
 
-## 3. Authors
+## 2. Authors
 * Jacques Saraydaryan
 
-## 4.  Configuration 
+## 3.  Configuration 
 
 The common_gm.yaml file:
 ```python
@@ -33,9 +33,9 @@ The common_gm.yaml file:
   
 ```
 
-## 3.  Scenario creation procedure
+## 4.  Scenario creation procedure
 
-### 3.1 Create a Scenario File
+### 4.1 Create a Scenario File
 Go to the scripts/scenario folder
 Create a new file e.g MyScenario.py
 
