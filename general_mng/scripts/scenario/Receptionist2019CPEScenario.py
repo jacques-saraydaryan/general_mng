@@ -95,6 +95,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
                 self.wait_for_local_manager()  # TODO Check API
             elif step["action"] == "pointTo":
                 self.wait_for_local_manager()  # TODO Check API
+                lookAtObject(step["arguments"]["what"], 100.0)
             elif step["action"] == "presentPerson":
                 self.wait_for_local_manager()
             elif step["action"] == "find":
@@ -169,7 +170,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         self._enableTtsAction = False
         self._enableDialogueAction = False
         self._enableAddInMemoryAction = False
-        self._enableObjectMngAction = False
+        self._enableObjectDetectionMngAction = False
+        self._enableLookAtObjectMngAction = True
         self._enableMultiplePeopleDetectionAction = False
 
         AbstractScenarioAction.configure_intern(self)

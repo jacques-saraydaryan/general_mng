@@ -183,7 +183,7 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
         self._enableTtsAction=False
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=False
+        self._enableObjectDetectionMngAction=False
         self._enableMultiplePeopleDetectionAction=True
         
         AbstractScenarioAction.configure_intern(self)

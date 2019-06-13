@@ -39,7 +39,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
     def __init__(self,config):
         AbstractScenarioBus.__init__(self,config)
         AbstractScenarioAction.__init__(self,config)
-  
+
 
         try:
             self.obj_labels=config['labels']
@@ -53,7 +53,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
             rospy.logwarn("no config value for object_memory_location use default:"+str(self.DEFAULT_OBJECT_MEMORY_LOCATION))
             self.object_memory_location=self.DEFAULT_OBJECT_MEMORY_LOCATION
 
-            
+
 
 
         try:
@@ -70,14 +70,14 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
         rospy.loginfo("######################################")
         rospy.loginfo("Starting the TEST_COCKTAIL_PARTY_V1 Scenario...")
         rospy.loginfo("######################################")
-        
+
         self._location_beacon={}
         self._location_room={}
         self._location_rooms_list=[]
         self._location_rooms_togo=[]
         self._location_beacon_by_rooms_map={}
         self._location_rooms_list=[]
-        
+
         self._location_rooms_list.append(self.DEFAULT_GOTO_EVERYWHERE)
         self._location_rooms_list.append('room_kitchen')
         self._location_rooms_list.append('room_living_room')
@@ -86,14 +86,14 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
         self._location_rooms_list.append('room_cooridoor')
         self._location_rooms_list.append('room_entrance')
         self._location_rooms_list.append('room_exit')
-        
+
         #self._location_rooms_togo.append(self.DEFAULT_GOTO_EVERYWHERE)
         self._location_rooms_togo.append('GPRS_PEOPLE_KITCHEN_It0')
         self._location_rooms_togo.append('GPRS_PEOPLE_LIVINGROOM_It0')
         self._location_rooms_togo.append('GPRS_PEOPLE_DININGROOM_It0')
         self._location_rooms_togo.append('GPRS_PEOPLE_BEDROOM_It0')
         self._location_rooms_togo.append('GPRS_PEOPLE_ENTRANCE_It0')
-        
+
         #self._location_room['everywhere']='everywhere'
         self._location_room['room_kitchen']='GPRS_PEOPLE_KITCHEN_It0'
         self._location_room['room_living_room']='GPRS_PEOPLE_LIVINGROOM_It0'
@@ -207,7 +207,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                 current_target=jsonContent['target']
                 current_type=jsonContent['target_type']
                 self.processEveryWhere(current_type,current_target)
-                
+
         else:
                 if current_type ==self.DEFAULT_TARGET_OBJECT:
                         try:
@@ -235,7 +235,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                         obj_labels=[]
                         #obj_labels.append(current_target)
                         object_found=False
-                        for current_location in  self._location_beacon_by_rooms_map[gotToOrder]:  
+                        for current_location in  self._location_beacon_by_rooms_map[gotToOrder]:
                                 #### XX-DETECTION OBJECTS
                                 orderState7,result7=self.getObjectInFrontRobot(obj_labels,60.0)
                                 rospy.loginfo("#### OBJECT DETECTED ####")
@@ -244,7 +244,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                                         if len(result7.labelList) > 0 :
                                                 #result0.labelList
                                                 ### Say the object was found
-                                               
+
                                                 self.sendTtsOrderAction("TTS","I found the"+str(result7.labelList)+" objects !!! Go back to the operator" ,"NO_WAIT_END","English",60.0)
                                                 #self.sendTtsOrderAction("TTS","I found the"+str(current_target)+" object !!! Go back to the operator" ,"NO_WAIT_END","English",60.0)
                                                 #### XX-INFORM NAOQI OBJECT FOUND
@@ -267,7 +267,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
 
                         orderState0,result0=self.detectMetaPeople(30)
                         rospy.loginfo(result0)
-                        
+
                         try:
                                 #if len(result.peopleMetaList.peopleList) >0:
                                 if self.checkPeopleWithLeg(result0.peopleMetaList.peopleList) > 0:
@@ -294,7 +294,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                         self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
 
                         #Start detecting People
-               
+
                         orderState0,result0=self.detectMetaPeople(30)
                         try:
                                 #if len(result.peopleMetaList.peopleList) >0:
@@ -304,7 +304,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                                         orderState1,result1=self.sendDialogueOrderAction("GPRS/FindPeopleStart","GPRS/FindPeopleFinish",60.0*3)
 
                                         try:
-                                                ## Check result1 
+                                                ## Check result1
                                                if result1.payload == 'SUCCESS':
                                                         ###
                                                         self.sendTtsOrderAction("TTS","I do my job !, I go back to the operator" ,"NO_WAIT_END","English",60.0)
@@ -314,7 +314,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                                         except Exception as e:
                                                 rospy.logwarn(" Unable to process received data e:"+str(e))
 
-                                        
+
                         except Exception as e:
                                 rospy.logwarn("UNABLE TO PROCESS PEOPLE e:"+str(e))
         if self.DEFAULT_TARGET_OBJECT == target_type:
@@ -344,11 +344,11 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                                 rospy.logwarn("UNABLE TO PROCESS Object")
                 if not object_found:
                         self.sendTtsOrderAction("TTS","I so sorry, I did not found the"+str(target)+" object, Go back to the operator" ,"NO_WAIT_END","English",60.0)
-                
-               
+
+
                 orderState02=self.sendNavOrderAction("NP","CRRCloseToGoal","GPRS_START_It2",60.0)
 
-                        
+
     def checkPeopleWithLeg(self,peoplelist):
         nbPeople=0
         if len(peoplelist) == 0:
@@ -358,22 +358,22 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                 if person.trouser_color_name != 'NONE':
                         nbPeople=nbPeople+1
         return nbPeople
-        
 
-    def gmBusListener(self,msg): 
+
+    def gmBusListener(self,msg):
         if self._status == self.WAIT_ACTION_STATUS:
            self.checkActionStatus(msg)
 
 
     def initScenario(self):
-        
+
         self._enableNavAction=True
         self._enableTtsAction=True
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=True
+        self._enableObjectDetectionMngAction=True
         self._enableMultiplePeopleDetectionAction=True
-        
+
         AbstractScenarioAction.configure_intern(self)
 
     def moveheadPose(self,pitch_value,yaw_value,track):
@@ -392,4 +392,3 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                     self.moveheadPose(current_it.head_pitch,current_it.head_yaw,true)
             except Exception as e:
                     rospy.logwarn("Unable to move head to data from It point info e:"+str(e))
-        

@@ -160,7 +160,7 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         self._enableTtsAction=False
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=True
+        self._enableObjectDetectionMngAction=True
         
         AbstractScenarioAction.configure_intern(self)
 
