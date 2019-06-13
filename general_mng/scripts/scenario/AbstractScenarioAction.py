@@ -11,6 +11,8 @@ from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignal
 from object_management.msg import ObjectDetectionAction,ObjectDetectionGoal
 from ros_people_mng_actions.msg import ProcessPeopleFromImgAction,ProcessPeopleFromImgGoal
 
+from actionlib_msgs.msg import GoalStatus
+
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -41,9 +43,9 @@ class AbstractScenarioAction:
                     rospy.loginfo("navigation_manager Connected")
                 else:
                     rospy.logwarn("Unable to connect to navigation_manager action server")
-                rospy.loginfo("Connecting to tts_hri action server ... ")
 
             if self._enableTtsAction:
+                rospy.loginfo("Connecting to tts_hri action server ... ")
                 self._actionTtsHri_server = actionlib.SimpleActionClient('tts_hri', TtsHriAction)
                 finished2 = self._actionTtsHri_server.wait_for_server(timeout = rospy.Duration(10.0))
                 if finished2:
@@ -102,14 +104,14 @@ class AbstractScenarioAction:
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionNavMng_server.get_state()
-            if state ==4:
-                rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
+            if state == GoalStatus.ABORTED:
+                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
+                rospy.loginfo("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             return state
         except Exception as e:
              rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
-        return 4
+        return GoalStatus.SUCCEEDED
 
     
     def sendNavOrderActionToPt(self,action,mode,x,y,timeout):
@@ -124,15 +126,15 @@ class AbstractScenarioAction:
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionNavMng_server.get_state()
-            if state ==4:
-                rospy.logwarn("###### NAV ACTION END , State: %s",str(state))
+            if state == GoalStatus.ABORTED:
+                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ACTION END , State: %s",str(state))
+                rospy.loginfo("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
             return state
 
         except Exception as e:
              rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
-        return 4
+        return GoalStatus.ABORTED
 
     def sendTtsOrderAction(self,action,txt,mode,lang,timeout):
         try:
@@ -149,7 +151,7 @@ class AbstractScenarioAction:
             return state
         except Exception as e:
              rospy.logwarn("###### TTS ACTION FAILURE , State: %s",str(e))
-        return 4
+        return GoalStatus.ABORTED
 
 
     def sendDialogueOrderAction(self,signal_to_emit,signal_to_wait,timeout):
@@ -174,7 +176,7 @@ class AbstractScenarioAction:
             return state,result
         except Exception as e:
              rospy.logwarn("###### TTS ACTION FAILURE , State: %s",str(e))
-        return 4,None
+        return GoalStatus.ABORTED, None
 
     def addInPepperMemory(self,memory_location,json_payload,timeout):
         goalAddInMemory = AddInMemoryGoal()
@@ -218,7 +220,7 @@ class AbstractScenarioAction:
             return state,result
         except Exception as e:
              rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
-        return 4,None
+        return GoalStatus.ABORTED, None
 
 
     def detectMetaPeople(self,timeout):
@@ -241,7 +243,7 @@ class AbstractScenarioAction:
 
         except Exception as e:
              rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
-        return 4,None
+        return GoalStatus.ABORTED, None
 
     def detectMetaPeopleFromImg(self,img_path,timeout):
         img_loaded1 = cv2.imread(img_path)
@@ -261,3 +263,25 @@ class AbstractScenarioAction:
             self._actioneMultiplePeopleDetection_server.cancel_all_goals()
         # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
         return state,result
+
+    def action_status_to_string(self, action_status_int):
+        if action_status_int == GoalStatus.PENDING:
+            return "PENDING"
+        elif action_status_int == GoalStatus.ACTIVE:
+            return "ACTIVE"
+        elif action_status_int == GoalStatus.PREEMPTED:
+            return "PREEMPTED"
+        elif action_status_int == GoalStatus.SUCCEEDED:
+            return "SUCCEEDED"
+        elif action_status_int == GoalStatus.ABORTED:
+            return "ABORTED"
+        elif action_status_int == GoalStatus.REJECTED:
+            return "REJECTED"
+        elif action_status_int == GoalStatus.PREEMPTING:
+            return "PREEMPTING"
+        elif action_status_int == GoalStatus.RECALLING:
+            return "RECALLING"
+        elif action_status_int == GoalStatus.RECALLED:
+            return "RECALLED"
+        elif action_status_int == GoalStatus.LOST:
+            return "LOST"

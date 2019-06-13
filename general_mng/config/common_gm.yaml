@@ -1,18 +1,21 @@
 GeneralManager:
   #config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
-  config_folder: '/home/astro/catkin_robocup2018/data/general_management'
-  #current_scenario: 'COCKTAIL_PARTY'
-  #current_scenario: 'TEST_NAVIG'
-  #current_scenario: 'DOOR_OPENED_NAVIG'
-  #current_scenario: 'TEST_DIALOGUE'
-  #current_scenario: 'TEST_COCKTAIL_PARTY_V2'
-  #current_scenario: 'TEST_COCKTAIL_PARTY_V3'
-  #current_scenario: 'TEST_HOOMANO'
-  #current_scenario: 'SPRV1'
-  current_scenario: 'SPRV2'
-  #current_scenario: 'INSPECTION'
-  #current_scenario: 'GPRSV1'
-  #current_scenario: 'GPRSV2CPE'
+  config_folder: '/home/xia0ben/pepper_ws/data/general_management'
+  all_scenarios:
+    - 'COCKTAIL_PARTY'
+    - 'TEST_NAVIG'
+    - 'DOOR_OPENED_NAVIG'
+    - 'TEST_DIALOGUE'
+    - 'TEST_COCKTAIL_PARTY_V3'
+    - 'TEST_COCKTAIL_PARTY_V2'
+    - 'TEST_HOOMANO'
+    - 'SPRV1'
+    - 'SPRV2'
+    - 'INSPECTION'
+    - 'GPRSV1'
+    - 'GPRSV2CPE'
+    - 'RECEPTIONIST_2019_CPE'
+  current_scenario: 'RECEPTIONIST_2019_CPE' # Must be in the "scenarios" list above
   
 
 
