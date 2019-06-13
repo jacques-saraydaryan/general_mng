@@ -81,7 +81,7 @@ class InspectionScenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAc
         self._enableTtsAction=False
         self._enableDialogueAction=False
         self._enableAddInMemoryAction=False
-        self._enableObjectMngAction=False
+        self._enableObjectDetectionMngAction=False
         AbstractScenarioAction.configure_intern(self)
 
 

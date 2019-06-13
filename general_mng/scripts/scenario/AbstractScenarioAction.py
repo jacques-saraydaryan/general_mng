@@ -8,7 +8,8 @@ import actionlib
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal,AddInMemoryAction,AddInMemoryGoal
-from object_management.msg import ObjectDetectionAction,ObjectDetectionGoal
+from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
+from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
 from ros_people_mng_actions.msg import ProcessPeopleFromImgAction,ProcessPeopleFromImgGoal
 
 from actionlib_msgs.msg import GoalStatus
@@ -23,11 +24,12 @@ class AbstractScenarioAction:
     _enableTtsAction=True
     _enableDialogueAction=True
     _enableAddInMemoryAction=True
-    _enableObjectMngAction=False
+    _enableObjectDetectionMngAction=False
+    _enableLookAtObjectMngAction=False
     _enableMultiplePeopleDetectionAction=False
     _configurationReady=False
-    
-   
+
+
 
     def __init__(self,config):
         self._bridge = CvBridge()
@@ -60,7 +62,7 @@ class AbstractScenarioAction:
                     rospy.loginfo("dialogue_hri Connected")
                 else:
                     rospy.logwarn("Unable to connect to dialogue_hri action server")
-            
+
             if self._enableAddInMemoryAction:
                 self._actionAddInMemoryHri_server = actionlib.SimpleActionClient('add_in_memory_action', AddInMemoryAction)
                 finished4 = self._actionAddInMemoryHri_server.wait_for_server(timeout = rospy.Duration(10.0))
@@ -70,24 +72,32 @@ class AbstractScenarioAction:
                     rospy.logwarn("Unable to connect to AddInMemoryHri action server")
 
 
-            if self._enableObjectMngAction:
-                self._actioneObjectMng_server = actionlib.SimpleActionClient('object_detection_action', ObjectDetectionAction)
-                finished5 = self._actioneObjectMng_server.wait_for_server(timeout = rospy.Duration(10.0))
+            if self._enableObjectDetectionMngAction:
+                self._actionObjectDetectionMng_server = actionlib.SimpleActionClient('object_detection_action', ObjectDetectionAction)
+                finished5 = self._actionObjectDetectionMng_server.wait_for_server(timeout = rospy.Duration(10.0))
                 if finished5:
-                    rospy.loginfo("ObjectMng Connected")
+                    rospy.loginfo("ObjectDetectionMng Connected")
                 else:
-                    rospy.logwarn("Unable to connect to ObjectMng action server")
+                    rospy.logwarn("Unable to connect to ObjectDetectionMng action server")
 
-            
+            if self._enableLookAtObjectMngAction:
+                self._actionLookAtObjectMng_server = actionlib.SimpleActionClient('look_at_object_action', LookAtObjectAction)
+                finished6 = self._actionLookAtObjectMng_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished6:
+                    rospy.loginfo("LookAtObjectMng Connected")
+                else:
+                    rospy.logwarn("Unable to connect to LookAtObjectMng action server")
+
+
             if self._enableMultiplePeopleDetectionAction:
                 self._actioneMultiplePeopleDetection_server = actionlib.SimpleActionClient('detect_people_meta_action', ProcessPeopleFromImgAction)
-                finished6 = self._actioneMultiplePeopleDetection_server.wait_for_server(timeout = rospy.Duration(10.0))
-                if finished6:
+                finished7 = self._actioneMultiplePeopleDetection_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished7:
                     rospy.loginfo("MultiplePeopleDetection Connected")
                 else:
                     rospy.logwarn("Unable to connect to MultiplePeopleDetection action server")
 
-                
+
 
         except Exception as e:
             rospy.loginfo("Unable to connect to action server: %s" % e)
@@ -95,7 +105,7 @@ class AbstractScenarioAction:
 
 
     def sendNavOrderAction(self,action,mode,itP,timeout):
-        try: 
+        try:
             goal = NavMngGoal()
             goal.action=action
             goal.itP=itP
@@ -113,7 +123,7 @@ class AbstractScenarioAction:
              rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
         return GoalStatus.SUCCEEDED
 
-    
+
     def sendNavOrderActionToPt(self,action,mode,x,y,timeout):
         try:
             goal = NavMngGoal()
@@ -196,30 +206,53 @@ class AbstractScenarioAction:
             self._actionAddInMemoryHri_server.cancel_all_goals()
         # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
         return state,result
-    
+
 
 
     def getObjectInFrontRobot(self,labels,timeout):
         try:
-            goalObjMng = ObjectDetectionGoal()
-            goalObjMng.labels=labels
-        
-            rospy.loginfo("### OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalObjMng).replace('\n',', '))
+            goalObjDetection = ObjectDetectionGoal()
+            goalObjDetection.labels=labels
+
+            rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",str(goalObjDetection).replace('\n',', '))
 
             # send the current goal to the action server
-            self._actioneObjectMng_server.send_goal(goalObjMng)
+            self._actionObjectDetectionMng_server.send_goal(goalObjDetection)
             # wait action server result
-            finished_before_timeout=self._actioneObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
-            state=self._actioneObjectMng_server.get_state()
-            result=self._actioneObjectMng_server.get_result()
-            rospy.loginfo("###### OBJECT MNG GET OBJECT ACTION END , State: %s",str(state))
+            finished_before_timeout=self._actionObjectDetectionMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionObjectDetectionMng_server.get_state()
+            result=self._actionObjectDetectionMng_server.get_result()
+            rospy.loginfo("###### OBJECT DETECTION MNG GET OBJECT ACTION END , State: %s",str(state))
             # if timeout cancel all goals on the action server
             if finished_before_timeout:
-                self._actioneObjectMng_server.cancel_all_goals()
+                self._actionObjectDetectionMng_server.cancel_all_goals()
             # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
             return state,result
         except Exception as e:
-             rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
+             rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s",str(e))
+        return GoalStatus.ABORTED, None
+
+    def lookAtObject(self,labels,timeout):
+        try:
+            goalLookAtObj = LookAtObjectGoal()
+            goalLookAtObj.labels = labels
+
+            rospy.loginfo("### LOOK AT OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalLookAtObj).replace('\n',', '))
+
+            # send the current goal to the action server
+            self._actionLookAtObjectMng_server.send_goal(goalLookAtObj)
+            # wait action server result
+            finished_before_timeout=self._actionLookAtObjectMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionLookAtObjectMng_server.get_state()
+            result=self._actionLookAtObjectMng_server.get_result()
+            rospy.loginfo("###### LOOK AT OBJECT MNG GET OBJECT ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actionLookAtObjectMng_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state,result
+        except Exception as e:
+             rospy.logwarn("###### LOOK AT OBJECT MNG ACTION FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
 
@@ -247,7 +280,7 @@ class AbstractScenarioAction:
 
     def detectMetaPeopleFromImg(self,img_path,timeout):
         img_loaded1 = cv2.imread(img_path)
-        msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")   
+        msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")
         goalMetaPeople = ProcessPeopleFromImgGoal(img=msg_im1)
         rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
 

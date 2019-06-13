@@ -210,7 +210,7 @@ class SPRV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
         self._enableTtsAction=True
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
-        self._enableObjectMngAction=True
+        self._enableObjectDetectionMngAction=True
         self._enableMultiplePeopleDetectionAction=True
         
         AbstractScenarioAction.configure_intern(self)
