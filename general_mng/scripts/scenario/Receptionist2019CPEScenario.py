@@ -98,12 +98,13 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
             elif step["action"] == "detectHuman":
                 self.wait_for_local_manager()  # TODO Check API
             elif step["action"] == "pointTo":
-                self.wait_for_local_manager()  # TODO Check API
-                lookAtObject(step["arguments"]["what"], 100.0)
+                self.wait_for_local_manager()
+                self.lookAtObject(step["arguments"]["what"], 100.0) #TODO What about Persons
             elif step["action"] == "presentPerson":
                 self.wait_for_local_manager()
             elif step["action"] == "find":
-                self.wait_for_local_manager()  # TODO Check API
+                self.wait_for_local_manager()
+                self.getObjectInFrontRobot(step["arguments"]["what"], 100.0) #Moves only the head. Is-it enough ?
             elif step["action"] == "seatGuest":
                 self.wait_for_local_manager()
             elif step["action"] == "finishScenario":
