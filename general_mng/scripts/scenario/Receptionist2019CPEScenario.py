@@ -70,31 +70,27 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
             self.memory.raiseEvent(self.apis["gmToHRI"]["currentAction"]["ALMemory"], json.dumps(obj))
 
             if step["action"] == "goTo":
-                self.sendNavOrderAction("NP", "CRRCloseToGoal", step["arguments"]["interestPoint"], 100.0)
-                # if time_left <= 0.0:
-                #     # Dont' go AND THROW ERROR !
-                # else:
-                #     self.sendNavOrderAction("NP", "CRRCloseToGoal", step["arguments"]["interestPoint"], time_left)
+                if time_left <= 0.0:
+                    rospy.logerr("Not enough time to navigate !")
+                else:
+                    self.sendNavOrderAction("NP", "CRRCloseToGoal", step["arguments"]["interestPoint"], time_left)
             elif step["action"] == "wait":
                 self.wait(step["arguments"]["time"])
             elif step["action"] == "askOpenDoor":
                 self.wait_for_local_manager()
             elif step["action"] == "askName":
                 self.wait_for_local_manager()
-                if self.hri_work_status == "confirm":
-                    self.current_step_pointer -= 1
-                    return
             elif step["action"] == "askDrink":
                 self.wait_for_local_manager()
-                if self.hri_work_status == "confirm":
-                    self.current_step_pointer -= 1
-                    return
             elif step["action"] == "askAge":
                 self.wait_for_local_manager()
             elif step["action"] == "askToFollow":
                 self.wait_for_local_manager()
             elif step["action"] == "confirm":
                 self.wait_for_local_manager()
+                if self.hri_work_status == "confirm":
+                    self.current_step_pointer -= 1
+                    return
             elif step["action"] == "detectHuman":
                 self.wait_for_local_manager()  # TODO Check API
             elif step["action"] == "pointTo":
@@ -163,6 +159,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         Finished executing the {scenario_name} Scenario...
         ######################################
         """.format(scenario_name=self.scenario["name"]))
+        # Reset Scenario !
+        self.is_scenario_finished = False
 
     def gmBusListener(self, msg):
         if self._status == self.WAIT_ACTION_STATUS:
