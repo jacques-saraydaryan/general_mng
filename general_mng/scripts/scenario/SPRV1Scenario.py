@@ -146,7 +146,7 @@ class SPRV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             rospy.sleep(2.0)
             
             #Start detecting People
-            orderState0,result0=self.detectMetaPeople(30)
+            orderState0,result0=self.detectMetaPeopleFromImgTopic(30)
             rospy.loginfo(result0)
 
             if orderState0 == 3:
