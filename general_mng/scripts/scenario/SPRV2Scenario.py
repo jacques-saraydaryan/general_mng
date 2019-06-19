@@ -164,7 +164,7 @@ class SPRV2Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction)
             self.takePicture('/tmp/imageFrontPepper.png')
             
             #Start detecting People
-            orderState0,result0=self.detectMetaPeopleFromImg('/tmp/imageFrontPepper.png',30)
+            orderState0,result0=self.detectMetaPeopleFromImgPath('/tmp/imageFrontPepper.png',30)
             rospy.loginfo(result0)
 
             nbOfPeople=0

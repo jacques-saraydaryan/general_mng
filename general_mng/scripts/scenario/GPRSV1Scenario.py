@@ -265,7 +265,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                         ### SET HEAD FOR RECOGNITION
                         self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE,self.HEAD_YAW_CENTER,True)
 
-                        orderState0,result0=self.detectMetaPeople(30)
+                        orderState0,result0=self.detectMetaPeopleFromImgTopic(30)
                         rospy.loginfo(result0)
 
                         try:
@@ -295,7 +295,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
 
                         #Start detecting People
 
-                        orderState0,result0=self.detectMetaPeople(30)
+                        orderState0,result0=self.detectMetaPeopleFromImgTopic(30)
                         try:
                                 #if len(result.peopleMetaList.peopleList) >0:
                                 if self.checkPeopleWithLeg(result0.peopleMetaList.peopleList) > 0:
