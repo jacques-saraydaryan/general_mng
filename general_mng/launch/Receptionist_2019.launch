@@ -38,9 +38,8 @@
 
     <node pkg="object_management" type="ObjectManagementNode.py" name="object_management" required="false" output="screen">
     </node>
-    -->
 
-    <!--
+
     <include file="$(find ros_people_mng_node)/launch/people_mng.launch">
     </include>
     -->
