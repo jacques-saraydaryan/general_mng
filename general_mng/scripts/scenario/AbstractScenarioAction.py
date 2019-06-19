@@ -7,10 +7,11 @@ from threading import Timer
 import actionlib
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
-from dialogue_hri_actions.msg import DialogueSendSignalAction,DialogueSendSignalGoal,AddInMemoryAction,AddInMemoryGoal
+from dialogue_hri_actions.msg import DialogueSendSignalAction, DialogueSendSignalGoal, AddInMemoryAction, AddInMemoryGoal
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
-from ros_people_mng_actions.msg import ProcessPeopleFromImgAction,ProcessPeopleFromImgGoal
+from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
+from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
 
 from actionlib_msgs.msg import GoalStatus
 
@@ -26,6 +27,7 @@ class AbstractScenarioAction:
     _enableAddInMemoryAction=True
     _enableObjectDetectionMngAction=False
     _enableLookAtObjectMngAction=False
+    _enableLearnPeopleMetaAction=False
     _enableMultiplePeopleDetectionAction=False
     _configurationReady=False
 
@@ -89,10 +91,18 @@ class AbstractScenarioAction:
                     rospy.logwarn("Unable to connect to LookAtObjectMng action server")
 
 
-            if self._enableMultiplePeopleDetectionAction:
-                self._actioneMultiplePeopleDetection_server = actionlib.SimpleActionClient('detect_people_meta_action', ProcessPeopleFromImgAction)
-                finished7 = self._actioneMultiplePeopleDetection_server.wait_for_server(timeout = rospy.Duration(10.0))
+            if self._enableLearnPeopleMetaAction:
+                self._actionLearnPeopleMeta_server = actionlib.SimpleActionClient('learn_people_meta_action', LearnPeopleFromImgAction)
+                finished7 = self._actionLearnPeopleMeta_server.wait_for_server(timeout = rospy.Duration(10.0))
                 if finished7:
+                    rospy.loginfo("learnPeopleMeta action server Connected")
+                else:
+                    rospy.logwarn("Unable to connect to learnPeopleMeta action server")
+
+            if self._enableMultiplePeopleDetectionAction:
+                self._actionMultiplePeopleDetection_server = actionlib.SimpleActionClient('detect_people_meta_action', ProcessPeopleFromImgAction)
+                finished8 = self._actionMultiplePeopleDetection_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished8:
                     rospy.loginfo("MultiplePeopleDetection Connected")
                 else:
                     rospy.logwarn("Unable to connect to MultiplePeopleDetection action server")
@@ -208,7 +218,6 @@ class AbstractScenarioAction:
         return state,result
 
 
-
     def getObjectInFrontRobot(self,labels,timeout):
         try:
             goalObjDetection = ObjectDetectionGoal()
@@ -256,46 +265,70 @@ class AbstractScenarioAction:
         return GoalStatus.ABORTED, None
 
 
-    def detectMetaPeople(self,timeout):
-        try:
-            goalMetaPeople = ProcessPeopleFromImgGoal()
-            rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
+    def learnPeopleMetaFromImgTopic(self, name, timeout):
+        """ Appel de l'apprentissage des attributs d'une personne """
+        goalLearnPeople = LearnPeopleFromImgGoal(name=name)
+        state, result = self.learnPeopleMeta(goalLearnPeople)
+        return state, result
 
+    def learnPeopleMetaFromImgPath(self, img_path, name, timeout):
+        """ Appel de l'apprentissage des attributs d'une personne """
+        img_loaded = cv2.imread(img_path)
+        msg_img = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
+        goalLearnPeople = LearnPeopleFromImgGoal(name=name, img=msg_img)
+        state, result = self.learnPeopleMeta(goalLearnPeople)
+        return state, result
+
+    def learnPeopleMeta(self, goalLearnPeople):
+        try:
+            rospy.loginfo("### LEARN PEOPLE ATTRIBUTES ACTION PENDING")
             # send the current goal to the action server
-            self._actioneMultiplePeopleDetection_server.send_goal(goalMetaPeople)
+            self._actionLearnPeopleMeta_server.send_goal(goalLearnPeople)
             # wait action server result
-            finished_before_timeout=self._actioneMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
-            state=self._actioneMultiplePeopleDetection_server.get_state()
-            result=self._actioneMultiplePeopleDetection_server.get_result()
-            rospy.loginfo("###### DETECT META PEOPLE ACTION END , State: %s",str(state))
+            finished_before_timeout = self._actionLearnPeopleMeta_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state = self._actionLearnPeopleMeta_server.get_state()
+            result = self._actionLearnPeopleMeta_server.get_result()
+            rospy.loginfo("###### LEARN PEOPLE ATTRIBUTES ACTION END , State: %s",str(state))
             # if timeout cancel all goals on the action server
             if finished_before_timeout:
-                self._actioneMultiplePeopleDetection_server.cancel_all_goals()
+                self._actionLearnPeopleMeta_server.cancel_all_goals()
             # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
-            return state,result
-
+            return state, result
         except Exception as e:
-             rospy.logwarn("###### OBJECT MNG ACTION FAILURE , State: %s",str(e))
+             rospy.logwarn("###### LEARN PEOPLE ATTRIBUTES FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
-    def detectMetaPeopleFromImg(self,img_path,timeout):
+    def detectMetaPeopleFromImgTopic(self, timeout):
+        goalMetaPeople = ProcessPeopleFromImgGoal()
+        state, result = self.detectMetaPeople(goalMetaPeople)
+        return state, result
+
+    def detectMetaPeopleFromImgPath(self, img_path, timeout):
         img_loaded1 = cv2.imread(img_path)
         msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")
         goalMetaPeople = ProcessPeopleFromImgGoal(img=msg_im1)
-        rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
+        state, result = self.detectMetaPeople(goalMetaPeople)
+        return state, result
 
-        # send the current goal to the action server
-        self._actioneMultiplePeopleDetection_server.send_goal(goalMetaPeople)
-        # wait action server result
-        finished_before_timeout=self._actioneMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
-        state=self._actioneMultiplePeopleDetection_server.get_state()
-        result=self._actioneMultiplePeopleDetection_server.get_result()
-        rospy.loginfo("###### DETECT META PEOPLE ACTION END , State: %s",str(state))
-        # if timeout cancel all goals on the action server
-        if finished_before_timeout:
-            self._actioneMultiplePeopleDetection_server.cancel_all_goals()
-        # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
-        return state,result
+    def detectMetaPeople(self, goalMetaPeople):
+        try:
+            rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
+            # send the current goal to the action server
+            self._actionMultiplePeopleDetection_server.send_goal(goalMetaPeople)
+            # wait action server result
+            finished_before_timeout=self._actionMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state=self._actionMultiplePeopleDetection_server.get_state()
+            result=self._actionMultiplePeopleDetection_server.get_result()
+            rospy.loginfo("###### DETECT META PEOPLE ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actionMultiplePeopleDetection_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state,result
+        except Exception as e:
+             rospy.logwarn("###### DETECT META PEOPLE FAILURE , State: %s",str(e))
+        return GoalStatus.ABORTED, None
+
 
     def action_status_to_string(self, action_status_int):
         if action_status_int == GoalStatus.PENDING:

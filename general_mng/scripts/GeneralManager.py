@@ -21,6 +21,7 @@ from scenario.InspectionScenario import InspectionScenario
 from scenario.SPRV2Scenario import SPRV2Scenario
 from scenario.GPRSV1Scenario import GPRSV1Scenario
 from scenario.GPRSV2CPE1Scenario import GPRSV2CPE1Scenario
+from scenario.TakeOutTheGarbage2019v1Scenario import TakeOutTheGarbage2019Scenario
 from scenario.Receptionist2019CPEScenario import Receptionist2019CPEScenario
 
 from pepper_door_open_detector.srv import MinFrontValue
@@ -81,7 +82,8 @@ class GeneralManager:
         # self._scenarioMap["INSPECTION"]=InspectionScenario(currentConfig)
         # self._scenarioMap["GPRSV1"] = GPRSV1Scenario(currentConfig)
         # self._scenarioMap["GPRSV2CPE"] = GPRSV2CPE1Scenario(currentConfig)
-        self._scenarioMap["RECEPTIONIST_2019_CPE"] = Receptionist2019CPEScenario(currentConfig)
+        self._scenarioMap["GARBAGE_2019_CPE"] = TakeOutTheGarbage2019Scenario(currentConfig)
+        # self._scenarioMap["RECEPTIONIST_2019_CPE"] = Receptionist2019CPEScenario(currentConfig)
 
         try:
             self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO]
