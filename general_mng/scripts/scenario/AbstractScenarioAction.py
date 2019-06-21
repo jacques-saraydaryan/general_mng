@@ -264,7 +264,6 @@ class AbstractScenarioAction:
              rospy.logwarn("###### LOOK AT OBJECT MNG ACTION FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
-
     def learnPeopleMetaFromImgTopic(self, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
         goalLearnPeople = LearnPeopleFromImgGoal(name=name)

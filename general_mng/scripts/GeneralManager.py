@@ -68,31 +68,31 @@ class GeneralManager:
         except Exception as e:
             rospy.logwarn("Unable to load config file: %s" % e)
 
-        # self._scenarioMap["COCKTAIL_PARTY"]=CocktailPartyScenario(currentConfig)
-        # self._scenarioMap["TEST_NAVIG"]=TestNavigScenario(currentConfig)
-        # self._scenarioMap["DOOR_OPENED_NAVIG"]=DoorOpenAndNavigScenario(currentConfig)
-        # self._scenarioMap["TEST_DIALOGUE"]=TestDialogueScenario(currentConfig)
-        # self._scenarioMap["TEST_COCKTAIL_PARTY_V1"]=TestCocktailPartyV1Scenario(currentConfig)
-        # self._scenarioMap["TEST_COCKTAIL_PARTY_V2"]=TestCocktailPartyV2Scenario(currentConfig)
-        # self._scenarioMap["TEST_COCKTAIL_PARTY_V3"]=TestCocktailPartyV3Scenario(currentConfig)
-        # self._scenarioMap["TEST_HOOMANO"]=TestHoomanoScenario(currentConfig)
-        # self._scenarioMap["SPRV1"]=SPRV1Scenario(currentConfig)
-        # self._scenarioMap["SPRV2"] = SPRV2Scenario(currentConfig)
-        # self._scenarioMap["HELP_ME_CARRY"]=HelpMeCarryV1Scenario(currentConfig)
-        # self._scenarioMap["INSPECTION"]=InspectionScenario(currentConfig)
-        # self._scenarioMap["GPRSV1"] = GPRSV1Scenario(currentConfig)
-        # self._scenarioMap["GPRSV2CPE"] = GPRSV2CPE1Scenario(currentConfig)
-        self._scenarioMap["GARBAGE_2019_CPE"] = TakeOutTheGarbage2019Scenario(currentConfig)
-        # self._scenarioMap["RECEPTIONIST_2019_CPE"] = Receptionist2019CPEScenario(currentConfig)
+        self._scenarioMap = dict(COCKTAIL_PARTY=CocktailPartyScenario,
+                                 TEST_NAVIG=TestNavigScenario,
+                                 DOOR_OPENED_NAVIG=DoorOpenAndNavigScenario,
+                                 TEST_DIALOGUE=TestDialogueScenario,
+                                 TEST_COCKTAIL_PARTY_V1=TestCocktailPartyV1Scenario,
+                                 TEST_COCKTAIL_PARTY_V2=TestCocktailPartyV2Scenario,
+                                 TEST_COCKTAIL_PARTY_V3=TestCocktailPartyV3Scenario,
+                                 TEST_HOOMANO=TestHoomanoScenario,
+                                 SPRV1=SPRV1Scenario,
+                                 SPRV2=SPRV2Scenario,
+                                 HELP_ME_CARRY=HelpMeCarryV1Scenario,
+                                 INSPECTION=InspectionScenario,
+                                 GPRSV1=GPRSV1Scenario,
+                                 GPRSV2CPE=GPRSV2CPE1Scenario,
+                                 GARBAGE_2019_CPE=TakeOutTheGarbage2019Scenario,
+                                 RECEPTIONIST_2019_CPE=Receptionist2019CPEScenario)
 
         try:
-            self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO]
+            self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO](currentConfig)
             self._currentScenario.initScenario()
         except Exception as e:
             rospy.logerr("Unable Load SCENARIO Object: %s" % e)
 
         # FOR DEBUG :
-        # self.execute()
+        self.execute()
 
     def execute(self):
         if self._currentScenario == None:

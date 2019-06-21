@@ -4,6 +4,7 @@ import rospy
 from AbstractScenario import AbstractScenario
 from AbstractScenarioAction import AbstractScenarioAction
 from AbstractScenarioBus import AbstractScenarioBus
+from AbstractScenarioService import AbstractScenarioService
 
 import json
 import os
@@ -13,7 +14,8 @@ import time
 import qi
 
 
-class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, AbstractScenarioAction):
+class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
+                                  AbstractScenarioAction, AbstractScenarioService):
 
     def __init__(self, config):
         AbstractScenarioBus.__init__(self, config)
@@ -39,69 +41,11 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
 
         self.hri_work_return_string = ""
 
+        receptionist_scenario_filepath = "/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json"
+        with open(receptionist_scenario_filepath) as data:
+            self.scenario = json.load(data)
+
         # TODO END
-
-    def execute_action(self, step, time_left):
-        if step["action"] == "":
-            self.memory.raiseEvent(self.apis["gmToHRI"]["stepCompleted"]["ALMemory"], json.dumps({}))
-            self.memory.raiseEvent(self.apis["gmToHRI"]["currentStep"]["ALMemory"],
-                                   json.dumps({"actionId": step['id']}))
-        else:
-            obj = step["arguments"]
-            # Kind of a hack : add step id to action arguments to be sent to local manager to avoid sending entire step
-            obj["actionId"] = step['id']
-            self.memory.raiseEvent(self.apis["gmToHRI"]["currentAction"]["ALMemory"], json.dumps(obj))
-
-            if step["action"] == "goTo":
-                if time_left <= 0.0:
-                    rospy.logerr("Not enough time to navigate !")
-                else:
-                    self.sendNavOrderAction("NP", "CRRCloseToGoal", step["arguments"]["interestPoint"], time_left)
-            elif step["action"] == "wait":
-                self.wait(step["arguments"]["time"])
-            elif step["action"] == "askOpenDoor":
-                self.wait_for_local_manager()
-            elif step["action"] == "askName":
-                self.wait_for_local_manager()
-            elif step["action"] == "askDrink":
-                self.wait_for_local_manager()
-            elif step["action"] == "askAge":
-                self.wait_for_local_manager()
-            elif step["action"] == "askToFollow":
-                self.wait_for_local_manager()
-            elif step["action"] == "confirm":
-                self.wait_for_local_manager()
-                if self.hri_work_status == "confirm":
-                    self.current_step_pointer -= 1
-                    return
-            elif step["action"] == "detectHuman":
-                self.wait_for_local_manager()  # TODO Check API
-            elif step["action"] == "pointTo":
-                self.wait_for_local_manager()
-                self.lookAtObject(step["arguments"]["what"], 100.0) #TODO What about Persons
-            elif step["action"] == "presentPerson":
-                self.wait_for_local_manager()
-            elif step["action"] == "find":
-                self.wait_for_local_manager()
-                self.getObjectInFrontRobot(step["arguments"]["what"], 100.0) #Moves only the head. Is-it enough ?
-            elif step["action"] == "seatGuest":
-                self.wait_for_local_manager()
-            elif step["action"] == "finishScenario":
-                self.is_scenario_finished = True
-            else:
-                text = "Action '{action_name}' is not an expected action name".format(action_name=step["action"])
-                raise KeyError(text)
-
-        # By default, go to next step
-        self.current_step_pointer = self.current_step_pointer + 1
-
-    def wait_for_local_manager(self):
-        print("Doing nothing until local manager is done...")
-        while not self.hri_work_done:
-            time.sleep(0.1)
-        self.hri_work_done = False
-
-        threading.Thread(target=self.gm_heartbeat).start()
 
     def startScenario(self):
         rospy.loginfo("""
@@ -127,6 +71,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         ###################################################################################################
 
         # Find first guest
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
         self.send_global_step_start_signal("FindG1")
         global_step_find_g1_start_time = time.time()
 
@@ -204,6 +149,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         ###################################################################################################
 
         # Introduce first guest to John
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
         self.send_global_step_start_signal("IntroduceG1ToJohn")
         global_step_introduce_g1_to_john_start_time = time.time()
 
@@ -246,7 +192,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
 
         ###################################################################################################
 
-        # TODO If time too short, don't try to bring second guest
+        # TODO If time too short, don't try to bring second guest ?
 
         # Go to door
         self.send_global_step_start_signal("GotoDoor1")
@@ -259,6 +205,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         ###################################################################################################
 
         # Find second guest
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
         self.send_global_step_start_signal("FindG2")
         global_step_find_g2_start_time = time.time()
 
@@ -336,6 +283,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         ###################################################################################################
 
         # Introduce second guest to others
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
         self.send_global_step_start_signal("IntroduceG2ToOthers")
         global_step_introduce_g2_to_others_start_time = time.time()
 
@@ -416,7 +364,10 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus, Abstrac
         self._enableLookAtObjectMngAction = False
         self._enableMultiplePeopleDetectionAction = False
 
+        self._enableMoveHeadPoseService = True
+
         AbstractScenarioAction.configure_intern(self)
+        AbstractScenarioService.configure_intern(self)
 
     def gm_heartbeat(self):
         while True:

@@ -9,13 +9,6 @@
         <param name="confPath" value="$(arg mapManagerConfPath)"/>
     </node>
 
-    <!--
-    <node pkg="pepper_pose_for_nav" type="MoveHeadPosition.py" name="fix_head_position" required="false" output="screen">
-        <param name="ip" value="$(arg nao_ip)"/>
-        <param name="port" value="$(arg nao_port)"/>
-    </node>
-    -->
-
     <include file="$(find dialogue_hri_node)/launch/hri_mng.launch">
         <arg name="nao_ip" value="$(arg nao_ip)"/>
         <arg name="nao_port" value="$(arg nao_port)"/>
