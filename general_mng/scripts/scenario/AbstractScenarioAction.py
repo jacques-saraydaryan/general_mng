@@ -12,6 +12,7 @@ from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
 from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
 from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
+from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
 
 from actionlib_msgs.msg import GoalStatus
 
@@ -29,6 +30,7 @@ class AbstractScenarioAction:
     _enableLookAtObjectMngAction=False
     _enableLearnPeopleMetaAction=False
     _enableMultiplePeopleDetectionAction=False
+    _enableGetPeopleNameAction=False
     _configurationReady=False
 
 
@@ -106,6 +108,14 @@ class AbstractScenarioAction:
                     rospy.loginfo("MultiplePeopleDetection Connected")
                 else:
                     rospy.logwarn("Unable to connect to MultiplePeopleDetection action server")
+
+            if self._enableGetPeopleNameAction:
+                self._actionGetPeopleName_server = actionlib.SimpleActionClient('get_people_name_action', GetPeopleNameFromImgAction)
+                finished9 = self._actionGetPeopleName_server.wait_for_server(timeout = rospy.Duration(10.0))
+                if finished9:
+                    rospy.loginfo("GetPeopleName Connected")
+                else:
+                    rospy.logwarn("Unable to connect to GetPeopleName action server")
 
 
 
@@ -328,6 +338,36 @@ class AbstractScenarioAction:
              rospy.logwarn("###### DETECT META PEOPLE FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
+    def getPeopleNameFromImgTopic(self, timeout):
+        goalPeopleName = GetPeopleNameFromImgGoal()
+        state, result = self.getPeopleName(goalPeopleName)
+        return state, result
+
+    def getPeopleNameFromImgPath(self, img_path, timeout):
+        img_loaded = cv2.imread(img_path)
+        img_msg = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
+        goalPeopleName = ProcessPeopleFromImgGoal(img=img_msg)
+        state, result = self.getPeopleName(goalPeopleName)
+        return state, result
+
+    def getPeopleName(self, goalPeopleName):
+        try:
+            rospy.loginfo("### GET PEOPLE NAME ACTION PENDING")
+            # send the current goal to the action server
+            self._actionGetPeopleName_server.send_goal(goalPeopleName)
+            # wait action server result
+            finished_before_timeout = self._actionGetPeopleName_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state = self._actionGetPeopleName_server.get_state()
+            result = self._actionGetPeopleName_server.get_result()
+            rospy.loginfo("###### GET PEOPLE NAME ACTION END , State: %s",str(state))
+            # if timeout cancel all goals on the action server
+            if finished_before_timeout:
+                self._actionGetPeopleName_server.cancel_all_goals()
+            # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+            return state, result
+        except Exception as e:
+             rospy.logwarn("###### GET PEOPLE NAME FAILURE , State: %s",str(e))
+        return GoalStatus.ABORTED, None
 
     def action_status_to_string(self, action_status_int):
         if action_status_int == GoalStatus.PENDING:
