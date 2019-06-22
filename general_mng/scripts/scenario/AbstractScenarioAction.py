@@ -141,7 +141,7 @@ class AbstractScenarioAction:
             return state
         except Exception as e:
              rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
-        return GoalStatus.SUCCEEDED
+        return GoalStatus.ABORTED
 
 
     def sendNavOrderActionToPt(self,action,mode,x,y,timeout):

@@ -1,5 +1,6 @@
 __author__ = 'Benoit Renault'
 import rospy
+import rostopic
 
 from AbstractScenario import AbstractScenario
 from AbstractScenarioAction import AbstractScenarioAction
@@ -70,8 +71,14 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         ###################################################################################################
 
+        ## Go to door
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
+        self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 50.0)
+
+        ###################################################################################################
+
         # Find first guest
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
         self.send_global_step_start_signal("FindG1")
         global_step_find_g1_start_time = time.time()
 
@@ -144,12 +151,13 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         ## Go to living room
         self.send_action_to_local_manager("gotolr1_go-to-living-room")
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_in_steps_by_id(self.steps, "gotolr1_go-to-living-room")["arguments"]["interestPoint"], 50.0)
 
         ###################################################################################################
 
         # Introduce first guest to John
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
         self.send_global_step_start_signal("IntroduceG1ToJohn")
         global_step_introduce_g1_to_john_start_time = time.time()
 
@@ -200,12 +208,13 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         ## Go to door
         self.send_action_to_local_manager("gotodoor1_go-to-door")
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_in_steps_by_id(self.steps, "gotodoor1_go-to-door")["arguments"]["interestPoint"], 50.0)
 
         ###################################################################################################
 
         # Find second guest
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
         self.send_global_step_start_signal("FindG2")
         global_step_find_g2_start_time = time.time()
 
@@ -278,12 +287,13 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         ## Go to living room
         self.send_action_to_local_manager("gotolr2_go-to-living-room")
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_in_steps_by_id(self.steps, "gotolr2_go-to-living-room")["arguments"]["interestPoint"], 50.0)
 
         ###################################################################################################
 
         # Introduce second guest to others
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, False)  # Reset Head position to talk
+        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
         self.send_global_step_start_signal("IntroduceG2ToOthers")
         global_step_introduce_g2_to_others_start_time = time.time()
 
@@ -438,8 +448,18 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
             return "error"
 
     def send_global_step_start_signal(self, action_id):
-        self.memory.raiseEvent(self.apis["gmToHRI"]["stepCompleted"]["ALMemory"], json.dumps({}))
-        self.memory.raiseEvent(self.apis["gmToHRI"]["currentStep"]["ALMemory"], json.dumps({"actionId": action_id}))
+        try:
+            self.memory.raiseEvent(self.apis["gmToHRI"]["stepCompleted"]["ALMemory"], json.dumps({}))
+            self.memory.raiseEvent(self.apis["gmToHRI"]["currentStep"]["ALMemory"], json.dumps({"actionId": action_id}))
+        except RuntimeError as e:
+            if "Session closed" in e.message:
+                self.session = qi.Session()
+                self.session.connect(self.url)
+                self.memory = self.session.service("ALMemory")
+
+                self.memory.raiseEvent(self.apis["gmToHRI"]["stepCompleted"]["ALMemory"], json.dumps({}))
+                self.memory.raiseEvent(self.apis["gmToHRI"]["currentStep"]["ALMemory"],
+                                       json.dumps({"actionId": action_id}))
 
     def handle_hri_job_complete(self, value):
         lock = threading.Lock()

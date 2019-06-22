@@ -25,14 +25,14 @@
         <arg name="nao_port" value="$(arg nao_port)"/>
     </include>
 
-    <!--
+
     <include file="$(find darknet_gateway_config)/launch/darknet_ros.launch">
     </include>
 
     <node pkg="object_management" type="ObjectManagementNode.py" name="object_management" required="false" output="screen">
     </node>
 
-
+    <!--
     <include file="$(find ros_people_mng_node)/launch/people_mng.launch">
     </include>
     -->

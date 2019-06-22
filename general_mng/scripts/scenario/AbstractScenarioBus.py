@@ -1,9 +1,12 @@
 __author__ = 'Jacques Saraydaryan'
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 import rospy
+import rostopic
 from robocup_msgs.msg import gm_bus_msg
 import uuid
 from threading import Timer
+import time
+
 
 class AbstractScenarioBus:
     WAIT_ACTION_STATUS="WAIT_ACTION"
@@ -45,6 +48,7 @@ class AbstractScenarioBus:
         self._gm_sub = rospy.Subscriber("/gm_bus_answer", gm_bus_msg, self.gmBusListener)
         self._config=config
         self._operatorCheckFunctionMap={self.AND_OPERATOR:self.checkAndOperator,self.OR_OPERATOR:self.checkOrOperator,self.NONE_OPERATOR:self.checkNoneOperator}
+        self.remapped_topics = dict()
     
     @abstractmethod
     def gmBusListener(self,msg): pass
@@ -180,9 +184,37 @@ class AbstractScenarioBus:
 
     def resetActionPendingMap(self):
          self._actionPendingMap={}
-                
 
-        
+    def remap_topic(self, source_topic, target_topic, only_one_msg=True, freq=1.0, queue_size=10):
+        if (source_topic, target_topic) in self.remapped_topics:
+            remap_data = self.remapped_topics[(source_topic, target_topic)]
+            remap_data["only_one_msg"] = only_one_msg
+            remap_data["freq"] = freq
+            remap_data["duration"] = 1.0 / freq
+            remap_data["last_call_time"] = time.time()
+        else:
+            topic_msg_class = rostopic.get_topic_class(source_topic)[0]
+            subscriber = rospy.Subscriber(
+                source_topic, topic_msg_class, callback=self.callback, callback_args=source_topic)
+            publisher = rospy.Publisher(target_topic, topic_msg_class, queue_size=queue_size)
 
+            self.remapped_topics[(source_topic, target_topic)] = {"only_one_msg": only_one_msg,
+                                                                  "freq": freq,
+                                                                  "duration": 1.0 / freq,
+                                                                  "subscriber": subscriber,
+                                                                  "publisher": publisher,
+                                                                  "last_call_time": time.time()}
 
+    def remap_callback(self, msg, source_topic, target_topic):
+        this_call_time = time.time()
+        remap_data = self.remapped_topics[(source_topic, target_topic)]
+        if this_call_time - remap_data["last_call_time"] >= remap_data["duration"]:
+            remap_data["publisher"].publish(msg)
+            if remap_data["only_one_msg"]:
+                self.unremap_topic(source_topic, target_topic)
+        remap_data["last_call_time"] = this_call_time
 
+    def unremap_topic(self, source_topic, target_topic):
+        remap_data = self.remapped_topics[(source_topic, target_topic)]
+        remap_data["subscriber"].unregister()
+        del self.remapped_topics[(source_topic, target_topic)]

@@ -5,7 +5,7 @@ from rospy.exceptions import ROSException, ROSInterruptException
 
 
 class AbstractScenarioService:
-    HEAD_PITCH_FOR_SPEECH_POSE = 0.20
+    HEAD_PITCH_FOR_SPEECH_POSE = -0.30
     HEAD_PITCH_FOR_NAV_POSE = 0.5
     HEAD_YAW_CENTER = 0.0
 
