@@ -10,9 +10,9 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction, DialogueSendSignalGoal, AddInMemoryAction, AddInMemoryGoal
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
-from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
-from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
-from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
+from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal, ProcessPeopleFromImgResult
+from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal, LearnPeopleFromImgResult
+from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal, GetPeopleNameFromImgResult
 
 from actionlib_msgs.msg import GoalStatus
 
@@ -251,10 +251,14 @@ class AbstractScenarioAction:
              rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
-    def lookAtObject(self,labels,timeout):
+    def lookAtObject(self,labels,index,head,base,finger,timeout):
         try:
             goalLookAtObj = LookAtObjectGoal()
             goalLookAtObj.labels = labels
+            goalLookAtObj.index = index
+            goalLookAtObj.head = head
+            goalLookAtObj.base = base
+            goalLookAtObj.finger = finger
 
             rospy.loginfo("### LOOK AT OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalLookAtObj).replace('\n',', '))
 
