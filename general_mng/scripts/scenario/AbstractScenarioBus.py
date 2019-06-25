@@ -115,8 +115,6 @@ class AbstractScenarioBus:
 
         return result
 
-        
-
     def checkActionStatus(self,msg):
         if msg.action_id in self._actionPendingMap:
             self._actionPendingMap[msg.action_id]=msg

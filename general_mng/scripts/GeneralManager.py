@@ -1,10 +1,7 @@
 #!/usr/bin/env python
+
 import rospy
-import json
 import yaml
-from collections import namedtuple
-from robocup_msgs.msg import gm_bus_msg
-import threading
 from std_msgs.msg import String
 
 from scenario.CocktailPartyScenario import CocktailPartyScenario
@@ -27,7 +24,7 @@ from scenario.Receptionist2019CPEScenario import Receptionist2019CPEScenario
 from pepper_door_open_detector.srv import MinFrontValue
 
 
-## COmmand Samples
+## Command Samples
 # rostopic pub /gm_start std_msgs/String "data: 'START'"
 #
 
@@ -62,9 +59,9 @@ class GeneralManager:
         rospy.loginfo("Param: config_folder:" + str(self.CONFIG_FOLDER))
         rospy.loginfo("Param: current_scenario:" + str(self.CURRENT_SCENARIO))
         rospy.loginfo('configure ok')
-        currentConfig = None
+        scenario_config = None
         try:
-            currentConfig = self.loadConfig()
+            scenario_config = self.loadConfig()
         except Exception as e:
             rospy.logwarn("Unable to load config file: %s" % e)
 
@@ -86,7 +83,7 @@ class GeneralManager:
                                  RECEPTIONIST_2019_CPE=Receptionist2019CPEScenario)
 
         try:
-            self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO](currentConfig)
+            self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO](scenario_config)
             self._currentScenario.initScenario()
         except Exception as e:
             rospy.logerr("Unable Load SCENARIO Object: %s" % e)
@@ -109,10 +106,10 @@ class GeneralManager:
     #######################################################################
     def loadConfig(self):
         scenarioFile = self.CONFIG_FOLDER + "/" + self.CURRENT_SCENARIO + "_SCENARIO.json"
-        rospy.loginfo("Opening scenario configuraiton file: %s" % scenarioFile)
+        rospy.loginfo("Opening scenario configuration file: %s" % scenarioFile)
         with open(scenarioFile) as json_data:
             jsonContent = yaml.safe_load(json_data)
-            rospy.loginfo("Scenario configuraiton file content: %s" % jsonContent)
+            rospy.loginfo("Scenario configuration file content: %s" % jsonContent)
             # jsonString=json.load(jsonContent)
             # jsonObject = json.load(jsonString, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             ##rospy.loginfo("Scenario configuraiton Object content: %s" % str(jsonObject))

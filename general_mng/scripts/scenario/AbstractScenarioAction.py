@@ -1,23 +1,25 @@
 __author__ = 'Jacques Saraydaryan'
-from abc import ABCMeta, abstractmethod
+
 import rospy
-from robocup_msgs.msg import gm_bus_msg
 import uuid
-from threading import Timer
 import actionlib
+import time
+import json
 from navigation_manager.msg import NavMngGoal, NavMngAction
 from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction, DialogueSendSignalGoal, AddInMemoryAction, AddInMemoryGoal
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
-from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal, ProcessPeopleFromImgResult
-from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal, LearnPeopleFromImgResult
-from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal, GetPeopleNameFromImgResult
+from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
+from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
+from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
+# from dialogue_hri_actions.msg import RequestToLocalManagerGoal, RequestToLocalManagerAction
 
 from actionlib_msgs.msg import GoalStatus
 
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
+
 
 class AbstractScenarioAction:
     _actionNavMng_server=None
@@ -32,8 +34,7 @@ class AbstractScenarioAction:
     _enableMultiplePeopleDetectionAction=False
     _enableGetPeopleNameAction=False
     _configurationReady=False
-
-
+    _enableRequestToLocalManagerAction=False
 
     def __init__(self,config):
         self._bridge = CvBridge()
@@ -117,12 +118,39 @@ class AbstractScenarioAction:
                 else:
                     rospy.logwarn("Unable to connect to GetPeopleName action server")
 
-
+            # if self._enableRequestToLocalManagerAction:
+            #     self._actionRequestToLocalManager_server = actionlib.SimpleActionClient('request_to_local_manager', RequestToLocalManagerAction)
+            #     finished10 = self._actionGetPeopleName_server.wait_for_server(timeout = rospy.Duration(10.0))
+            #     if finished10:
+            #         rospy.loginfo("RequestToLocalManager Connected")
+            #     else:
+            #         rospy.logwarn("Unable to connect to RequestToLocalManager action server")
 
         except Exception as e:
             rospy.loginfo("Unable to connect to action server: %s" % e)
         self._configurationReady=True
 
+    def action_status_to_string(self, action_status_int):
+        if action_status_int == GoalStatus.PENDING:
+            return "PENDING"
+        elif action_status_int == GoalStatus.ACTIVE:
+            return "ACTIVE"
+        elif action_status_int == GoalStatus.PREEMPTED:
+            return "PREEMPTED"
+        elif action_status_int == GoalStatus.SUCCEEDED:
+            return "SUCCEEDED"
+        elif action_status_int == GoalStatus.ABORTED:
+            return "ABORTED"
+        elif action_status_int == GoalStatus.REJECTED:
+            return "REJECTED"
+        elif action_status_int == GoalStatus.PREEMPTING:
+            return "PREEMPTING"
+        elif action_status_int == GoalStatus.RECALLING:
+            return "RECALLING"
+        elif action_status_int == GoalStatus.RECALLED:
+            return "RECALLED"
+        elif action_status_int == GoalStatus.LOST:
+            return "LOST"
 
     def sendNavOrderAction(self,action,mode,itP,timeout):
         try:
@@ -372,25 +400,3 @@ class AbstractScenarioAction:
         except Exception as e:
              rospy.logwarn("###### GET PEOPLE NAME FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
-
-    def action_status_to_string(self, action_status_int):
-        if action_status_int == GoalStatus.PENDING:
-            return "PENDING"
-        elif action_status_int == GoalStatus.ACTIVE:
-            return "ACTIVE"
-        elif action_status_int == GoalStatus.PREEMPTED:
-            return "PREEMPTED"
-        elif action_status_int == GoalStatus.SUCCEEDED:
-            return "SUCCEEDED"
-        elif action_status_int == GoalStatus.ABORTED:
-            return "ABORTED"
-        elif action_status_int == GoalStatus.REJECTED:
-            return "REJECTED"
-        elif action_status_int == GoalStatus.PREEMPTING:
-            return "PREEMPTING"
-        elif action_status_int == GoalStatus.RECALLING:
-            return "RECALLING"
-        elif action_status_int == GoalStatus.RECALLED:
-            return "RECALLED"
-        elif action_status_int == GoalStatus.LOST:
-            return "LOST"

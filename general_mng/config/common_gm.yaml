@@ -16,16 +16,3 @@ GeneralManager:
     - 'GPRSV2CPE'
     - 'RECEPTIONIST_2019_CPE'
   current_scenario: 'RECEPTIONIST_2019_CPE' # Must be in the "scenarios" list above
-  
-
-
-  
-  
-  
-  
-  
-
-  
-  
-
-  
