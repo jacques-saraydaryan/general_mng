@@ -2,7 +2,6 @@ import rospy
 import qi
 import json
 import threading
-import math
 import time
 import uuid
 
@@ -32,6 +31,7 @@ class LocalManagerWrapper:
         rospy.loginfo("{class_name}: Configuration finished.".format(class_name=self.__class__))
 
     def _configure_naoqi(self, ip, port):
+        rospy.loginfo("{class_name}: Connecting to ALMemory...".format(class_name=self.__class__))
         self._session = qi.Session()
         try:
             self._session.connect("tcp://" + ip + ":" + str(port))
@@ -258,8 +258,35 @@ class LocalManagerWrapper:
     def detail_drinks(self, timeout):
         raise NotImplementedError()
 
-    def present_person(self, timeout):
-        raise NotImplementedError()
+    def present_person(self, speech, name_to_present, drink_to_present, names_present_to, timeout):
+        """
+        Present one person and its favorite drink to a list of other persons
+
+        :param speech: the text that will be use by the Local Manager for tablet and vocal
+        :type speech: dict
+        :param name_to_present:
+        :type name_to_present: string
+        :param drink_to_present:
+        :type drink_to_present: drink json object (string)
+        :param names_present_to:
+        :param names_present_to: string[]
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'speech': speech,
+                'who': {
+                    'name': name_to_present,
+                    'drink': drink_to_present
+                },
+                'to': names_present_to
+            }
+        })
+        status, result = self._execute_request("presentPerson", payload, timeout)
+        return status
 
     def go_to(self, speech, location, timeout):
         """
@@ -281,7 +308,7 @@ class LocalManagerWrapper:
         status, result = self._execute_request("goTo", payload, timeout)
         return status
 
-    def seat_guest(self, speech, guest, timeout):
+    def seat_guest(self, speech, timeout):
         """
         Start the view 'seatGuest'
 
@@ -297,7 +324,6 @@ class LocalManagerWrapper:
             'timestamp': time.time(),
             'args': {
                 'speech': speech,
-                'guest': guest
             }
         })
         status, result = self._execute_request("seatGuest", payload, timeout)

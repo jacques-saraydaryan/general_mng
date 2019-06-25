@@ -22,7 +22,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("192.168.1.189", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("192.168.42.189", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json") as data:
@@ -41,8 +41,15 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
             self._videos = json.load(data)
 
         # Scenario data
-        self._living_room = self.find_location(self._locations, "livingRoom")
 
+        # - Constants
+        self._living_room = self.find_by_id(self._locations, "livingRoom")
+        self._entrance = self.find_by_id(self._locations, "entrance")
+        self.host_name = "John"
+        self.host_age = 40
+        self.host_drink = self.find_by_id(self._drinks, "coke")["name"]
+
+        # - Variables
         self.guest_1_name = "Placeholder name"
         self.guest_2_name = "Placeholder name"
         self.guest_1_age = 1000
@@ -85,15 +92,15 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         global_step_find_g1_start_time = time.time()
 
         # - Wait
-        findg1_wait = self.find_step(steps, "findg1_wait")
+        findg1_wait = self.find_by_id(steps, "findg1_wait")
         self._lm_wrapper.wait(findg1_wait["speech"], findg1_wait["arguments"]["time"], findg1_wait["arguments"]["time"] + 2.0)
 
         # - Ask referee to open the door
-        findg1_ask_referee = self.find_step(steps, "findg1_ask-referee-to-open-the-door")
+        findg1_ask_referee = self.find_by_id(steps, "findg1_ask-referee-to-open-the-door")
         self._lm_wrapper.ask_open_door(findg1_ask_referee["speech"], self.NO_TIMEOUT)
 
         # - Wait2
-        findg1_wait2 = self.find_step(steps, "findg1_wait2")
+        findg1_wait2 = self.find_by_id(steps, "findg1_wait2")
         self._lm_wrapper.wait(findg1_wait2["speech"], findg1_wait2["arguments"]["time"], findg1_wait2["arguments"]["time"] + 2.0)
 
         # - Detect human
@@ -112,8 +119,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         askinfog1_ask_name_counter = 0
         askinfog1_ask_name_max_counts = 3
-        askinfog1_ask_name = self.find_step(steps, "askinfog1_ask-name")
-        askinfog1_confirm_name = self.find_step(steps, "askinfog1_confirm-name")
+        askinfog1_ask_name = self.find_by_id(steps, "askinfog1_ask-name")
+        askinfog1_confirm_name = self.find_by_id(steps, "askinfog1_confirm-name")
         while True:
 
             if askinfog1_ask_name_counter >= askinfog1_ask_name_max_counts:
@@ -138,8 +145,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         askinfog1_ask_drink_counter = 0
         askinfog1_ask_drink_max_counts = 3
-        askinfog1_ask_drink = self.find_step(steps, "askinfog1_ask-drink")
-        askinfog1_confirm_drink = self.find_step(steps, "askinfog1_confirm-drink")
+        askinfog1_ask_drink = self.find_by_id(steps, "askinfog1_ask-drink")
+        askinfog1_confirm_drink = self.find_by_id(steps, "askinfog1_confirm-drink")
         while True:
 
             if askinfog1_ask_drink_counter >= askinfog1_ask_drink_max_counts:
@@ -155,17 +162,17 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
             # - Confirm drink
             confirm_speech = askinfog1_confirm_drink["speech"]
-            confirm_speech["drink"] = tentative_guest_1_drink
+            confirm_speech["drink"] = tentative_guest_1_drink["name"]
             askinfog1_ask_drink_confirmed = self._lm_wrapper.confirm(confirm_speech, self.NO_TIMEOUT)[1]
             if askinfog1_ask_drink_confirmed:
-                rospy.loginfo("Guest 1 got drink {drink} confirmed !".format(drink=tentative_guest_1_drink))
+                rospy.loginfo("Guest 1 got drink <{drink}> confirmed !".format(drink=tentative_guest_1_drink["name"]))
                 self.guest_1_drink = tentative_guest_1_drink
                 break
 
             askinfog1_ask_drink_counter += 1
 
         # - Ask age
-        askinfog1_ask_age = self.find_step(steps, "askinfog1_ask-age")
+        askinfog1_ask_age = self.find_by_id(steps, "askinfog1_ask-age")
         askinfog1_ask_age_speech = askinfog1_ask_age["speech"]
         askinfog1_ask_age_speech["name"] = self.guest_1_name
         self.guest_1_age = self._lm_wrapper.ask_age(askinfog1_ask_age_speech, self.NO_TIMEOUT)[1]
@@ -180,14 +187,15 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_go_to_lr1_start_time = time.time()
 
         # - Ask to follow
-        gotolr1_ask_to_follow = self.find_step(steps, "gotolr1_ask-to-follow")
+        gotolr1_ask_to_follow = self.find_by_id(steps, "gotolr1_ask-to-follow")
+        gotolr1_ask_to_follow["speech"]["name"] = self.guest_1_name
         self._lm_wrapper.ask_to_follow(gotolr1_ask_to_follow["speech"], self._living_room, self.NO_TIMEOUT)
 
         # - Go to living room
-        gotolr1_go_to_living_room = self.find_step(steps, "gotolr1_go-to-living-room")
+        gotolr1_go_to_living_room = self.find_by_id(steps, "gotolr1_go-to-living-room")
         self._lm_wrapper.go_to(gotolr1_go_to_living_room["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to_living_room["arguments"]["interestPoint"], 50.0)
+        # self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to_living_room["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR1"], self.NO_TIMEOUT)
 
@@ -200,11 +208,11 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_introduce_g1_to_john_start_time = time.time()
 
         # - Point to first guest
-        self.send_action_to_local_manager("introduceg1tojohn_point-to-first-guest")
         self.simulate_ros_work(1.0, "SIMULATING POINTING TO FIRST GUEST ")
 
         # - Say name and drink
-        self.send_action_to_local_manager("introduceg1tojohn_say-name-and-drink")
+        int_g1_john = self.find_by_id(steps, "introduceg1tojohn_say-name-and-drink")
+        self._lm_wrapper.present_person(int_g1_john["speech"], self.guest_1_name, self.guest_1_drink, [self.host_name], self.NO_TIMEOUT)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["IntroduceG1ToJohn"], self.NO_TIMEOUT)
 
@@ -216,11 +224,11 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_introduce_john_to_g1_start_time = time.time()
 
         # - Point to John
-        self.send_action_to_local_manager("introducejohntog1_point-to-john")
         self.simulate_ros_work(1.0, "SIMULATING POINTING TO JOHN ")
 
         # - Say name and drink
-        self.send_action_to_local_manager("introducejohntog1_say-name-and-drink")
+        int_john_g1 = self.find_by_id(steps, "introducejohntog1_say-name-and-drink")
+        self._lm_wrapper.present_person(int_john_g1["speech"], self.host_name, self.host_drink, [self.guest_1_name], self.NO_TIMEOUT)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["IntroduceJohnToG1"], self.NO_TIMEOUT)
 
@@ -231,15 +239,15 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_seat_g1_start_time = time.time()
 
         # - Find empty seat
-        self.send_action_to_local_manager("seatg1_find-empty-seat")
         self.simulate_ros_work(1.0, "SIMULATING FINDING AN EMPTY SEAT")
 
         # - Point to empty seat
-        self.send_action_to_local_manager("seatg1_point-to-empty-seat")
         self.simulate_ros_work(1.0, "SIMULATING POINTING TO EMPTY SEAT")
 
         # - Tell first guest to seat
-        self.send_action_to_local_manager("seatg1_tell-first-guest-to-seat")
+        seat_g1 = self.find_by_id(steps, "seatg1_tell-first-guest-to-seat")
+        seat_g1["speech"]["name"] = self.guest_1_name
+        self._lm_wrapper.seat_guest(seat_g1["speech"], self.NO_TIMEOUT)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["SeatG1"], self.NO_TIMEOUT)
 
@@ -252,9 +260,10 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_find_go_to_door1_start_time = time.time()
 
         # - Go to door
-        self.send_action_to_local_manager("gotodoor1_go-to-door")
+        gotodoor1 = self.find_by_id(steps, "gotodoor1_go-to-door")
+        self._lm_wrapper.go_to(gotodoor1["speech"], self._entrance, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_in_steps_by_id(steps, "gotodoor1_go-to-door")["arguments"]["interestPoint"], 50.0)
+        # self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor1["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoDoor1"], self.NO_TIMEOUT)
 
@@ -266,14 +275,14 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_find_g2_start_time = time.time()
 
         # - Wait
-        findg2_wait = self.find_step(steps, "findg2_wait")
+        findg2_wait = self.find_by_id(steps, "findg2_wait")
         self.wait(findg2_wait["speech"], findg2_wait["arguments"]["time"], findg2_wait["arguments"]["time"] + 2.0)
 
         # - Ask referee to open the door
         self.send_action_to_local_manager("findg2_ask-referee-to-open-the-door")
 
         # - Wait2
-        findg2_wait2 = self.find_step(steps, "findg2_wait2")
+        findg2_wait2 = self.find_by_id(steps, "findg2_wait2")
         self.wait(findg2_wait2["speech"], findg2_wait2["arguments"]["time"], findg2_wait2["arguments"]["time"] + 2.0)
 
         # - Detect human
@@ -291,7 +300,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         askinfog2_ask_name_counter = 0
         askinfog2_ask_name_max_counts = 3
         askinfog2_ask_name_return_value = ""
-        askinfog2_ask_name = self.find_step(steps, "askinfog2_ask-name")
+        askinfog2_ask_name = self.find_by_id(steps, "askinfog2_ask-name")
         while askinfog2_ask_name_return_value != "ok":
 
             if askinfog2_ask_name_counter >= askinfog2_ask_name_max_counts:  # Reproduce bug of wrong text for ask drink that displays ask name : change >= to <
@@ -343,7 +352,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # - Go to living room
         self.send_action_to_local_manager("gotolr2_go-to-living-room")
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_step(steps, "gotolr2_go-to-living-room")["arguments"]["interestPoint"], 50.0)
+        # self.sendNavOrderAction("NP", "CRRCloseToGoal", self.find_by_id(steps, "gotolr2_go-to-living-room")["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR2"], self.NO_TIMEOUT)
 
@@ -452,21 +461,16 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         rospy.logwarn("Waiting for {duration} seconds...".format(duration=time_for_work))
         time.sleep(time_for_work)
 
-    def find_step(self, steps_array, step_id):
-        step_index = self.find_step_index(steps_array, step_id)
+    def find_by_id(self, steps_array, step_id):
+        step_index = self.find_index_by_id(steps_array, step_id)
         if step_index is None:
             return None
         else:
             return steps_array[step_index]
 
-    def find_step_index(self, steps_array, step_id):
+    def find_index_by_id(self, steps_array, step_id):
         for index in range(len(steps_array)):
             step = steps_array[index]
             if step["id"] == step_id:
                 return index
         return None
-
-    def find_location(self, locations_array, location_id):
-        for location in locations_array:
-            if location["id"] == location_id:
-                return location
