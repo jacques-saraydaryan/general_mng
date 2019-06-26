@@ -505,7 +505,7 @@ class LocalManagerWrapper:
         index = 0
         for step in steps:
             if not step['action']:
-                step_list.append({'name': step['name'], 'eta': step['eta']})
+                step_list.append({'name': step['name'], 'eta': step['eta'], 'id': step['id']})
                 step_id_to_index[step['id']] = index
                 index += 1
 
