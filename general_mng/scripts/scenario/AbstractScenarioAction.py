@@ -279,10 +279,14 @@ class AbstractScenarioAction:
              rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
-    def lookAtObject(self,labels,timeout):
+    def lookAtObject(self,labels,index,head,base,finger,timeout):
         try:
             goalLookAtObj = LookAtObjectGoal()
             goalLookAtObj.labels = labels
+            goalLookAtObj.index = index
+            goalLookAtObj.head = head
+            goalLookAtObj.base = base
+            goalLookAtObj.finger = finger
 
             rospy.loginfo("### LOOK AT OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalLookAtObj).replace('\n',', '))
 
@@ -305,7 +309,7 @@ class AbstractScenarioAction:
     def learnPeopleMetaFromImgTopic(self, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
         goalLearnPeople = LearnPeopleFromImgGoal(name=name)
-        state, result = self.learnPeopleMeta(goalLearnPeople)
+        state, result = self.learnPeopleMeta(goalLearnPeople, timeout)
         return state, result
 
     def learnPeopleMetaFromImgPath(self, img_path, name, timeout):
@@ -313,10 +317,10 @@ class AbstractScenarioAction:
         img_loaded = cv2.imread(img_path)
         msg_img = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
         goalLearnPeople = LearnPeopleFromImgGoal(name=name, img=msg_img)
-        state, result = self.learnPeopleMeta(goalLearnPeople)
+        state, result = self.learnPeopleMeta(goalLearnPeople, timeout)
         return state, result
 
-    def learnPeopleMeta(self, goalLearnPeople):
+    def learnPeopleMeta(self, goalLearnPeople, timeout):
         try:
             rospy.loginfo("### LEARN PEOPLE ATTRIBUTES ACTION PENDING")
             # send the current goal to the action server
@@ -337,17 +341,17 @@ class AbstractScenarioAction:
 
     def detectMetaPeopleFromImgTopic(self, timeout):
         goalMetaPeople = ProcessPeopleFromImgGoal()
-        state, result = self.detectMetaPeople(goalMetaPeople)
+        state, result = self.detectMetaPeople(goalMetaPeople, timeout)
         return state, result
 
     def detectMetaPeopleFromImgPath(self, img_path, timeout):
         img_loaded1 = cv2.imread(img_path)
         msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")
         goalMetaPeople = ProcessPeopleFromImgGoal(img=msg_im1)
-        state, result = self.detectMetaPeople(goalMetaPeople)
+        state, result = self.detectMetaPeople(goalMetaPeople, timout)
         return state, result
 
-    def detectMetaPeople(self, goalMetaPeople):
+    def detectMetaPeople(self, goalMetaPeople, timeout):
         try:
             rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
             # send the current goal to the action server
@@ -368,17 +372,17 @@ class AbstractScenarioAction:
 
     def getPeopleNameFromImgTopic(self, timeout):
         goalPeopleName = GetPeopleNameFromImgGoal()
-        state, result = self.getPeopleName(goalPeopleName)
+        state, result = self.getPeopleName(goalPeopleName, timeout)
         return state, result
 
     def getPeopleNameFromImgPath(self, img_path, timeout):
         img_loaded = cv2.imread(img_path)
         img_msg = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
         goalPeopleName = ProcessPeopleFromImgGoal(img=img_msg)
-        state, result = self.getPeopleName(goalPeopleName)
+        state, result = self.getPeopleName(goalPeopleName, timeout)
         return state, result
 
-    def getPeopleName(self, goalPeopleName):
+    def getPeopleName(self, goalPeopleName, timeout):
         try:
             rospy.loginfo("### GET PEOPLE NAME ACTION PENDING")
             # send the current goal to the action server

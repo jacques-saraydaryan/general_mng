@@ -12,5 +12,3 @@ class AbstractScenario:
 
     @abstractmethod
     def initScenario(self): pass
-
-

@@ -20,6 +20,7 @@ from scenario.GPRSV1Scenario import GPRSV1Scenario
 from scenario.GPRSV2CPE1Scenario import GPRSV2CPE1Scenario
 from scenario.TakeOutTheGarbage2019v1Scenario import TakeOutTheGarbage2019Scenario
 from scenario.Receptionist2019CPEScenario import Receptionist2019CPEScenario
+from scenario.TestFaceLearnAndFindPoint import TestFaceLearnAndFindPoint
 
 from pepper_door_open_detector.srv import MinFrontValue
 
@@ -80,7 +81,8 @@ class GeneralManager:
                                  GPRSV1=GPRSV1Scenario,
                                  GPRSV2CPE=GPRSV2CPE1Scenario,
                                  GARBAGE_2019_CPE=TakeOutTheGarbage2019Scenario,
-                                 RECEPTIONIST_2019_CPE=Receptionist2019CPEScenario)
+                                 RECEPTIONIST_2019_CPE=Receptionist2019CPEScenario,
+                                 TEST_FACE_LEARN_AND_FIND_POINT=TestFaceLearnAndFindPoint)
 
         try:
             self._currentScenario = self._scenarioMap[self.CURRENT_SCENARIO](scenario_config)
