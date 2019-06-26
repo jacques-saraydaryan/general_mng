@@ -279,10 +279,14 @@ class AbstractScenarioAction:
              rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s",str(e))
         return GoalStatus.ABORTED, None
 
-    def lookAtObject(self,labels,timeout):
+    def lookAtObject(self,labels,index,head,base,finger,timeout):
         try:
             goalLookAtObj = LookAtObjectGoal()
             goalLookAtObj.labels = labels
+            goalLookAtObj.index = index
+            goalLookAtObj.head = head
+            goalLookAtObj.base = base
+            goalLookAtObj.finger = finger
 
             rospy.loginfo("### LOOK AT OBJECT MNG GET OBJECT ACTION PENDING : %s",str(goalLookAtObj).replace('\n',', '))
 
