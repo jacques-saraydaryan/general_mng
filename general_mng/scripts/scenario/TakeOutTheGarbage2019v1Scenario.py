@@ -40,7 +40,8 @@ class TakeOutTheGarbage2019Scenario(AbstractScenario,AbstractScenarioBus,Abstrac
         #orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","C",120.0)
         #orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","B",120.0)
         #orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","I",120.0)
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","H",120.0)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
+        orderState1=self.sendNavOrderAction("NP","CRRCloseToGoal","It1",120.0)
 
         self.sendTtsOrderAction("TTS","Ok , I see the garbage, can you please give me the garbage as explain on the tablet ? " ,"NO_WAIT_END","English",60.0*2)
         
@@ -49,23 +50,22 @@ class TakeOutTheGarbage2019Scenario(AbstractScenario,AbstractScenarioBus,Abstrac
         
         #CALL HRI to Garbage interaction
         #Wait HRI confirmation from Almemory
-        orderState1,result1=self.sendDialogueOrderAction("Garbage/PlaceGarbageStart","Garbage/PlaceGarbageFinished",10.0*1)
-        rospy.loginfo(result1)
+        orderState2,result2=self.sendDialogueOrderAction("Garbage/PlaceGarbageStart","Garbage/PlaceGarbageFinished",10.0*1)
+        rospy.loginfo(result2)
 
         #Go to carry Pose
         self.poseToCarryGarbage()
 
         self.sendTtsOrderAction("TTS"," Every thing is ready ? " ,"NO_WAIT_END","English",60.0)
 
-        orderState2,result2=self.sendDialogueOrderAction("Garbage/CheckBeforeGoStart","Garbage/CheckBeforeGoFinished",10.0*1)
-        rospy.loginfo(result2)
+        orderState3,result3=self.sendDialogueOrderAction("Garbage/CheckBeforeGoStart","Garbage/CheckBeforeGoFinished",10.0*1)
+        rospy.loginfo(result3)
 
 
         self.sendTtsOrderAction("TTS"," Let's go! " ,"NO_WAIT_END","English",60.0)
 
         #Navigate to destination
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","E",60.0*2)
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","D",60.0*2)
+        orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
 
         #Release Garbage
         self.poseToTakeGarbage()
