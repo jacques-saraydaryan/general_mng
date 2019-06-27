@@ -1,4 +1,5 @@
 import rospy
+from std_srvs.srv import Trigger
 from pepper_pose_for_nav.srv import MoveHeadAtPosition
 from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
@@ -7,6 +8,7 @@ from rospy.exceptions import ROSException, ROSInterruptException
 
 
 class AbstractScenarioService:
+    HEAD_PITCH_CENTER = 0.0
     HEAD_PITCH_FOR_SPEECH_POSE = -0.30
     HEAD_PITCH_FOR_LOOK_AT_PEOPLE = -0.5
     HEAD_PITCH_FOR_NAV_POSE = 0.5
@@ -15,6 +17,7 @@ class AbstractScenarioService:
     _enableMoveHeadPoseService = True
     _enableMoveTurnService = True
     _enablePointAtService = False
+    _enableResetPersonMetaInfoMap = False
 
     def __init__(self):
         pass
@@ -41,12 +44,21 @@ class AbstractScenarioService:
         # Connect to point_at service
         if self._enablePointAtService:
             rospy.loginfo("Connecting to the point_at service...")
-            self._pointAtSP = rospy.ServiceProxy('point_at', MoveTurn)
+            self._pointAtSP = rospy.ServiceProxy('point_at', PointAt)
             try:
                 point_at_srv_is_up = rospy.wait_for_service('point_at', timeout=10.0)
                 rospy.loginfo("Connected to the point_at service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the point_at service.")
+        # Connect to person Mat info erasing service
+        if self._enableResetPersonMetaInfoMap:
+            rospy.loginfo("Connecting to the reset_people_meta_info_map_srv service...")
+            self._resetPeopleMetaInfoMapSP = rospy.ServiceProxy('reset_people_meta_info_map_srv', Trigger)
+            try:
+                reset_people_meta_info_map_srv_is_up = rospy.wait_for_service('reset_people_meta_info_map_srv', timeout=10.0)
+                rospy.loginfo("Connected to the reset_people_meta_info_map_srv service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the reset_people_meta_info_map_srv service.")
 
     def moveheadPose(self, pitch_value, yaw_value, track):
         try:
@@ -65,3 +77,9 @@ class AbstractScenarioService:
             return self._pointAtSP(x, y, z, head, arm, duration)
         except rospy.ServiceException as e:
             rospy.logerr("Service point_at could not process request: {error}".format(error=e))
+
+    def resetPeopleMetaInfoMap(self):
+        try:
+            return self._resetPeopleMetaInfoMapSP()
+        except rospy.ServiceException as e:
+            rospy.logerr("Service reset_people_meta_info_map_srv could not process request: {error}".format(error=e))

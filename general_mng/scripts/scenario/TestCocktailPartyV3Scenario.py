@@ -58,7 +58,7 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
             rospy.logwarn("no config value for object_memory_location use default:"+str(self.DEFAULT_OBJECT_MEMORY_LOCATION))
             self.object_memory_location=self.DEFAULT_OBJECT_MEMORY_LOCATION
 
-            
+
 
 
         try:
@@ -75,7 +75,7 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         rospy.loginfo("######################################")
         rospy.loginfo("Starting the TEST_COCKTAIL_PARTY_V1 Scenario...")
         rospy.loginfo("######################################")
-     
+
         #TOO make the logic of the scenario
 
         ### 0-SET HEAD FOR NAVIGATION
@@ -85,7 +85,7 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         ### 1-INFORM NAOQI TO START DIALOGUE
         orderState1,result1=self.sendDialogueOrderAction("Cocktail/ScenarioStart","",60.0)
         rospy.sleep(5.0)
-        
+
         ### 2-SET HEAD FOR NAVIGATION
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
 
@@ -112,10 +112,10 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
         ### 5-SET HEAD FOR NAVIGATION
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE,self.HEAD_YAW_CENTER,True)
-        
+
         ### 6-NAVIGATE TO BAR TENDER
         orderState4=self.sendNavOrderAction("NP","CRRCloseToGoal","G",60.0)
-        
+
         ### 7-INFORM NAOQI TO TELL COMMAND TO BAR TENDER
         orderState5,result5=self.sendDialogueOrderAction("Cocktail/OrdersCheckStart","Cocktail/OrdersCheckFinish",60.0*3)
 
@@ -124,11 +124,11 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         orderState6=self.sendNavOrderAction("NP","CRRCloseToGoal","H",60.0)
 
         ### 8-DETECTION OBJECTS
-        orderState7,result7=self.getObjectInFrontRobot(self.obj_labels,60.0)
+        orderState7,result7=self.getObjectInFrontRobot(self.obj_labels, True, 60.0)
         rospy.loginfo("#### OBJECT DETECTED ####")
         rospy.loginfo(result0)
 
-        ### 9-ADD OBJECTS INTO NOAQI MEMORY 
+        ### 9-ADD OBJECTS INTO NOAQI MEMORY
         orderState8,result8=self.addInPepperMemory(self.object_memory_location,str(result0.labelList),5.0)
 
 
@@ -149,19 +149,19 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
 
 
 
-    def gmBusListener(self,msg): 
+    def gmBusListener(self,msg):
         if self._status == self.WAIT_ACTION_STATUS:
            self.checkActionStatus(msg)
 
 
     def initScenario(self):
-        
+
         self._enableNavAction=True
         self._enableTtsAction=False
         self._enableDialogueAction=True
         self._enableAddInMemoryAction=True
         self._enableObjectDetectionMngAction=True
-        
+
         AbstractScenarioAction.configure_intern(self)
 
     def moveheadPose(self,pitch_value,yaw_value,track):
@@ -171,4 +171,3 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         except Exception as e:
             rospy.logerr("Service move_head_pose_srv call failed: %s" % e)
             return
-        
