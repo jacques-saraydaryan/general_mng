@@ -86,7 +86,7 @@ class LocalManagerWrapper:
         start_time = time.time()
 
         rospy.loginfo(
-            "{class_name}: Received action {action_name} for local manager. \n Arguments: {args}".format(
+            "{class_name}: Received action <{action_name}> for local manager. Arguments: \n{args}".format(
                 class_name=self.__class__, action_name=action, args=payload))
 
         # If action never been sent before, initialize communication channels

@@ -23,7 +23,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("pepper2", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("pepper1", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json") as data:
@@ -58,6 +58,9 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self.guest_1_drink = "Placeholder drink"
         self.guest_2_drink = "Placeholder drink"
 
+        # Debug options
+        self.allow_navigation = False
+
     def startScenario(self):
         rospy.loginfo("""
         ######################################
@@ -81,8 +84,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # - Go to door
         # TODO Add scenario step !
-        # self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        # self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 50.0)
+        self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 50.0)
 
         ###################################################################################################
 
@@ -136,7 +139,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         askinfog1_ask_drink_max_counts = 3  # TODO Move this as config parameter
         askinfog1_ask_drink = self.find_by_id(steps, "askinfog1_ask-drink")
         askinfog1_confirm_drink = self.find_by_id(steps, "askinfog1_confirm-drink")
-        self.guest_1_drink = self.ask_drink_and_confirm(askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink)
+        self.guest_1_drink = self.ask_drink_and_confirm(askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.guest_1_name)
 
         # - Ask age
         askinfog1_ask_age = self.find_by_id(steps, "askinfog1_ask-age")
@@ -162,7 +165,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         gotolr1_go_to_living_room = self.find_by_id(steps, "gotolr1_go-to-living-room")
         self._lm_wrapper.go_to(gotolr1_go_to_living_room["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        # self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to_living_room["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to_living_room["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR1"], self.NO_TIMEOUT)
 
@@ -265,7 +268,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         gotodoor1 = self.find_by_id(steps, "gotodoor1_go-to-door")
         self._lm_wrapper.go_to(gotodoor1["speech"], self._entrance, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        # self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor1["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor1["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoDoor1"], self.NO_TIMEOUT)
 
@@ -319,7 +322,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         askinfog2_ask_drink_max_counts = 3  # TODO Move this as config parameter
         askinfog2_ask_drink = self.find_by_id(steps, "askinfog2_ask-drink")
         askinfog2_confirm_drink = self.find_by_id(steps, "askinfog2_confirm-drink")
-        self.guest_2_drink = self.ask_drink_and_confirm(askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink)
+        self.guest_2_drink = self.ask_drink_and_confirm(askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.guest_2_name)
 
         # - Ask age
         askinfog2_ask_age = self.find_by_id(steps, "askinfog2_ask-age")
@@ -344,7 +347,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         gotolr2_go_to_living_room = self.find_by_id(steps, "gotolr2_go-to-living-room")
         self._lm_wrapper.go_to(gotolr2_go_to_living_room["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        # self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr2_go_to_living_room["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr2_go_to_living_room["arguments"]["interestPoint"], 50.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR2"], self.NO_TIMEOUT)
 
@@ -467,12 +470,12 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                 #  I guess I will just call you {Last_Understood Name}
                 return tentative_guest_name
 
-    def ask_drink_and_confirm(self, ask_drink_max_count, ask_step_data, confirm_step_data):
+    def ask_drink_and_confirm(self, ask_drink_max_count, ask_step_data, confirm_step_data, guest_name):
         ask_drink_counter = 0
         while True:
             # - Ask drink
             ask_speech = ask_step_data["speech"]
-            ask_speech["name"] = self.guest_1_name
+            ask_speech["name"] = guest_name
             tentative_guest_drink = self._lm_wrapper.ask_drink(ask_speech, self._drinks, self.NO_TIMEOUT)[1]
 
             # - Confirm drink
