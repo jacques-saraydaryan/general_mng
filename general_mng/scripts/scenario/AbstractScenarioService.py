@@ -41,7 +41,7 @@ class AbstractScenarioService:
         # Connect to point_at service
         if self._enablePointAtService:
             rospy.loginfo("Connecting to the point_at service...")
-            self._pointAtSP = rospy.ServiceProxy('point_at', MoveTurn)
+            self._pointAtSP = rospy.ServiceProxy('point_at', PointAt)
             try:
                 point_at_srv_is_up = rospy.wait_for_service('point_at', timeout=10.0)
                 rospy.loginfo("Connected to the point_at service.")
