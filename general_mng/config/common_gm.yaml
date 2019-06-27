@@ -16,4 +16,4 @@ GeneralManager:
     - 'GPRSV2CPE'
     - 'RECEPTIONIST_2019_CPE'
     - 'TEST_FACE_LEARN_AND_FIND_POINT'
-  current_scenario: 'RECEPTIONIST_2019_CPE' # Must be in the "scenarios" list above
+  current_scenario: 'TEST_FACE_LEARN_AND_FIND_POINT' # Must be in the "scenarios" list above
