@@ -175,7 +175,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
 
 
         #### XX-DETECTION OBJECTS
-        orderState7,result7=self.getObjectInFrontRobot([],60.0)
+        orderState7,result7=self.getObjectInFrontRobot([], True, 60.0)
         self.sendTtsOrderAction("TTS","I found the"+str(result7.labelList)+" objects !!! Go back to the operator" ,"NO_WAIT_END","English",60.0)
 
         return
@@ -237,7 +237,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                         object_found=False
                         for current_location in  self._location_beacon_by_rooms_map[gotToOrder]:
                                 #### XX-DETECTION OBJECTS
-                                orderState7,result7=self.getObjectInFrontRobot(obj_labels,60.0)
+                                orderState7,result7=self.getObjectInFrontRobot(obj_labels, True, 60.0)
                                 rospy.loginfo("#### OBJECT DETECTED ####")
                                 rospy.loginfo(result7)
                                 try:
@@ -326,7 +326,7 @@ class GPRSV1Scenario(AbstractScenario,AbstractScenarioBus,AbstractScenarioAction
                         orderState02=self.sendNavOrderAction("NP","CRRCloseToGoal",current_location,60.0)
                         self.moveheadFromItInfo(current_location)
                         #### XX-DETECTION OBJECTS
-                        orderState7,result7=self.getObjectInFrontRobot(obj_labels,60.0)
+                        orderState7,result7=self.getObjectInFrontRobot(obj_labels, True, 60.0)
                         rospy.loginfo("#### OBJECT DETECTED ####")
                         rospy.loginfo(result7)
                         try:

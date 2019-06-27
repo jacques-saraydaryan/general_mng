@@ -11,6 +11,8 @@ import json
 import time
 import math
 
+import pdb
+
 
 class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                                 AbstractScenarioAction, AbstractScenarioService):
@@ -26,19 +28,20 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper = LocalManagerWrapper("192.168.42.189", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json") as data:
+        ws = "/home/astro/catkin_robocup2019"
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/drinks.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/drinks.json".format(ws)) as data:
             self._drinks = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
             self._locations = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/people.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/people.json".format(ws)) as data:
             self._people = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json".format(ws)) as data:
             self._videos = json.load(data)
 
         # Scenario data
@@ -48,7 +51,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         self._entrance = self.find_by_id(self._locations, "entrance")
         self.host_name = "John"
         self.host_age = 40
-        self.host_drink = self.find_by_id(self._drinks, "coke")["name"]
+        self.host_drink = self.find_by_id(self._drinks, "coke")
 
         # - Variables
         self.guest_1_name = "Placeholder name"
@@ -68,6 +71,9 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         steps = self._scenario["steps"]
 
         ###################################################################################################
+        # Resete people database
+        self.resetPeopleMetaInfoMap()
+
         # Start timeboard to follow scenario evolution on screen
 
         # Remember the dictionary that associates big steps to the array that was sent to the local manager
@@ -112,71 +118,114 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
 
         #Learn face from name
         state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.guest_1_name, 10.0) #TODO whatif the face is not properly seen
+        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.guest_1_name, 10.0) #TODO whatif the face is not properly seen
+        print result_learnPeopleMeta
+
+        # Then ask drink
+        askinfog1_ask_drink_counter = 0
+        askinfog1_ask_drink_max_counts = 3
+        askinfog1_ask_drink = self.find_by_id(steps, "askinfog1_ask-drink")
+        askinfog1_confirm_drink = self.find_by_id(steps, "askinfog1_confirm-drink")
+        while True:
+
+            if askinfog1_ask_drink_counter >= askinfog1_ask_drink_max_counts:
+                rospy.logwarn("Could not get drink with confirmation !")
+                # TODO : Do TTS action where robot says something like: Hmmm, I really can't understand what you say,
+                #  I guess I will just consider you like {Last_Understood Drink}
+                break
+
+            # - Ask drink
+            ask_speech = askinfog1_ask_drink["speech"]
+            ask_speech["name"] = self.guest_1_name
+            tentative_guest_1_drink = self._lm_wrapper.ask_drink(ask_speech, self._drinks, self.NO_TIMEOUT)[1]
+
+            # - Confirm drink
+            confirm_speech = askinfog1_confirm_drink["speech"]
+            confirm_speech["drink"] = tentative_guest_1_drink["name"]
+            askinfog1_ask_drink_confirmed = self._lm_wrapper.confirm(confirm_speech, self.NO_TIMEOUT)[1]
+            if askinfog1_ask_drink_confirmed:
+                rospy.loginfo("Guest 1 got drink <{drink}> confirmed !".format(drink=tentative_guest_1_drink["name"]))
+                self.guest_1_drink = tentative_guest_1_drink
+                break
+
+            askinfog1_ask_drink_counter += 1
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["AskInfoG1"], self.NO_TIMEOUT)
 
         # Point to and introduce both G1 and Host
 
-        self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
+        # self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
+        self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
 
         # TODO: Make sure the name associated with the image of the person is updated from new input when only general
         #  manager is restarted but not the face_recognition package
         # Turn around to introduce guests
         nb_people_here = 2
         nb_people_introduced = 0
+        people_introduced = {}
+        people_introduced[self.guest_1_name] = False
+        people_introduced["Host"] = False
         for inc_angle in range(360/25):
             # Find people in the image
-            state_getObject, result_getObject = self.getObjectInFrontRobot("person", 15.0)
+            state_getObject, result_getObject = self.getObjectInFrontRobot(["person"], False, 50.0)
             # Loop on people found
             if result_getObject is not None:
-                for i_person in range(len(result_getObject.labelList)):
-                    # Get name of the i_person-th closest people
-                    state_lookAtObject, result_lookAtObject = self.lookAtObject("person", i_person, True, False, True, 4.0)
-                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(15.0)
-                    # Loop on people recognized
-                    i_people_to_introduce = -1
-                    bounding_box_area_max = -1
-                    if result_getPeopleName is not None:
-                        for i_people_name in range(len(result_getPeopleName.peopleNames)):
-                            # Bounding box around the current person
-                            box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
-                            box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
-                            box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
-                            box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
-                            # Relative size of the bounding box
-                            bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-                            if bounding_box_area > bounding_box_area_max:
-                                bounding_box_area_max = bounding_box_area
-                                i_people_to_introduce = i_people_name
-                        # Introduce the person
-                        if result_getPeopleName.peopleNames[i_people_to_introduce] == self.guest_1_name:
-                            # Introduce first guest to John
-                            self._lm_wrapper.timeboard_set_current_step(self.find_by_id["IntroduceG1ToJohn"], self.NO_TIMEOUT)
-                            nb_people_introduced += 1
-                            # Point to guest 1
-                            # Say name and drink
-                            int_g1_john = self.find_by_id(steps, "introduceg1tojohn_say-name-and-drink")
-                            self._lm_wrapper.present_person(int_g1_john["speech"], self.guest_1_name, self.guest_1_drink,
-                                                            [self.host_name], self.NO_TIMEOUT)
-                            self._lm_wrapper.timeboard_send_step_done(self.find_by_id["IntroduceG1ToJohn"], self.NO_TIMEOUT)
-                        # TODO We find the host by leimination : maybe to improve upon
-                        elif result_getPeopleName.peopleNames[i_people_to_introduce] == "Unknown":
-                            # Introduce John to first guest
-                            self._lm_wrapper.timeboard_set_current_step(self.find_by_id["IntroduceJohnToG1"], self.NO_TIMEOUT)
-                            nb_people_introduced += 1
-                            # Point to John
-                            # Say name and drink
-                            int_john_g1 = self.find_by_id(steps, "introducejohntog1_say-name-and-drink")
-                            self._lm_wrapper.present_person(int_john_g1["speech"], self.host_name, self.host_drink,
-                                                            [self.guest_1_name], self.NO_TIMEOUT)
-                            self._lm_wrapper.timeboard_send_step_done(self.find_by_id["IntroduceJohnToG1"], self.NO_TIMEOUT)
-                        else:
-                            # TODO unknown name ?
-                            pass
+                if len(result_getObject.labelFound) > 0:
+                    for i_person in range(result_getObject.labelFound[0]):
+                        # Get name of the i_person-th closest people
+                        state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
+                        # Loop on people recognized
+                        i_people_to_introduce = -1
+                        bounding_box_area_max = -1
+                        if result_getPeopleName is not None:
+                            print result_getPeopleName.peopleNames
+                            print result_getPeopleName.peopleNamesScore
+                            for i_people_name in range(len(result_getPeopleName.peopleNames)):
+                                # Bounding box around the current person
+                                box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
+                                box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
+                                box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
+                                box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
+                                # Relative size of the bounding box
+                                bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
+                                if bounding_box_area > bounding_box_area_max:
+                                    bounding_box_area_max = bounding_box_area
+                                    i_people_to_introduce = i_people_name
+                            # Introduce the person
+                            if i_people_to_introduce >= 0:
+                                if (result_getPeopleName.peopleNames[i_people_to_introduce] == self.guest_1_name) and (people_introduced[self.guest_1_name] == False):
+                                    # Introduce first guest to John
+                                    self._lm_wrapper.timeboard_set_current_step(self.find_by_id(steps, "IntroduceG1ToJohn"), self.NO_TIMEOUT)
+                                    nb_people_introduced += 1
+                                    # Point to guest 1
+                                    # Say name and drink
+                                    int_g1_john = self.find_by_id(steps, "introduceg1tojohn_say-name-and-drink")
+                                    self._lm_wrapper.present_person(int_g1_john["speech"], self.guest_1_name, self.guest_1_drink,
+                                                                    [self.host_name], self.NO_TIMEOUT)
+                                    state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_person, False, False, True, 50.0)
+                                    self._lm_wrapper.timeboard_send_step_done(self.find_by_id(steps, "IntroduceG1ToJohn"), self.NO_TIMEOUT)
+                                    people_introduced[self.guest_1_name] = True
+                                # TODO We find the host by leimination : maybe to improve upon
+                                elif (result_getPeopleName.peopleNames[i_people_to_introduce] == "Unknown") and (people_introduced["Host"] == False):
+                                    # Introduce John to first guest
+                                    self._lm_wrapper.timeboard_set_current_step(self.find_by_id(steps, "IntroduceJohnToG1"), self.NO_TIMEOUT)
+                                    nb_people_introduced += 1
+                                    # Point to John
+                                    # Say name and drink
+                                    int_john_g1 = self.find_by_id(steps, "introducejohntog1_say-name-and-drink")
+                                    self._lm_wrapper.present_person(int_john_g1["speech"], self.host_name, self.host_drink,
+                                                                    [self.guest_1_name], self.NO_TIMEOUT)
+                                    state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_person, False, False, True, 50.0)
+                                    self._lm_wrapper.timeboard_send_step_done(self.find_by_id(steps, "IntroduceJohnToG1"), self.NO_TIMEOUT)
+                                    people_introduced["Host"] = True
+                                else:
+                                    # TODO unknown name ?
+                                    pass
             # Check if everyone has been introduced
             if nb_people_introduced < nb_people_here:
                 # Turn a bit to find someone else
                 self.moveTurn(25.0*math.pi/180.0)
+                #print "I TURN !!!!"
             else:
                 # End introducing
                 break
@@ -204,6 +253,9 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         self._enableGetPeopleNameAction = True
 
         self._enableMoveHeadPoseService = True
+        self._enableMoveTurnService = True
+        self._enablePointAtService = True
+        self._enableResetPersonMetaInfoMap = True
 
         AbstractScenarioAction.configure_intern(self)
         AbstractScenarioService.configure_intern(self)

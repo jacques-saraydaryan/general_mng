@@ -256,10 +256,11 @@ class AbstractScenarioAction:
         return state,result
 
 
-    def getObjectInFrontRobot(self,labels,timeout):
+    def getObjectInFrontRobot(self,labels,move_head,timeout):
         try:
             goalObjDetection = ObjectDetectionGoal()
             goalObjDetection.labels=labels
+            goalObjDetection.moveHead=move_head
 
             rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",str(goalObjDetection).replace('\n',', '))
 
