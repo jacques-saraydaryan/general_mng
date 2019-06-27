@@ -192,10 +192,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_seat_g1_start_time = time.time()
 
         # - Find empty seat
-        self.simulate_ros_work(1.0, "SIMULATING FINDING AN EMPTY SEAT")
-
-        # - Point to empty seat
-        self.simulate_ros_work(1.0, "SIMULATING POINTING TO EMPTY SEAT")
+        self.find_an_empty_chair()
 
         # - Tell first guest to seat
         seat_g1 = self.find_by_id(self.steps, "seatg1_tell-first-guest-to-seat")
@@ -264,7 +261,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[2], 10.0)
+        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[2], 10.0)
 
         # Then ask drink
         askinfog2_ask_drink_max_counts = 3  # TODO Move this as config parameter
@@ -299,6 +296,11 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR2"], self.NO_TIMEOUT)
 
+        ###################################################################################################
+
+        # Introduce people
+        self.introduce_people_to_each_others()
+        
         # ###################################################################################################
         #
         # # Introduce second guest to others
@@ -327,10 +329,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         global_step_seat_g2_start_time = time.time()
 
         # - Find empty seat
-        self.simulate_ros_work(1.0, "SIMULATING FINDING AN EMPTY SEAT")
-
-        # - Point to empty seat
-        self.simulate_ros_work(1.0, "SIMULATING POINTING TO EMPTY SEAT")
+        self.find_an_empty_chair()
 
         # - Tell first guest to seat
         seat_g2 = self.find_by_id(self.steps, "seatg2_tell-first-guest-to-seat")
@@ -449,8 +448,6 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         """
         Pepper turn on himself to find people and to introduce the to the group
         """
-        # TODO: Make sure the name associated with the image of the person is updated from new input when only general
-        #  manager is restarted but not the face_recognition package
         # Intialize guests / host presentation
         nb_people_here = len(self.people_name_by_id.keys())
         nb_people_introduced = 0
@@ -546,13 +543,14 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         """
         Introduce the new guest to other guests
         """
-        # TODO a coder
+        # TODO: nouveau dialogue
         pass
 
     def introduce_one_guest_to_another_guest(self, guest1_id, guest2_id):
         """
         Introduce one guest to another guest
         """
+        # TODO: nouveau dialogue
         # # Introduce guest to John
         # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest1_id, guest2_id)), self.NO_TIMEOUT)
         # # Say name and drink
@@ -564,7 +562,9 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
     def introduce_host_to_guest(self, guest_id):
         """
+        Introduce the host to a given guest
         """
+        # TODO: Nouveau dialogue
         # # Introduce John to first guest
         # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
         # # Say name and drink
@@ -576,7 +576,9 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
     def introduce_guest_to_host(self, guest_id):
         """
+        Introduce a guest to the host
         """
+        # TODO: nouveau dialogue
         # # Introduce guest to John
         # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
         # # Say name and drink
@@ -585,3 +587,24 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         #                                 [self.people_name_by_id[0]], self.NO_TIMEOUT)
         # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
         pass
+
+    def find_an_empty_chair(self):
+        """
+        Find an empty chair for a guest
+        """
+        # Set head position
+        self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_FOR_CHAIR, self.HEAD_YAW_CENTER, True)
+        # Turn around to introduce guests
+        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
+        angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        for angle in angle_list:
+            # Find and point the chair in the image
+            state_lookAtObject, result_lookAtObject = self.lookAtObject(["chair"], 0, False, False, True, 50.0)
+            # Loop on people found
+            if result_lookAtObject is not None:
+                print result_lookAtObject.nb_label
+                if result_lookAtObject.nb_label > 0:
+                    return
+            # Turn a bit to find somewhere else
+            self.moveTurn(angle*math.pi/180.0)
+        return
