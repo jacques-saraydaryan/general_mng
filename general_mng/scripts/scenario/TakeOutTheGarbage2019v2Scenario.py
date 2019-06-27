@@ -75,16 +75,27 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._lm_wrapper.timeboard_set_timer_state(True, self.NO_TIMEOUT)
 
 
-#        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
+        ###############################################################################################################
+        #################################################### Go to start point ########################################
+        ###############################################################################################################
 
-        # Go to the first B
+
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
+
+
+        ###############################################################################################################
+        #################################################### 1first bin################################################
+        ###############################################################################################################
+
+
+        # Go to the first Bin
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
         gotolr1_ask_to_b1 = self.find_step(steps, "gotob1_go-to-the-first-bin")
         ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
         bean1_location = self.find_location(self._location, gotolr1_ask_to_b1["arguments"]["location"])
         self._lm_wrapper.go_to(gotolr1_ask_to_b1["speech"], bean1_location, self.NO_TIMEOUT)
 
-#        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It1",120.0)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It1",120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
 
 
@@ -98,8 +109,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         call2r1_take_bin1 = self.find_step(steps, "takeb1_explain-how-to-prepare-the-bag")
         
         ##Be ready to take garbage
-#        self.poseToTakeGarbage()
-        orderState2,result2=self.sendDialogueOrderAction("Garbage/PlaceGarbageStart","Garbage/PlaceGarbageFinished",10.0*1)
+        self.poseToTakeGarbage()
+#        orderState2,result2=self.sendDialogueOrderAction("Garbage/PlaceGarbageStart","Garbage/PlaceGarbageFinished",10.0*1)
         
         self.sendTtsOrderAction("TTS",call2r1_take_bin1["speech"]["said"] ,"NO_WAIT_END","English",60.0)
         #self._lm_wrapper.call_human(call2r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
@@ -115,21 +126,90 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._lm_wrapper.show_video({"title":'-'},video2,self.NO_TIMEOUT)
 
          ##Go to carry Pose
-#        self.poseToCarryGarbage()
+        self.poseToCarryGarbage()
+        self.sendTtsOrderAction("TTS","Every thing is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
+        #self._lm_wrapper.confirm( {"title":'-',"said":'Every thing is ok, can i go ?'}, self.NO_TIMEOUT)
+        self._lm_wrapper.confirm( {"title":'-'}, self.NO_TIMEOUT)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB1"], self.NO_TIMEOUT)
 
         ##Start go to release point
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
-#        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
 
 
         ##Arrived on release zone
         ##Release Garbage
-#        self.poseToTakeGarbage()
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["DropB1"], self.NO_TIMEOUT)
+        self.poseToTakeGarbage()
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB1"], self.NO_TIMEOUT)
         ##Release Arm at the end
-#        self.releaseArms()
+        self.releaseArms()
         
+
+
+        ###############################################################################################################
+        #################################################### 2nd bin###################################################
+        ###############################################################################################################
+
+
+         # Go to the first B
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
+        ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
+        bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
+        self._lm_wrapper.go_to(goto2r1_ask_to_b1["speech"], bean2_location, self.NO_TIMEOUT)
+
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It1",120.0)
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+
+
+        ## Start take Garbage
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
+
+
+        call1r1_take_bin2 = self.find_step(steps, "takeb2_call-human")
+        #FIXME need to check also the waittime
+        self._lm_wrapper.call_human(call1r1_take_bin2["speech"],3.0,self.NO_TIMEOUT)
+        call2r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-prepare-the-bag")
+        
+        ##Be ready to take garbage
+        self.poseToTakeGarbage()
+#        orderState2,result2=self.sendDialogueOrderAction("Garbage/PlaceGarbageStart","Garbage/PlaceGarbageFinished",10.0*1)
+        
+        self.sendTtsOrderAction("TTS",call2r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
+        #self._lm_wrapper.call_human(call2r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
+        ##FIXME need a button to finish and release action
+        video = self.find_video(self._videos, call2r1_take_bin2["arguments"]["what"])
+        self._lm_wrapper.show_video({"title":'-'},video,self.NO_TIMEOUT)
+        
+        
+        call3r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-put-the-bag-into-pepper's-hand")
+        self.sendTtsOrderAction("TTS",call3r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
+        #self._lm_wrapper.call_human(call3r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
+        video2 = self.find_video(self._videos, call3r1_take_bin2["arguments"]["what"])
+        self._lm_wrapper.show_video({"title":'-'},video2,self.NO_TIMEOUT)
+
+         ##Go to carry Pose
+        self.poseToCarryGarbage()
+        self.sendTtsOrderAction("TTS","Every thing is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
+        #self._lm_wrapper.confirm( {"title":'-',"said":'Every thing is ok, can i go ?'}, self.NO_TIMEOUT)
+        self._lm_wrapper.confirm( {"title":'-'}, self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
+
+        ##Start go to release point
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","It0",120.0)
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
+
+
+        ##Arrived on release zone
+        ##Release Garbage
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["DropB2"], self.NO_TIMEOUT)
+        self.poseToTakeGarbage()
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB2"], self.NO_TIMEOUT)
+        ##Release Arm at the end
+        self.releaseArms()
 
 
     def gmBusListener(self,msg): 
