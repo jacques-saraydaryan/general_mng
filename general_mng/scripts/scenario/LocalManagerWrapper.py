@@ -450,7 +450,7 @@ class LocalManagerWrapper:
             'timestamp': time.time(),
             'args': {
                 'speech': speech,
-                'video_url': video_url
+                'video': video_url
             }
         })
         status, result = self._execute_request("showVideo", payload, timeout)
