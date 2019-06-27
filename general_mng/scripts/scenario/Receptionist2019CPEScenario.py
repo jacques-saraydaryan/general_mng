@@ -23,7 +23,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("pepper1", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("192.168.42.189", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         # ws = "/home/xia0ben/pepper_ws"
@@ -78,6 +78,10 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self.steps = self._scenario["steps"]
 
         ###################################################################################################
+        # Reset people database
+        self.resetPeopleMetaInfoMap()
+
+        ##################################################################################################
         # Start timeboard to follow scenario evolution on screen
 
         # Remember the dictionary that associates big steps to the array that was sent to the local manager
@@ -140,7 +144,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[1], 10.0)
+        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[1], 10.0)
 
         # Then ask drink
         askinfog1_ask_drink_max_counts = 3  # TODO Move this as config parameter
@@ -360,14 +364,17 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self._enableTtsAction = False
         self._enableDialogueAction = False
         self._enableAddInMemoryAction = False
-        self._enableObjectDetectionMngAction = False
-        self._enableLookAtObjectMngAction = False
+        self._enableObjectDetectionMngAction = True
+        self._enableLookAtObjectMngAction = True
         self._enableMultiplePeopleDetectionAction = False
         self._enableRequestToLocalManagerAction = True
-        self._enableLearnPeopleMetaAction = False
-        self._enableGetPeopleNameAction = False
+        self._enableLearnPeopleMetaAction = True
+        self._enableGetPeopleNameAction = True
 
         self._enableMoveHeadPoseService = True
+        self._enableMoveTurnService = True
+        self._enablePointAtService = True
+        self._enableResetPersonMetaInfoMap = True
 
         AbstractScenarioAction.configure_intern(self)
         AbstractScenarioService.configure_intern(self)
