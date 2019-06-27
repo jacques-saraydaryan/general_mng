@@ -19,6 +19,7 @@ from scenario.SPRV2Scenario import SPRV2Scenario
 from scenario.GPRSV1Scenario import GPRSV1Scenario
 from scenario.GPRSV2CPE1Scenario import GPRSV2CPE1Scenario
 from scenario.TakeOutTheGarbage2019v1Scenario import TakeOutTheGarbage2019Scenario
+from scenario.TakeOutTheGarbage2019v2Scenario import TakeOutTheGarbage2019v2Scenario
 from scenario.Receptionist2019CPEScenario import Receptionist2019CPEScenario
 from scenario.TestFaceLearnAndFindPoint import TestFaceLearnAndFindPoint
 
@@ -81,6 +82,7 @@ class GeneralManager:
                                  GPRSV1=GPRSV1Scenario,
                                  GPRSV2CPE=GPRSV2CPE1Scenario,
                                  GARBAGE_2019_CPE=TakeOutTheGarbage2019Scenario,
+                                 GARBAGE_2019V2_CPE=TakeOutTheGarbage2019v2Scenario,
                                  RECEPTIONIST_2019_CPE=Receptionist2019CPEScenario,
                                  TEST_FACE_LEARN_AND_FIND_POINT=TestFaceLearnAndFindPoint)
 
