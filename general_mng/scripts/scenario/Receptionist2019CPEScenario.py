@@ -26,37 +26,44 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper = LocalManagerWrapper("pepper1", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json") as data:
+        # ws = "/home/xia0ben/pepper_ws"
+        ws = "/home/astro/catkin_robocup2019"
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/drinks.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/drinks.json".format(ws)) as data:
             self._drinks = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
             self._locations = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/people.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/people.json".format(ws)) as data:
             self._people = json.load(data)
 
-        with open("/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json") as data:
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json".format(ws)) as data:
             self._videos = json.load(data)
 
+
         # Scenario data
+        self.people_name_by_id = {}
+        self.people_drink_by_id = {}
+        self.people_age_by_id = {}
+        self.steps = None
 
         # - Constants
         self._living_room = self.find_by_id(self._locations, "livingRoom")
         self._entrance = self.find_by_id(self._locations, "entrance")
-        self.host_name = "John"
-        self.host_age = 40
-        self.host_drink = self.find_by_id(self._drinks, "coke")["name"]
+        self.people_name_by_id[0] = "John"
+        self.people_age_by_id[0] = 40
+        self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")["name"]
 
         # - Variables
-        self.guest_1_name = "Placeholder name"
-        self.guest_2_name = "Placeholder name"
-        self.guest_1_age = 1000
-        self.guest_2_age = 1000
-        self.guest_1_drink = "Placeholder drink"
-        self.guest_2_drink = "Placeholder drink"
+        # self.people_name_by_id[1] = "Placeholder name"
+        # self.people_name_by_id[2] = "Placeholder name"
+        # self.people_age_by_id[1] = 1000
+        # self.people_age_by_id[2] = 1000
+        # self.people_drink_by_id[1] = "Placeholder drink"
+        # self.people_drink_by_id[2] = "Placeholder drink"
 
         # Debug options
         self.allow_navigation = False
@@ -68,14 +75,14 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         ######################################
         """.format(scenario_name=self._scenario["name"]))
 
-        steps = self._scenario["steps"]
+        self.steps = self._scenario["steps"]
 
         ###################################################################################################
         # Start timeboard to follow scenario evolution on screen
 
         # Remember the dictionary that associates big steps to the array that was sent to the local manager
         step_id_to_index = self._lm_wrapper.timeboard_send_steps_list(
-            steps, self._scenario["name"], self.NO_TIMEOUT)[1]
+            self.steps, self._scenario["name"], self.NO_TIMEOUT)[1]
         self._lm_wrapper.timeboard_set_timer_state(True, self.NO_TIMEOUT)
 
         # scenario_start_time = time.time()
@@ -96,19 +103,19 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         global_step_find_g1_start_time = time.time()
 
         # - Wait
-        findg1_wait = self.find_by_id(steps, "findg1_wait")
+        findg1_wait = self.find_by_id(self.steps, "findg1_wait")
         self._lm_wrapper.wait(findg1_wait["speech"], findg1_wait["arguments"]["time"], findg1_wait["arguments"]["time"] + 2.0)
 
         # - Ask referee to open the door
-        findg1_ask_referee = self.find_by_id(steps, "findg1_ask-referee-to-open-the-door")
+        findg1_ask_referee = self.find_by_id(self.steps, "findg1_ask-referee-to-open-the-door")
         self._lm_wrapper.ask_open_door(findg1_ask_referee["speech"], self.NO_TIMEOUT)
 
         # - Wait2
-        findg1_wait2 = self.find_by_id(steps, "findg1_wait2")
+        findg1_wait2 = self.find_by_id(self.steps, "findg1_wait2")
         self._lm_wrapper.wait(findg1_wait2["speech"], findg1_wait2["arguments"]["time"], findg1_wait2["arguments"]["time"] + 2.0)
 
         # - Detect human
-        # findg1_detect_human = self.find_step(steps, "findg1_detect-human")
+        # findg1_detect_human = self.find_step(self.steps, "findg1_detect-human")
         # self._lm_wrapper.call_human(findg1_detect_human["speech"], 3.0, self.NO_TIMEOUT)
         # self.simulate_ros_work(1.0, "SIMULATING HUMAN DETECTION")
 
@@ -126,26 +133,26 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         #First Ask name
         askinfog1_ask_name_max_counts = 3  # TODO Move this as config parameter
-        askinfog1_ask_name = self.find_by_id(steps, "askinfog1_ask-name")
-        askinfog1_confirm_name = self.find_by_id(steps, "askinfog1_confirm-name")
-        self.guest_1_name = self.ask_name_and_confirm(
+        askinfog1_ask_name = self.find_by_id(self.steps, "askinfog1_ask-name")
+        askinfog1_confirm_name = self.find_by_id(self.steps, "askinfog1_confirm-name")
+        self.people_name_by_id[1] = self.ask_name_and_confirm(
             askinfog1_ask_name_max_counts, askinfog1_ask_name, askinfog1_confirm_name)
 
         # Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.guest_1_name, 10.0)
+        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[1], 10.0)
 
         # Then ask drink
         askinfog1_ask_drink_max_counts = 3  # TODO Move this as config parameter
-        askinfog1_ask_drink = self.find_by_id(steps, "askinfog1_ask-drink")
-        askinfog1_confirm_drink = self.find_by_id(steps, "askinfog1_confirm-drink")
-        self.guest_1_drink = self.ask_drink_and_confirm(askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.guest_1_name)
+        askinfog1_ask_drink = self.find_by_id(self.steps, "askinfog1_ask-drink")
+        askinfog1_confirm_drink = self.find_by_id(self.steps, "askinfog1_confirm-drink")
+        self.people_drink_by_id[1] = self.ask_drink_and_confirm(askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])
 
         # - Ask age
-        askinfog1_ask_age = self.find_by_id(steps, "askinfog1_ask-age")
+        askinfog1_ask_age = self.find_by_id(self.steps, "askinfog1_ask-age")
         askinfog1_ask_age_speech = askinfog1_ask_age["speech"]
-        askinfog1_ask_age_speech["name"] = self.guest_1_name
-        self.guest_1_age = self._lm_wrapper.ask_age(askinfog1_ask_age_speech, self.NO_TIMEOUT)[1]
+        askinfog1_ask_age_speech["name"] = self.people_name_by_id[1]
+        self.people_age_by_id[1] = self._lm_wrapper.ask_age(askinfog1_ask_age_speech, self.NO_TIMEOUT)[1]
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["AskInfoG1"], self.NO_TIMEOUT)
 
@@ -157,12 +164,12 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_go_to_lr1_start_time = time.time()
 
         # - Ask to follow
-        gotolr1_ask_to_follow = self.find_by_id(steps, "gotolr1_ask-to-follow")
-        gotolr1_ask_to_follow["speech"]["name"] = self.guest_1_name
+        gotolr1_ask_to_follow = self.find_by_id(self.steps, "gotolr1_ask-to-follow")
+        gotolr1_ask_to_follow["speech"]["name"] = self.people_name_by_id[1]
         self._lm_wrapper.ask_to_follow(gotolr1_ask_to_follow["speech"], self._living_room, self.NO_TIMEOUT)
 
         # - Go to living room
-        gotolr1_go_to_living_room = self.find_by_id(steps, "gotolr1_go-to-living-room")
+        gotolr1_go_to_living_room = self.find_by_id(self.steps, "gotolr1_go-to-living-room")
         self._lm_wrapper.go_to(gotolr1_go_to_living_room["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to_living_room["arguments"]["interestPoint"], 50.0)
@@ -171,71 +178,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         ###################################################################################################
 
-        # Point to and introduce both G1 and Host
-        #
-        # self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to talk
-        #
-        # # TODO: Make sure the name associated with the image of the person is updated from new input when only general
-        # #  manager is restarted but not the face_recognition package
-        # # Turn around to introduce guests
-        # nb_people_here = 2
-        # nb_people_introduced = 0
-        # for inc_angle in range(360/25):
-        #     # Find people in the image
-        #     state_getObject, result_getObject = self.getObjectInFrontRobot("person", 15.0)
-        #     # Loop on people found
-        #     if result_getObject is not None:
-        #         for i_person in range(len(result_getObject.labelList)):
-        #             # Get name of the i_person-th closest people
-        #             state_lookAtObject, result_lookAtObject = self.lookAtObject("person", i_person, True, False, True, 4.0)
-        #             state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(15.0)
-        #             # Loop on people recognized
-        #             i_people_to_introduce = -1
-        #             bounding_box_area_max = -1
-        #             if result_getPeopleName is not None:
-        #                 for i_people_name in range(len(result_getPeopleName.peopleNames)):
-        #                     # Bounding box around the current person
-        #                     box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
-        #                     box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
-        #                     box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
-        #                     box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
-        #                     # Relative size of the bounding box
-        #                     bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-        #                     if bounding_box_area > bounding_box_area_max:
-        #                         bounding_box_area_max = bounding_box_area
-        #                         i_people_to_introduce = i_people_name
-        #                 # Introduce the person
-        #                 if result_getPeopleName.peopleNames[i_people_to_introduce] == self.guest_1_name:
-        #                     # Introduce first guest to John
-        #                     self._lm_wrapper.timeboard_set_current_step(self.find_by_id["IntroduceG1ToJohn"], self.NO_TIMEOUT)
-        #                     nb_people_introduced += 1
-        #                     # Point to guest 1
-        #                     # Say name and drink
-        #                     int_g1_john = self.find_by_id(steps, "introduceg1tojohn_say-name-and-drink")
-        #                     self._lm_wrapper.present_person(int_g1_john["speech"], self.guest_1_name, self.guest_1_drink,
-        #                                                     [self.host_name], self.NO_TIMEOUT)
-        #                     self._lm_wrapper.timeboard_send_step_done(self.find_by_id["IntroduceG1ToJohn"], self.NO_TIMEOUT)
-        #                 # TODO We find the host by leimination : maybe to improve upon
-        #                 elif result_getPeopleName.peopleNames[i_people_to_introduce] == "Unknown":
-        #                     # Introduce John to first guest
-        #                     self._lm_wrapper.timeboard_set_current_step(self.find_by_id["IntroduceJohnToG1"], self.NO_TIMEOUT)
-        #                     nb_people_introduced += 1
-        #                     # Point to John
-        #                     # Say name and drink
-        #                     int_john_g1 = self.find_by_id(steps, "introducejohntog1_say-name-and-drink")
-        #                     self._lm_wrapper.present_person(int_john_g1["speech"], self.host_name, self.host_drink,
-        #                                                     [self.guest_1_name], self.NO_TIMEOUT)
-        #                     self._lm_wrapper.timeboard_send_step_done(self.find_by_id["IntroduceJohnToG1"], self.NO_TIMEOUT)
-        #                 else:
-        #                     # TODO unknown name ?
-        #                     pass
-        #     # Check if everyone has been introduced
-        #     if nb_people_introduced < nb_people_here:
-        #         # Turn a bit to find someone else
-        #         self.moveTurn(25.0*math.pi/180.0)
-        #     else:
-        #         # End introducing
-        #         break
+        # Introduce people
+        self.introduce_people_to_each_others()
 
         ###################################################################################################
 
@@ -250,8 +194,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self.simulate_ros_work(1.0, "SIMULATING POINTING TO EMPTY SEAT")
 
         # - Tell first guest to seat
-        seat_g1 = self.find_by_id(steps, "seatg1_tell-first-guest-to-seat")
-        seat_g1["speech"]["name"] = self.guest_1_name
+        seat_g1 = self.find_by_id(self.steps, "seatg1_tell-first-guest-to-seat")
+        seat_g1["speech"]["name"] = self.people_name_by_id[1]
         self._lm_wrapper.seat_guest(seat_g1["speech"], self.NO_TIMEOUT)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["SeatG1"], self.NO_TIMEOUT)
@@ -265,7 +209,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_find_go_to_door1_start_time = time.time()
 
         # - Go to door
-        gotodoor1 = self.find_by_id(steps, "gotodoor1_go-to-door")
+        gotodoor1 = self.find_by_id(self.steps, "gotodoor1_go-to-door")
         self._lm_wrapper.go_to(gotodoor1["speech"], self._entrance, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor1["arguments"]["interestPoint"], 50.0)
@@ -280,19 +224,19 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_find_g2_start_time = time.time()
 
         # - Wait
-        findg2_wait = self.find_by_id(steps, "findg2_wait")
+        findg2_wait = self.find_by_id(self.steps, "findg2_wait")
         self._lm_wrapper.wait(findg2_wait["speech"], findg2_wait["arguments"]["time"], findg2_wait["arguments"]["time"] + 2.0)
 
         # - Ask referee to open the door
-        findg2_ask_referee = self.find_by_id(steps, "findg2_ask-referee-to-open-the-door")
+        findg2_ask_referee = self.find_by_id(self.steps, "findg2_ask-referee-to-open-the-door")
         self._lm_wrapper.ask_open_door(findg2_ask_referee["speech"], self.NO_TIMEOUT)
 
         # - Wait2
-        findg2_wait2 = self.find_by_id(steps, "findg2_wait2")
+        findg2_wait2 = self.find_by_id(self.steps, "findg2_wait2")
         self._lm_wrapper.wait(findg2_wait2["speech"], findg2_wait2["arguments"]["time"], findg2_wait2["arguments"]["time"] + 2.0)
 
         # - Detect human
-        # findg2_detect_human = self.find_step(steps, "findg2_detect-human")
+        # findg2_detect_human = self.find_step(self.steps, "findg2_detect-human")
         # self._lm_wrapper.call_human(findg2_detect_human["speech"], 3.0, self.NO_TIMEOUT)
         # self.simulate_ros_work(1.0, "SIMULATING HUMAN DETECTION")
 
@@ -309,26 +253,26 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         #First Ask name
         askinfog2_ask_name_max_counts = 3  # TODO Move this as config parameter
-        askinfog2_ask_name = self.find_by_id(steps, "askinfog2_ask-name")
-        askinfog2_confirm_name = self.find_by_id(steps, "askinfog2_confirm-name")
-        self.guest_2_name = self.ask_name_and_confirm(
+        askinfog2_ask_name = self.find_by_id(self.steps, "askinfog2_ask-name")
+        askinfog2_confirm_name = self.find_by_id(self.steps, "askinfog2_confirm-name")
+        self.people_name_by_id[2] = self.ask_name_and_confirm(
             askinfog2_ask_name_max_counts, askinfog2_ask_name, askinfog2_confirm_name)
 
         # Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.guest_2_name, 10.0)
+        # state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgTopic(self.people_name_by_id[2], 10.0)
 
         # Then ask drink
         askinfog2_ask_drink_max_counts = 3  # TODO Move this as config parameter
-        askinfog2_ask_drink = self.find_by_id(steps, "askinfog2_ask-drink")
-        askinfog2_confirm_drink = self.find_by_id(steps, "askinfog2_confirm-drink")
-        self.guest_2_drink = self.ask_drink_and_confirm(askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.guest_2_name)
+        askinfog2_ask_drink = self.find_by_id(self.steps, "askinfog2_ask-drink")
+        askinfog2_confirm_drink = self.find_by_id(self.steps, "askinfog2_confirm-drink")
+        self.people_drink_by_id[2] = self.ask_drink_and_confirm(askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])
 
         # - Ask age
-        askinfog2_ask_age = self.find_by_id(steps, "askinfog2_ask-age")
+        askinfog2_ask_age = self.find_by_id(self.steps, "askinfog2_ask-age")
         askinfog2_ask_age_speech = askinfog2_ask_age["speech"]
-        askinfog2_ask_age_speech["name"] = self.guest_2_name
-        self.guest_2_age = self._lm_wrapper.ask_age(askinfog2_ask_age_speech, self.NO_TIMEOUT)[1]
+        askinfog2_ask_age_speech["name"] = self.people_name_by_id[2]
+        self.people_age_by_id[2] = self._lm_wrapper.ask_age(askinfog2_ask_age_speech, self.NO_TIMEOUT)[1]
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["AskInfoG2"], self.NO_TIMEOUT)
 
@@ -339,12 +283,12 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         global_step_go_to_lr2_start_time = time.time()
 
         # - Ask to follow
-        gotolr2_ask_to_follow = self.find_by_id(steps, "gotolr2_ask-to-follow")
-        gotolr2_ask_to_follow["speech"]["name"] = self.guest_2_name
+        gotolr2_ask_to_follow = self.find_by_id(self.steps, "gotolr2_ask-to-follow")
+        gotolr2_ask_to_follow["speech"]["name"] = self.people_name_by_id[2]
         self._lm_wrapper.ask_to_follow(gotolr2_ask_to_follow["speech"], self._living_room, self.NO_TIMEOUT)
 
         # - Go to living room
-        gotolr2_go_to_living_room = self.find_by_id(steps, "gotolr2_go-to-living-room")
+        gotolr2_go_to_living_room = self.find_by_id(self.steps, "gotolr2_go-to-living-room")
         self._lm_wrapper.go_to(gotolr2_go_to_living_room["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr2_go_to_living_room["arguments"]["interestPoint"], 50.0)
@@ -385,8 +329,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self.simulate_ros_work(1.0, "SIMULATING POINTING TO EMPTY SEAT")
 
         # - Tell first guest to seat
-        seat_g2 = self.find_by_id(steps, "seatg2_tell-first-guest-to-seat")
-        seat_g2["speech"]["name"] = self.guest_2_name
+        seat_g2 = self.find_by_id(self.steps, "seatg2_tell-first-guest-to-seat")
+        seat_g2["speech"]["name"] = self.people_name_by_id[2]
         self._lm_wrapper.seat_guest(seat_g2["speech"], self.NO_TIMEOUT)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["SeatG2"], self.NO_TIMEOUT)
@@ -493,3 +437,144 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                 # TODO : Do TTS action where robot says something like: Hmmm, I really can't understand what you say,
                 #  I guess I will just consider you like {Last_Understood Drink}
                 return tentative_guest_drink
+
+    def introduce_people_to_each_others(self):
+        """
+        Pepper turn on himself to find people and to introduce the to the group
+        """
+        # TODO: Make sure the name associated with the image of the person is updated from new input when only general
+        #  manager is restarted but not the face_recognition package
+        # Intialize guests / host presentation
+        nb_people_here = len(self.people_name_by_id.keys())
+        nb_people_introduced = 0
+        people_introduced = {}
+        for name in self.people_name_by_id.values():
+            people_introduced[name] = False
+        newbie_name = self.people_name_by_id[max(self.people_name_by_id.keys())]
+        # Set head position
+        self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+        # Turn around to introduce guests
+        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
+        angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        for angle in angle_list:
+            # Find people in the image
+            state_getObject, result_getObject = self.getObjectInFrontRobot(["person"], False, 50.0)
+            # Loop on people found
+            if result_getObject is not None:
+                if len(result_getObject.labelFound) > 0:
+                    # TODO Ajouter un move head pour viser le visage
+                    # Get people names
+                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
+                    # If we recognize a face
+                    if result_getPeopleName is not None:
+                        if len(result_getPeopleName.peopleNames) > 0:
+                            # Test
+                            print result_getPeopleName.peopleNames
+                            print result_getPeopleName.peopleNamesScore
+                            # Find the person in the front - he/she has the biggest bounding box
+                            i_people_to_introduce = -1
+                            bounding_box_area_max = -1
+                            for i_people_name in range(len(result_getPeopleName.peopleNames)):
+                                # Bounding box around the current person
+                                box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
+                                box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
+                                box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
+                                box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
+                                # Relative size of the bounding box
+                                bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
+                                if bounding_box_area > bounding_box_area_max:
+                                    bounding_box_area_max = bounding_box_area
+                                    i_people_to_introduce = i_people_name
+                            # Introduce the person
+                            if i_people_to_introduce >= 0:
+                                # Checked if we find correspondences with any known name
+                                name_of_people_found = result_getPeopleName.peopleNames[i_people_to_introduce]
+                                for name in self.people_name_by_id.values():
+                                    # TODO
+                                    # First possibility : The person found is the new guest to introduce to everyone
+                                    if ((name_of_people_found == name) and (people_introduced[name] == False) and (name_of_people_found == newbie_name)):
+                                        # Introduce new_guest_to_john
+                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
+                                        self.introduce_guest_to_host(guest_id)
+                                        # Point to Guest
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Update internal variables
+                                        nb_people_introduced += 1
+                                        people_introduced[name] = True
+                                    # Second possibility
+                                    elif ((name_of_people_found == name) and (people_introduced[name] == False)):
+                                        guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
+                                        guest2_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
+                                        self.introduce_one_guest_to_another_guest(guest1_id, guest2_id)
+                                        # Point to Guest
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Update internal variables
+                                        nb_people_introduced += 1
+                                        people_introduced[name] = True
+                                    # Third possibility : The person found is the host
+                                    # TODO We find the host by elimination : maybe to improve upon
+                                    elif (name_of_people_found == "Unknown") and (people_introduced["John"] == False):
+                                        # Introduce John to new guest
+                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
+                                        self.introduce_host_to_guest(guest_id)
+                                        # Point to John
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Update internal variables
+                                        nb_people_introduced += 1
+                                        people_introduced["John"] = True
+                                    else:
+                                        # Mismatch
+                                        pass
+            # Check if everyone has been introduced
+            if nb_people_introduced < nb_people_here:
+                # Turn a bit to find someone else
+                self.moveTurn(angle*math.pi/180.0)
+                #print "I TURN !!!!"
+            else:
+                # End introducing
+                break
+        return
+
+    def introduce_new_guest_to_others(self):
+        """
+        Introduce the new guest to other guests
+        """
+        # TODO a coder
+        pass
+
+    def introduce_one_guest_to_another_guest(self, guest1_id, guest2_id):
+        """
+        Introduce one guest to another guest
+        """
+        # # Introduce guest to John
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest1_id, guest2_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_guest_host = self.find_by_id(self.steps, "introduceg{0}tog{1}_say-name-and-drink".format(guest1_id, guest2_id))
+        # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest1_id], self.people_drink_by_id[guest1_id],
+        #                                 [self.people_name_by_id[guest2_id]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest_id, guest2_id)), self.NO_TIMEOUT)
+        pass
+
+    def introduce_host_to_guest(self, guest_id):
+        """
+        """
+        # # Introduce John to first guest
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_host_guest = self.find_by_id(self.steps, "introducejohntog{0}_say-name-and-drink".format(guest_id))
+        # self._lm_wrapper.present_person(int_host_guest["speech"], self.people_name_by_id[0], self.people_drink_by_id[0],
+        #                                 [self.people_name_by_id[guest_id]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        pass
+
+    def introduce_guest_to_host(self, guest_id):
+        """
+        """
+        # # Introduce guest to John
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_guest_host = self.find_by_id(self.steps, "introduceg{0}tojohn_say-name-and-drink".format(guest_id))
+        # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id],
+        #                                 [self.people_name_by_id[0]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        pass
