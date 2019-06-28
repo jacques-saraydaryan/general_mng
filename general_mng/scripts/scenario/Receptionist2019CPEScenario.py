@@ -23,11 +23,11 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.189", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("pepper4", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        # ws = "/home/xia0ben/pepper_ws"
-        ws = "/home/astro/catkin_robocup2019"
+        ws = "/home/xia0ben/pepper_ws"
+        # ws = "/home/astro/catkin_robocup2019"
         with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
 
@@ -183,6 +183,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         ###################################################################################################
 
         # Introduce people
+        self.remap_topic("/pepper_robot/camera/front/image_raw", "/darknet_ros/camera_in", freq=2.0)
+        self.remap_topic("/pepper_robot/camera/front/image_raw", "/openpose/camera_in", freq=2.0)
         self.introduce_people_to_each_others()
 
         ###################################################################################################
@@ -193,6 +195,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # - Find empty seat
         self.find_an_empty_chair()
+        self.unremap_topic("/pepper_robot/camera/front/image_raw", "/darknet_ros/camera_in")
+        self.unremap_topic("/pepper_robot/camera/front/image_raw", "/openpose/camera_in")
 
         # - Tell first guest to seat
         seat_g1 = self.find_by_id(self.steps, "seatg1_tell-first-guest-to-seat")
@@ -300,29 +304,6 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # Introduce people
         self.introduce_people_to_each_others()
-        
-        # ###################################################################################################
-        #
-        # # Introduce second guest to others
-        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["IntroduceG2ToOthers"], self.NO_TIMEOUT)
-        #
-        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["IntroduceG2ToOthers"], self.NO_TIMEOUT)
-        #
-        # ###################################################################################################
-        #
-        # # Introduce John to second guest
-        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["IntroduceJohnToG2"], self.NO_TIMEOUT)
-
-        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["IntroduceJohnToG2"], self.NO_TIMEOUT)
-        #
-        # ###################################################################################################
-        #
-        # # Introduce first guest to second guest
-        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["IntroduceG1ToG2"], self.NO_TIMEOUT)
-        #
-        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["IntroduceG1ToG2"], self.NO_TIMEOUT)
-        #
-        # ###################################################################################################
 
         # Seat second guest
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["SeatG2"], self.NO_TIMEOUT)
