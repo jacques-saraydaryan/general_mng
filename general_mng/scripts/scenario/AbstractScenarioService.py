@@ -3,6 +3,7 @@ from std_srvs.srv import Trigger
 from pepper_pose_for_nav.srv import MoveHeadAtPosition
 from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
+from dialogue_hri_srvs.srv import ReleaseArms
 
 from rospy.exceptions import ROSException, ROSInterruptException
 
@@ -18,7 +19,8 @@ class AbstractScenarioService:
     _enableMoveHeadPoseService = True
     _enableMoveTurnService = True
     _enablePointAtService = False
-    _enableResetPersonMetaInfoMap = False
+    _enableResetPersonMetaInfoMapService = False
+    _enableReleaseArmsService = False
 
     def __init__(self):
         pass
@@ -52,7 +54,7 @@ class AbstractScenarioService:
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the point_at service.")
         # Connect to person Mat info erasing service
-        if self._enableResetPersonMetaInfoMap:
+        if self._enableResetPersonMetaInfoMapService:
             rospy.loginfo("Connecting to the reset_people_meta_info_map_srv service...")
             self._resetPeopleMetaInfoMapSP = rospy.ServiceProxy('reset_people_meta_info_map_srv', Trigger)
             try:
@@ -60,6 +62,16 @@ class AbstractScenarioService:
                 rospy.loginfo("Connected to the reset_people_meta_info_map_srv service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the reset_people_meta_info_map_srv service.")
+        # Connect to person Mat info erasing service
+        if self._enableReleaseArmsService:
+            rospy.loginfo("Connecting to the release_arms service...")
+            self._releaseArmsSP = rospy.ServiceProxy('release_arms', ReleaseArms)
+            try:
+                release_arms_srv_is_up = rospy.wait_for_service('release_arms', timeout=10.0)
+                rospy.loginfo("Connected to the release_arms service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the release_arms service.")
+
 
     def moveheadPose(self, pitch_value, yaw_value, track):
         try:
@@ -84,3 +96,9 @@ class AbstractScenarioService:
             return self._resetPeopleMetaInfoMapSP()
         except rospy.ServiceException as e:
             rospy.logerr("Service reset_people_meta_info_map_srv could not process request: {error}".format(error=e))
+
+    def releaseArms(self):
+        try:
+            return self._releaseArmsSP(0.6)
+        except rospy.ServiceException as e:
+            rospy.logerr("Service release_arms could not process request: {error}".format(error=e))
