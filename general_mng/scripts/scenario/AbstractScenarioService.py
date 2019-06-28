@@ -6,6 +6,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
 from pepper_door_open_detector.srv import MinFrontValue
+from dialogue_hri_srvs.srv import ReleaseArms
 
 
 class AbstractScenarioService:
@@ -22,6 +23,8 @@ class AbstractScenarioService:
     _enablePointAtService = False
     _enableResetPersonMetaInfoMap = False
     _enableMinFrontValueService = False
+    _enableResetPersonMetaInfoMapService = False
+    _enableReleaseArmsService = False
 
     def __init__(self):
         pass
@@ -58,7 +61,7 @@ class AbstractScenarioService:
                 rospy.logwarn("Unable to connect to the point_at service.")
 
         # Connect to person Mat info erasing service
-        if self._enableResetPersonMetaInfoMap:
+        if self._enableResetPersonMetaInfoMapService:
             rospy.loginfo("Connecting to the reset_people_meta_info_map_srv service...")
             self._resetPeopleMetaInfoMapSP = rospy.ServiceProxy('reset_people_meta_info_map_srv', Trigger)
             try:
@@ -66,6 +69,16 @@ class AbstractScenarioService:
                 rospy.loginfo("Connected to the reset_people_meta_info_map_srv service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the reset_people_meta_info_map_srv service.")
+        # Connect to person Mat info erasing service
+        if self._enableReleaseArmsService:
+            rospy.loginfo("Connecting to the release_arms service...")
+            self._releaseArmsSP = rospy.ServiceProxy('release_arms', ReleaseArms)
+            try:
+                release_arms_srv_is_up = rospy.wait_for_service('release_arms', timeout=10.0)
+                rospy.loginfo("Connected to the release_arms service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the release_arms service.")
+
 
         # Connect to min_front_value_srv service
         if self._enableMinFrontValueService:
@@ -121,3 +134,9 @@ class AbstractScenarioService:
         except rospy.ServiceException as e:
             rospy.logerr("Service min_front_value_srv could not process request: {error}".format(error=e))
             return False
+
+    def releaseArms(self):
+        try:
+            return self._releaseArmsSP(0.6)
+        except rospy.ServiceException as e:
+            rospy.logerr("Service release_arms could not process request: {error}".format(error=e))

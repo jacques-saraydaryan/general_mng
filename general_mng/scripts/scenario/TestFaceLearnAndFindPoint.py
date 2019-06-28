@@ -1,5 +1,6 @@
 __author__ = 'Benoit Renault'
 import rospy
+import collections
 
 from AbstractScenario import AbstractScenario
 from AbstractScenarioAction import AbstractScenarioAction
@@ -25,7 +26,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.189", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("pepper2", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         ws = "/home/astro/catkin_robocup2019"
@@ -163,78 +164,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
 
         self.introduce_people_to_each_others()
 
-        # # TODO: Make sure the name associated with the image of the person is updated from new input when only general
-        # #  manager is restarted but not the face_recognition package
-        # # Turn around to introduce guests
-        # nb_people_here = 2
-        # nb_people_introduced = 0
-        # people_introduced = {}
-        # people_introduced[self.people_name_by_id[1]] = False
-        # people_introduced["Host"] = False
-        # for inc_angle in range(360/25):
-        #     # Find people in the image
-        #     state_getObject, result_getObject = self.getObjectInFrontRobot(["person"], False, 50.0)
-        #     # Loop on people found
-        #     if result_getObject is not None:
-        #         if len(result_getObject.labelFound) > 0:
-        #             for i_person in range(result_getObject.labelFound[0]):
-        #                 # Get name of the i_person-th closest people
-        #                 state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
-        #                 # Loop on people recognized
-        #                 i_people_to_introduce = -1
-        #                 bounding_box_area_max = -1
-        #                 if result_getPeopleName is not None:
-        #                     print result_getPeopleName.peopleNames
-        #                     print result_getPeopleName.peopleNamesScore
-        #                     for i_people_name in range(len(result_getPeopleName.peopleNames)):
-        #                         # Bounding box around the current person
-        #                         box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
-        #                         box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
-        #                         box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
-        #                         box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
-        #                         # Relative size of the bounding box
-        #                         bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-        #                         if bounding_box_area > bounding_box_area_max:
-        #                             bounding_box_area_max = bounding_box_area
-        #                             i_people_to_introduce = i_people_name
-        #                     # Introduce the person
-        #                     if i_people_to_introduce >= 0:
-        #                         if (result_getPeopleName.peopleNames[i_people_to_introduce] == self.people_name_by_id[1]) and (people_introduced[self.people_name_by_id[1]] == False):
-        #                             # Introduce first guest to John
-        #                             self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG1ToJohn"), self.NO_TIMEOUT)
-        #                             nb_people_introduced += 1
-        #                             # Point to guest 1
-        #                             # Say name and drink
-        #                             int_g1_john = self.find_by_id(self.steps, "introduceg1tojohn_say-name-and-drink")
-        #                             self._lm_wrapper.present_person(int_g1_john["speech"], self.people_name_by_id[1], self.people_drink_by_id[1],
-        #                                                             [self.people_name_by_id[0]], self.NO_TIMEOUT)
-        #                             state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_person, False, False, True, 50.0)
-        #                             self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG1ToJohn"), self.NO_TIMEOUT)
-        #                             people_introduced[self.people_name_by_id[1]] = True
-        #                         # TODO We find the host by leimination : maybe to improve upon
-        #                         elif (result_getPeopleName.peopleNames[i_people_to_introduce] == "Unknown") and (people_introduced["Host"] == False):
-        #                             # Introduce John to first guest
-        #                             self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceJohnToG1"), self.NO_TIMEOUT)
-        #                             nb_people_introduced += 1
-        #                             # Point to John
-        #                             # Say name and drink
-        #                             int_john_g1 = self.find_by_id(self.steps, "introducejohntog1_say-name-and-drink")
-        #                             self._lm_wrapper.present_person(int_john_g1["speech"], self.people_name_by_id[0], self.people_drink_by_id[0],
-        #                                                             [self.people_name_by_id[1]], self.NO_TIMEOUT)
-        #                             state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_person, False, False, True, 50.0)
-        #                             self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceJohnToG1"), self.NO_TIMEOUT)
-        #                             people_introduced["Host"] = True
-        #                         else:
-        #                             # TODO unknown name ?
-        #                             pass
-        #     # Check if everyone has been introduced
-        #     if nb_people_introduced < nb_people_here:
-        #         # Turn a bit to find someone else
-        #         self.moveTurn(25.0*math.pi/180.0)
-        #         #print "I TURN !!!!"
-        #     else:
-        #         # End introducing
-        #         break
+        # End
 
         rospy.loginfo("""
                 ######################################
@@ -261,7 +191,8 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         self._enableMoveHeadPoseService = True
         self._enableMoveTurnService = True
         self._enablePointAtService = True
-        self._enableResetPersonMetaInfoMap = True
+        self._enableResetPersonMetaInfoMapService = True
+        self._enableReleaseArmsService = True
 
         AbstractScenarioAction.configure_intern(self)
         AbstractScenarioService.configure_intern(self)
@@ -289,8 +220,6 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         """
         Pepper turn on himself to find people and to introduce the to the group
         """
-        # TODO: Make sure the name associated with the image of the person is updated from new input when only general
-        #  manager is restarted but not the face_recognition package
         # Intialize guests / host presentation
         nb_people_here = len(self.people_name_by_id.keys())
         nb_people_introduced = 0
@@ -318,52 +247,64 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                             # Test
                             print result_getPeopleName.peopleNames
                             print result_getPeopleName.peopleNamesScore
-                            # Find the person in the front - he/she has the biggest bounding box
-                            i_people_to_introduce = -1
-                            bounding_box_area_max = -1
-                            for i_people_name in range(len(result_getPeopleName.peopleNames)):
-                                # Bounding box around the current person
-                                box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
-                                box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
-                                box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
-                                box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
-                                # Relative size of the bounding box
-                                bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-                                if bounding_box_area > bounding_box_area_max:
-                                    bounding_box_area_max = bounding_box_area
-                                    i_people_to_introduce = i_people_name
-                            # Introduce the person
-                            if i_people_to_introduce >= 0:
-                                name_of_people_found = result_getPeopleName.peopleNames[i_people_to_introduce]
-                                for name in self.people_name_by_id.values():
+                            # Compute people bounding box area
+                            name_by_area = {}
+                            for people, name in zip(result_getPeopleName.peopleMetaList.peopleList, result_getPeopleName.peopleNames):
+                                box_x0 = people.details.boundingBox.points[0].x
+                                box_x1 = people.details.boundingBox.points[1].x
+                                box_y0 = people.details.boundingBox.points[0].y
+                                box_y1 = people.details.boundingBox.points[1].y
+                                box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
+                                name_by_area[box_area] = name
+                            # Inverse sort of the people aera : closest people first
+                            name_by_area_ordered = collections.OrderedDict(sorted(name_by_area.items(), reverse=True))
+                            # Test all the names we found
+                            for (name_of_people_found, i_name_of_people_found) in zip(name_by_area_ordered.values(), range(len(name_by_area_ordered.values()))):
+                                # If the persone has not been recognize we jump to the next one
+                                if name_of_people_found == "None":
+                                    continue
+                                # Checked if we find correspondences with any known name
+                                for name_of_people_known in self.people_name_by_id.values():
+                                    # TODO
                                     # First possibility : The person found is the new guest to introduce to everyone
-                                    if ((name_of_people_found == name) and (people_introduced[name] == False) and (name_of_people_found == newbie_name)):
-                                        # Introduce new_guest_to_john
-                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
-                                        self.introduce_guest_to_host(guest_id)
+                                    if (   (name_of_people_found == name_of_people_known)
+                                       and (people_introduced[name_of_people_known] == False)
+                                       and (name_of_people_found == newbie_name)):
                                         # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        # Introduce new_guest_to_john
+                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
+                                        self.introduce_guest_to_host(guest_id)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
-                                        people_introduced[name] = True
+                                        people_introduced[name_of_people_known] = True
                                     # Second possibility
-                                    elif ((name_of_people_found == name) and (people_introduced[name] == False)):
-                                        guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
+                                    elif (   (name_of_people_found == name_of_people_known)
+                                         and (people_introduced[name_of_people_known] == False)):
+                                        # Point to Guest
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        # Introduce guests
+                                        guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         guest2_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
                                         self.introduce_one_guest_to_another_guest(guest1_id, guest2_id)
-                                        # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
-                                        people_introduced[name] = True
+                                        people_introduced[name_of_people_known] = True
                                     # Third possibility : The person found is the host
                                     # TODO We find the host by elimination : maybe to improve upon
-                                    elif (name_of_people_found == "Unknown") and (people_introduced["John"] == False):
+                                    elif (   (name_of_people_found == "Unknown")
+                                         and (people_introduced["John"] == False)):
+                                        # Point to John
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce John to new guest
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
                                         self.introduce_host_to_guest(guest_id)
-                                        # Point to John
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
                                         people_introduced["John"] = True
@@ -380,43 +321,55 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                 break
         return
 
-    def introduce_new_guest_to_others(self):
+    def introduce_new_guest_to_others(self, guest_id):
         """
         Introduce the new guest to other guests
         """
-        # TODO a coder
+        # TODO: nouveau dialogue
+        print "INTRODUCING {0} TO OTHERS".format(self.people_name_by_id[guest_id])
         pass
 
     def introduce_one_guest_to_another_guest(self, guest1_id, guest2_id):
         """
         Introduce one guest to another guest
         """
-        # Introduce guest to John
-        self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest1_id, guest2_id)), self.NO_TIMEOUT)
-        # Say name and drink
-        int_guest_host = self.find_by_id(self.steps, "introduceg{0}tog{1}_say-name-and-drink".format(guest1_id, guest2_id))
-        self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest1_id], self.people_drink_by_id[guest1_id],
-                                        [self.people_name_by_id[guest2_id]], self.NO_TIMEOUT)
-        self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest_id, guest2_id)), self.NO_TIMEOUT)
+        # TODO: nouveau dialogue
+        # # Introduce guest to John
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest1_id, guest2_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_guest_host = self.find_by_id(self.steps, "introduceg{0}tog{1}_say-name-and-drink".format(guest1_id, guest2_id))
+        # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest1_id], self.people_drink_by_id[guest1_id],
+        #                                 [self.people_name_by_id[guest2_id]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest_id, guest2_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[guest1_id], self.people_name_by_id[guest1_id])
+        pass
 
     def introduce_host_to_guest(self, guest_id):
         """
+        Introduce the host to a given guest
         """
-        # Introduce John to first guest
-        self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
-        # Say name and drink
-        int_host_guest = self.find_by_id(self.steps, "introducejohntog{0}_say-name-and-drink".format(guest_id))
-        self._lm_wrapper.present_person(int_host_guest["speech"], self.people_name_by_id[0], self.people_drink_by_id[0],
-                                        [self.people_name_by_id[guest_id]], self.NO_TIMEOUT)
-        self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        # TODO: Nouveau dialogue
+        # # Introduce John to first guest
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_host_guest = self.find_by_id(self.steps, "introducejohntog{0}_say-name-and-drink".format(guest_id))
+        # self._lm_wrapper.present_person(int_host_guest["speech"], self.people_name_by_id[0], self.people_drink_by_id[0],
+        #                                 [self.people_name_by_id[guest_id]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[0], self.people_name_by_id[guest_id])
+        pass
 
     def introduce_guest_to_host(self, guest_id):
         """
+        Introduce a guest to the host
         """
-        # Introduce guest to John
-        self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
-        # Say name and drink
-        int_guest_host = self.find_by_id(self.steps, "introduceg{0}tojohn_say-name-and-drink".format(guest_id))
-        self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id],
-                                        [self.people_name_by_id[0]], self.NO_TIMEOUT)
-        self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        # TODO: nouveau dialogue
+        # # Introduce guest to John
+        # self._lm_wrapper.timeboard_set_current_step(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        # # Say name and drink
+        # int_guest_host = self.find_by_id(self.steps, "introduceg{0}tojohn_say-name-and-drink".format(guest_id))
+        # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id],
+        #                                 [self.people_name_by_id[0]], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[guest_id], self.people_name_by_id[0])
+        pass
