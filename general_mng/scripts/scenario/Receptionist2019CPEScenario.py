@@ -1,5 +1,6 @@
 __author__ = 'Benoit Renault'
 import rospy
+import collections
 
 from AbstractScenario import AbstractScenario
 from AbstractScenarioAction import AbstractScenarioAction
@@ -192,7 +193,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # global_step_seat_g1_start_time = time.time()
 
         # - Find empty seat
-        self.find_an_empty_chair()
+        self.find_an_empty_chair(1)
 
         # - Tell first guest to seat
         seat_g1 = self.find_by_id(self.steps, "seatg1_tell-first-guest-to-seat")
@@ -300,7 +301,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # Introduce people
         self.introduce_people_to_each_others()
-        
+
         # ###################################################################################################
         #
         # # Introduce second guest to others
@@ -329,7 +330,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         global_step_seat_g2_start_time = time.time()
 
         # - Find empty seat
-        self.find_an_empty_chair()
+        self.find_an_empty_chair(2)
 
         # - Tell first guest to seat
         seat_g2 = self.find_by_id(self.steps, "seatg2_tell-first-guest-to-seat")
@@ -373,7 +374,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         self._enableMoveHeadPoseService = True
         self._enableMoveTurnService = True
         self._enablePointAtService = True
-        self._enableResetPersonMetaInfoMap = True
+        self._enableResetPersonMetaInfoMapService = True
+        self._enableReleaseArmsService = True
 
         AbstractScenarioAction.configure_intern(self)
         AbstractScenarioService.configure_intern(self)
@@ -475,54 +477,64 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                             # Test
                             print result_getPeopleName.peopleNames
                             print result_getPeopleName.peopleNamesScore
-                            # Find the person in the front - he/she has the biggest bounding box
-                            i_people_to_introduce = -1
-                            bounding_box_area_max = -1
-                            for i_people_name in range(len(result_getPeopleName.peopleNames)):
-                                # Bounding box around the current person
-                                box_x0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].x
-                                box_x1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].x
-                                box_y0 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[0].y
-                                box_y1 = result_getPeopleName.peopleMetaList.peopleList[i_people_name].details.boundingBox.points[1].y
-                                # Relative size of the bounding box
-                                bounding_box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-                                if bounding_box_area > bounding_box_area_max:
-                                    bounding_box_area_max = bounding_box_area
-                                    i_people_to_introduce = i_people_name
-                            # Introduce the person
-                            if i_people_to_introduce >= 0:
+                            # Compute people bounding box area
+                            name_by_area = {}
+                            for people, name in zip(result_getPeopleName.peopleMetaList.peopleList, result_getPeopleName.peopleNames):
+                                box_x0 = people.details.boundingBox.points[0].x
+                                box_x1 = people.details.boundingBox.points[1].x
+                                box_y0 = people.details.boundingBox.points[0].y
+                                box_y1 = people.details.boundingBox.points[1].y
+                                box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
+                                name_by_area[box_area] = name
+                            # Inverse sort of the people aera : closest people first
+                            name_by_area_ordered = collections.OrderedDict(sorted(name_by_area.items(), reverse=True))
+                            # Test all the names we found
+                            for (name_of_people_found, i_name_of_people_found) in zip(name_by_area_ordered.values(), range(len(name_by_area_ordered.values()))):
+                                # If the persone has not been recognize we jump to the next one
+                                if name_of_people_found == "None":
+                                    continue
                                 # Checked if we find correspondences with any known name
-                                name_of_people_found = result_getPeopleName.peopleNames[i_people_to_introduce]
-                                for name in self.people_name_by_id.values():
+                                for name_of_people_known in self.people_name_by_id.values():
                                     # TODO
                                     # First possibility : The person found is the new guest to introduce to everyone
-                                    if ((name_of_people_found == name) and (people_introduced[name] == False) and (name_of_people_found == newbie_name)):
-                                        # Introduce new_guest_to_john
-                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
-                                        self.introduce_guest_to_host(guest_id)
+                                    if (   (name_of_people_found == name_of_people_known)
+                                       and (people_introduced[name_of_people_known] == False)
+                                       and (name_of_people_found == newbie_name)):
                                         # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        # Introduce new_guest_to_john
+                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
+                                        self.introduce_guest_to_host(guest_id)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
-                                        people_introduced[name] = True
+                                        people_introduced[name_of_people_known] = True
                                     # Second possibility
-                                    elif ((name_of_people_found == name) and (people_introduced[name] == False)):
-                                        guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name)]
+                                    elif (   (name_of_people_found == name_of_people_known)
+                                         and (people_introduced[name_of_people_known] == False)):
+                                        # Point to Guest
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        # Introduce guests
+                                        guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         guest2_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
                                         self.introduce_one_guest_to_another_guest(guest1_id, guest2_id)
-                                        # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
-                                        people_introduced[name] = True
+                                        people_introduced[name_of_people_known] = True
                                     # Third possibility : The person found is the host
                                     # TODO We find the host by elimination : maybe to improve upon
-                                    elif (name_of_people_found == "Unknown") and (people_introduced["John"] == False):
+                                    elif (   (name_of_people_found == "Unknown")
+                                         and (people_introduced["John"] == False)):
+                                        # Point to John
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce John to new guest
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
                                         self.introduce_host_to_guest(guest_id)
-                                        # Point to John
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], 0, False, False, True, 50.0)
+                                        # Release arm
+                                        self.releaseArms()
                                         # Update internal variables
                                         nb_people_introduced += 1
                                         people_introduced["John"] = True
@@ -539,11 +551,12 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                 break
         return
 
-    def introduce_new_guest_to_others(self):
+    def introduce_new_guest_to_others(self, guest_id):
         """
         Introduce the new guest to other guests
         """
         # TODO: nouveau dialogue
+        print "INTRODUCING {0} TO OTHERS".format(self.people_name_by_id[guest_id])
         pass
 
     def introduce_one_guest_to_another_guest(self, guest1_id, guest2_id):
@@ -558,6 +571,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest1_id], self.people_drink_by_id[guest1_id],
         #                                 [self.people_name_by_id[guest2_id]], self.NO_TIMEOUT)
         # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToG{1}".format(guest_id, guest2_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[guest1_id], self.people_name_by_id[guest1_id])
         pass
 
     def introduce_host_to_guest(self, guest_id):
@@ -572,6 +586,7 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper.present_person(int_host_guest["speech"], self.people_name_by_id[0], self.people_drink_by_id[0],
         #                                 [self.people_name_by_id[guest_id]], self.NO_TIMEOUT)
         # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceJohnToG{0}".format(guest_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[0], self.people_name_by_id[guest_id])
         pass
 
     def introduce_guest_to_host(self, guest_id):
@@ -586,9 +601,10 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper.present_person(int_guest_host["speech"], self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id],
         #                                 [self.people_name_by_id[0]], self.NO_TIMEOUT)
         # self._lm_wrapper.timeboard_send_step_done(self.find_by_id(self.steps, "IntroduceG{0}ToJohn".format(guest_id)), self.NO_TIMEOUT)
+        print "INTRODUCING {0} TO {1}".format(self.people_name_by_id[guest_id], self.people_name_by_id[0])
         pass
 
-    def find_an_empty_chair(self):
+    def find_an_empty_chair(self, guest_id):
         """
         Find an empty chair for a guest
         """
@@ -599,12 +615,20 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
         for angle in angle_list:
             # Find and point the chair in the image
-            state_lookAtObject, result_lookAtObject = self.lookAtObject(["chair"], 0, False, False, True, 50.0)
+            state_lookAtObject, result_lookAtObject = self.lookAtObject(["chair"], 0, False, False, 2, 50.0)
             # Loop on people found
             if result_lookAtObject is not None:
-                print result_lookAtObject.nb_label
                 if result_lookAtObject.nb_label > 0:
+                    self.sit_here_guest(guest_id)
+                    self.releaseArms()
                     return
             # Turn a bit to find somewhere else
             self.moveTurn(angle*math.pi/180.0)
         return
+
+    def sit_here_guest(self, guest_id):
+        """
+        Say to a guest to sit here
+        """
+        # TODO : To code
+        print "Sit here {0}".format(self.people_name_by_id[guest_id])
