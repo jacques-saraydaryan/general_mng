@@ -124,7 +124,7 @@ class TestCocktailPartyV3Scenario(AbstractScenario,AbstractScenarioBus,AbstractS
         orderState6=self.sendNavOrderAction("NP","CRRCloseToGoal","H",60.0)
 
         ### 8-DETECTION OBJECTS
-        orderState7,result7=self.getObjectInFrontRobot(self.obj_labels, True, 60.0)
+        orderState7,result7=self.detectObjectsWithLookAround(self.obj_labels, 60.0)
         rospy.loginfo("#### OBJECT DETECTED ####")
         rospy.loginfo(result0)
 
