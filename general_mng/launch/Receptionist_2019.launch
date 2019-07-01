@@ -5,6 +5,10 @@
     <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
     <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" />
 
+    <param name="nao_ip" value="$(arg nao_ip)"/>
+    <param name="jsons_data_folder" value="/home/catkin_robocup2019/src/robocup-main/robocup_pepper-scenario_data_generator/jsons"/>
+    <param name="pictures_folder" value="/home/catkin_robocup2019/pictures"/>
+
     <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
         <param name="confPath" value="$(arg mapManagerConfPath)"/>
     </node>
