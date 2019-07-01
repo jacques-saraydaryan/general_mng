@@ -23,25 +23,26 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         AbstractScenarioAction.__init__(self, config)
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
+        # Node Configuration
+        self.__configure()
+
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("pepper4", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper(self.nao_ip, 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        ws = "/home/xia0ben/pepper_ws"
-        # ws = "/home/astro/catkin_robocup2019"
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/receptionist/scenario.json".format(ws)) as data:
+        with open("{0}/receptionist/scenario.json".format(self.jsons_data_folder)) as data:
             self._scenario = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/drinks.json".format(ws)) as data:
+        with open("{0}/drinks.json".format(self.jsons_data_folder)) as data:
             self._drinks = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
+        with open("{0}/locations.json".format(self.jsons_data_folder)) as data:
             self._locations = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/people.json".format(ws)) as data:
+        with open("{0}/people.json".format(self.jsons_data_folder)) as data:
             self._people = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json".format(ws)) as data:
+        with open("{0}/videos.json".format(self.jsons_data_folder)) as data:
             self._videos = json.load(data)
 
 
@@ -68,6 +69,15 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
 
         # Debug options
         self.allow_navigation = False
+
+    def __configure(self):
+        """
+        Get all parameters for the node.
+        """
+        self.nao_ip = rospy.get_param("nao_ip", "pepper3")
+        self.jsons_data_folder = rospy.get_param("jsons_data_folder", "/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons")
+        self.pictures_folder = rospy.get_param("pictures_folder", "/home/xia0ben/pepper_ws/data/pictures")
+
 
     def startScenario(self):
         rospy.loginfo("""
@@ -438,20 +448,29 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
         for name in self.people_name_by_id.values():
             people_introduced[name] = False
         newbie_name = self.people_name_by_id[max(self.people_name_by_id.keys())]
+        # Picture file
+        picture_file_path = "{0}/introducing.png".format(self.pictures_folder)
         # Set head position
         self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
-        # Turn around to introduce guests
+        # Indicator to set head position in the future
+        # 0 : head is centered
+        # 1 : need to head up
+        # 2 : head is up
+        person_might_be_standing = 0
+        # Angle list to turn around to find guests
         # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
         angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
-        for angle in angle_list:
+        # Beware the infinity loop
+        while True:
+            # Take a picture and save it
+            self.takePicture(picture_file_path)
             # Find people in the image
             state_getObject, result_getObject = self.getObjectInFrontRobot(["person"], False, 50.0)
             # Loop on people found
             if result_getObject is not None:
                 if len(result_getObject.labelFound) > 0:
-                    # TODO Ajouter un move head pour viser le visage
                     # Get people names
-                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
+                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
                     # If we recognize a face
                     if result_getPeopleName is not None:
                         if len(result_getPeopleName.peopleNames) > 0:
@@ -473,6 +492,8 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                             for (name_of_people_found, i_name_of_people_found) in zip(name_by_area_ordered.values(), range(len(name_by_area_ordered.values()))):
                                 # If the persone has not been recognize we jump to the next one
                                 if name_of_people_found == "None":
+                                    if person_might_be_standing == 0:
+                                        person_might_be_standing = 1
                                     continue
                                 # Checked if we find correspondences with any known name
                                 for name_of_people_known in self.people_name_by_id.values():
@@ -524,9 +545,22 @@ class Receptionist2019CPEScenario(AbstractScenario, AbstractScenarioBus,
                                         pass
             # Check if everyone has been introduced
             if nb_people_introduced < nb_people_here:
-                # Turn a bit to find someone else
-                self.moveTurn(angle*math.pi/180.0)
-                #print "I TURN !!!!"
+                # Set head position
+                if person_might_be_standing == 1:
+                    # Need to Head up
+                    self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
+                    person_might_be_standing = 2
+                else:
+                    # Reset Head position
+                    if person_might_be_standing == 2:
+                        self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+                    # Turn a bit to find someone else
+                    if len(angle_list) > 0:
+                        angle = angle_list.pop(0)
+                        self.moveTurn(angle*math.pi/180.0)
+                        #print "I TURN !!!!"
+                    else:
+                        break
             else:
                 # End introducing
                 break
