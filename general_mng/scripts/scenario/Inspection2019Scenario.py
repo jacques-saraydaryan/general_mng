@@ -95,7 +95,8 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
 
         # - Wait for validation of inspection by referee
         waitinspection_validation = self.find_by_id(self.steps, "waitinspection_validation")
-        self._lm_wrapper.ask_open_door(waitinspection_validation["speech"], self.NO_TIMEOUT)
+        waitinspection_confirm = self.find_by_id(self.steps, "waitinspection_confirm")
+        self.ask_validation_and_confirm(waitinspection_validation, waitinspection_confirm)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["waitInspection"], self.NO_TIMEOUT)
 
@@ -156,3 +157,36 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
             if step["id"] == step_id:
                 return index
         return None
+
+    def ask_validation_and_confirm(self, ask_step_data, confirm_step_data):
+        ask_validation_max_count = confirm_step_data["nb_max_retries"]
+        ask_validation_counter = 0
+        while True:
+            ask_speech = ask_step_data["speech"]
+            confirm_speech = confirm_step_data["speech"]
+
+            if ask_validation_counter == 1:
+                ask_speech["said"] = ask_speech["said2"]
+                confirm_speech["said"] = confirm_speech["said2"]
+            if ask_validation_counter == 2:
+                # TODO SEND SIGNAL TO LOCAL MANAGER TO CUT VOCAL RECOGNITION
+                ask_speech["said"] = ask_speech["said3"]
+                ask_speech["description"] = ask_speech["description3"]
+                confirm_speech["said"] = confirm_speech["said3"]
+
+            # - Ask validation
+            tentative_validation = self._lm_wrapper.ask_open_door(ask_speech, self.NO_TIMEOUT)
+
+            # - Confirm drink
+            ask_validation_confirmed = self._lm_wrapper.confirm(confirm_speech, self.NO_TIMEOUT)[1]
+            if ask_validation_confirmed:
+                rospy.loginfo("Inspection validation confirmed !")
+                return tentative_validation
+
+            ask_validation_counter += 1
+
+            if ask_validation_counter >= ask_validation_max_count:
+                rospy.logwarn("Could not get inspection validation with confirmation !")
+                # TODO : Do TTS action where robot says something like: Hmmm, I really can't understand what you say,
+                #  I guess I will just consider you like {Last_Understood Drink}
+                return tentative_validation
