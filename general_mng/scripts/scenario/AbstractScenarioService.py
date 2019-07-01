@@ -7,6 +7,7 @@ from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import ReleaseArms
+from dialogue_hri_srvs.srv import TakePicture
 
 
 class AbstractScenarioService:
@@ -25,6 +26,7 @@ class AbstractScenarioService:
     _enableMinFrontValueService = False
     _enableResetPersonMetaInfoMapService = False
     _enableReleaseArmsService = False
+    _enableTakePictureService = False
 
     def __init__(self):
         pass
@@ -60,7 +62,7 @@ class AbstractScenarioService:
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the point_at service.")
 
-        # Connect to person Mat info erasing service
+        # Connect to reset_people_meta_info_map_srv service
         if self._enableResetPersonMetaInfoMapService:
             rospy.loginfo("Connecting to the reset_people_meta_info_map_srv service...")
             self._resetPeopleMetaInfoMapSP = rospy.ServiceProxy('reset_people_meta_info_map_srv', Trigger)
@@ -69,7 +71,8 @@ class AbstractScenarioService:
                 rospy.loginfo("Connected to the reset_people_meta_info_map_srv service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the reset_people_meta_info_map_srv service.")
-        # Connect to person Mat info erasing service
+
+        # Connect to release_arms service
         if self._enableReleaseArmsService:
             rospy.loginfo("Connecting to the release_arms service...")
             self._releaseArmsSP = rospy.ServiceProxy('release_arms', ReleaseArms)
@@ -78,7 +81,6 @@ class AbstractScenarioService:
                 rospy.loginfo("Connected to the release_arms service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the release_arms service.")
-
 
         # Connect to min_front_value_srv service
         if self._enableMinFrontValueService:
@@ -89,6 +91,16 @@ class AbstractScenarioService:
                 rospy.loginfo("Connected to the min_front_value_srv service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the min_front_value_srv service.")
+
+        # Connect to take_picture_service service
+        if self._enableTakePictureService:
+            rospy.loginfo("Connecting to the take_picture_service service...")
+            self._takePictureSP = rospy.ServiceProxy('take_picture_service', TakePicture)
+            try:
+                take_picture_srv_is_up = rospy.wait_for_service('take_picture_service', timeout=10.0)
+                rospy.loginfo("Connected to the take_picture_service service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the take_picture_service service.")
 
     def moveheadPose(self, pitch_value, yaw_value, track):
         try:
@@ -136,7 +148,22 @@ class AbstractScenarioService:
             return False
 
     def releaseArms(self):
+        """
+        Call the release arms service. stiffness set at 0.6.
+        """
         try:
             return self._releaseArmsSP(0.6)
         except rospy.ServiceException as e:
             rospy.logerr("Service release_arms could not process request: {error}".format(error=e))
+
+    def takePictureAndSaveIt(self, path):
+        """
+        Take a picture with the naoqi request API and then save it in a dedicated file in png format.
+        path must be the picture absolute path.
+        """
+        try:
+            self._takePictureSP(path)
+            return True
+        except rospy.ServiceException as e:
+            rospy.logerr("Service take_picture_service could not process request: {error}".format(error=e))
+            return False
