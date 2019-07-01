@@ -234,7 +234,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
         angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
         for angle in angle_list:
             # Find people in the image
-            state_getObject, result_getObject = self.getObjectInFrontRobot(["person"], False, 50.0)
+            state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgTopic(["person"], 50.0)
             # Loop on people found
             if result_getObject is not None:
                 if len(result_getObject.labelFound) > 0:
@@ -271,7 +271,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                                        and (people_introduced[name_of_people_known] == False)
                                        and (name_of_people_found == newbie_name)):
                                         # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce new_guest_to_john
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         self.introduce_guest_to_host(guest_id)
@@ -284,7 +284,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                                     elif (   (name_of_people_found == name_of_people_known)
                                          and (people_introduced[name_of_people_known] == False)):
                                         # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce guests
                                         guest1_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         guest2_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
@@ -299,7 +299,7 @@ class TestFaceLearnAndFindPoint(AbstractScenario, AbstractScenarioBus,
                                     elif (   (name_of_people_found == "Unknown")
                                          and (people_introduced["John"] == False)):
                                         # Point to John
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObject(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce John to new guest
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(newbie_name)]
                                         self.introduce_host_to_guest(guest_id)
