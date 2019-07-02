@@ -10,6 +10,6 @@
 
     <include file="$(find pepper_teleop_ps3)/launch/pepper_teleop_ps3.launch"/>
 
-    <!-- <include file="$(find pepper_nav_custom)/launch/pepper_gmapping_hokyuo.launch"/> -->
+    <include file="$(find pepper_nav_custom)/launch/pepper_gmapping_hokyuo.launch"/>
 
 </launch>
