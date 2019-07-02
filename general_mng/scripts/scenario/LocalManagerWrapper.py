@@ -1,10 +1,9 @@
-import rospy
-import qi
 import json
+import qi
+import rospy
 import threading
 import time
 import uuid
-
 from actionlib_msgs.msg import GoalStatus
 
 
@@ -211,6 +210,42 @@ class LocalManagerWrapper:
         else:
             return status, "ERROR DRINK"
 
+    def generic(self, timeout, speech, image=None, video=None, p_list=None):
+        """
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout int
+        :param speech: the text that will be use by the Local Manager for tablet and vocal
+        :type speech dict
+        :param image: the path for TODO
+        :type image dict
+        :param video:
+        :type video dict
+        :param p_list:
+        :type p_list list
+        :return:
+        """
+        data = {}
+
+        if image and type(image) == dict:
+            if "pathOnTablet" in image and "alternative":
+                data['image'] = image
+
+        if video and type(video) == dict:
+            if "pathOnTablet" in video and "alternative" in video:
+                data['video'] = video
+
+        if p_list and type(p_list) == list:
+            data['list'] = p_list
+
+        if speech and type(speech) == dict:
+            data['speech'] = speech
+
+        status, result = self._execute_request("generic", json.dumps(data), timeout)
+        if status == GoalStatus.SUCCEEDED and 'drink' in result:
+            return status, result['drink']
+        else:
+            return status, "ERROR GENERIC"
+
     def ask_age(self, speech, timeout):
         """
         Start the view 'askAge'
@@ -228,10 +263,7 @@ class LocalManagerWrapper:
             }
         })
         status, result = self._execute_request("askAge", payload, timeout)
-        if status == GoalStatus.SUCCEEDED and 'age' in result:
-            return status, result['age']
-        else:
-            return status, 666
+        return status
 
     def confirm(self, speech, timeout):
         """
