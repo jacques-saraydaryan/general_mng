@@ -177,7 +177,7 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
             # - Ask validation
             tentative_validation = self._lm_wrapper.ask_open_door(ask_speech, self.NO_TIMEOUT)
 
-            # - Confirm drink
+            # - Confirm validation
             ask_validation_confirmed = self._lm_wrapper.confirm(confirm_speech, self.NO_TIMEOUT)[1]
             if ask_validation_confirmed:
                 rospy.loginfo("Inspection validation confirmed !")
