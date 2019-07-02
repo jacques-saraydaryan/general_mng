@@ -1,0 +1,37 @@
+<launch>
+    <env name="PYTHONPATH" value="$(env PYTHONPATH)" />
+
+    <arg name="nao_ip" />
+    <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
+    <!-- <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" /> -->
+
+    <param name="nao_ip" value="$(arg nao_ip)"/>
+    <param name="jsons_data_folder" value="/home/catkin_robocup2019/src/robocup-main/robocup_pepper-scenario_data_generator/jsons"/>
+    <param name="pictures_folder" value="/home/catkin_robocup2019/pictures"/>
+
+    <param name="move_head_on_cmd_vel" value="false"/>
+    <param name="teleop_move_head" value="true"/>
+    <param name="teleop_take_pictures" value="true"/>
+
+    <!-- <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
+        <param name="confPath" value="$(arg mapManagerConfPath)"/>
+    </node> -->
+
+    <include file="$(find dialogue_hri_node)/launch/hri_mng.launch">
+        <arg name="nao_ip" value="$(arg nao_ip)"/>
+        <arg name="nao_port" value="$(arg nao_port)"/>
+    </include>
+
+    <include file="$(find tts_hri)/launch/tts_hri.launch">
+        <arg name="nao_ip" value="$(arg nao_ip)"/>
+        <arg name="nao_port" value="$(arg nao_port)"/>
+    </include>
+
+    <include file="$(find navigation_manager)/launch/navigation_mng_overall.launch">
+        <arg name="nao_ip" value="$(arg nao_ip)"/>
+        <arg name="nao_port" value="$(arg nao_port)"/>
+    </include>
+
+    <include file="$(find pepper_teleop_ps3)/launch/pepper_teleop_ps3.launch"/>
+
+</launch>
