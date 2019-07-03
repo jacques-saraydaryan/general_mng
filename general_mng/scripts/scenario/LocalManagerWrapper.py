@@ -171,21 +171,24 @@ class LocalManagerWrapper:
         :type p_list list
         :return:
         """
-        data = {}
+        data = {
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {}}
 
         if image and type(image) == dict:
             if "pathOnTablet" in image and "alternative":
-                data['image'] = image
+                data['args']['image'] = image
 
         if video and type(video) == dict:
             if "pathOnTablet" in video and "alternative" in video:
-                data['video'] = video
+                data['args']['video'] = video
 
         if p_list and type(p_list) == list:
-            data['list'] = p_list
+            data['args']['list'] = p_list
 
         if speech and type(speech) == dict:
-            data['speech'] = speech
+            data['args']['speech'] = speech
 
         status, result = self._execute_request("generic", json.dumps(data), timeout)
         return status
@@ -291,7 +294,7 @@ class LocalManagerWrapper:
     def detail_drinks(self, timeout):
         raise NotImplementedError()
 
-    def introduce(self, speech, name_to_present, drink_to_present, timeout):
+    def introduce(self, speech, name_to_present, drink_to_present, image_to_present, timeout):
         """
         Present one person and its favorite drink to a list of other persons
 
@@ -313,7 +316,8 @@ class LocalManagerWrapper:
                 'speech': speech,
                 'who': {
                     'name': name_to_present,
-                    'drink': drink_to_present
+                    'drink': drink_to_present,
+                    'image': image_to_present
                 }
             }
         })
