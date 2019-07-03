@@ -49,15 +49,20 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
    
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.221", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("10.10.65.3", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        with open("/home/astro/catkin_robocup2019/data/scenario/takeOutGarbage/scenario.json") as data:
+        ws = "/home/xia0ben/pepper_ws"
+        # ws = "/home/astro/catkin_robocup2019"
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/takeOutGarbage/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
-        with open("/home/astro/catkin_robocup2019/data/scenario/locations.json") as data:
-            self._location=json.load(data)
-        with open("/home/astro/catkin_robocup2019/data/scenario/videos.json") as data:
-            self._videos=json.load(data)
+
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
+            self._location = json.load(data)
+
+        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json".format(
+                ws)) as data:
+            self._videos = json.load(data)
 
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
 
@@ -80,7 +85,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ###############################################################################################################
 
         goto_initial_pose = self.find_step(steps, "goto_initial_pose")
-#        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal",goto_initial_pose["arguments"]["interestPoint"],120.0)
+        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","ENTRANCE_GARBAGE_START_POINT_01",120.0)
 
 
         ###############################################################################################################
@@ -95,7 +100,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         bean1_location = self.find_location(self._location, gotolr1_ask_to_b1["arguments"]["location"])
         self._lm_wrapper.go_to(gotolr1_ask_to_b1["speech"], bean1_location, self.NO_TIMEOUT)
         goto_initial_pose = self.find_step(steps, "goto_initial_pose")
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal",gotolr1_ask_to_b1["arguments"]["interestPoint"],120.0)
+        orderState0a=self.sendNavOrderAction("NP","CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02",120.0)
+        orderState0b=self.sendNavOrderAction("NP","CRRCloseToGoal", "LIVINGROOM_BIN_01",120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
 
 
@@ -135,7 +141,9 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ##Start go to release point
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
         carryb1_go_to_the_collection_zone= self.find_step(steps, "carryb1_go-to-the-collection-zone")
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal",carryb1_go_to_the_collection_zone["arguments"]["interestPoint"],120.0)
+        orderState1a =self.sendNavOrderAction("NP","CRRCloseToGoal","LIVINGROOM_TO_ENTRANCE_01",120.0)
+        orderState1b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_02", 120.0)
+        orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
 
 
@@ -154,14 +162,18 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ###############################################################################################################
 
 
-         # Go to the first B
+         # Go to the second B
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
         goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
         ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
         bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
         self._lm_wrapper.go_to(goto2r1_ask_to_b1["speech"], bean2_location, self.NO_TIMEOUT)
 
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal",goto2r1_ask_to_b1["arguments"]["interestPoint"],120.0)
+        orderState2a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_01", 120.0)
+        orderState2b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
+        # orderState2c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_01", 120.0)
+        orderState2d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_02", 120.0)
+        orderState2e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_BIN_02", 120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
 
 
@@ -201,7 +213,13 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ##Start go to release point
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
         carryb2_go_to_the_collection_zone= self.find_step(steps, "carryb2_go-to-the-collection-zone")
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal",carryb2_go_to_the_collection_zone["arguments"]["interestPoint"],120.0)
+
+        orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_BEDROOM_01", 120.0)
+        orderState3b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
+        orderState3c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
+        orderState3d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
+        orderState3e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
 
 

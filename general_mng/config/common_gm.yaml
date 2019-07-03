@@ -19,4 +19,4 @@ GeneralManager:
     - 'RECEPTIONIST_2019_CPE_V2'
     - 'TEST_FACE_LEARN_AND_FIND_POINT'
     - 'INSPECTION_2019'
-  current_scenario: 'RECEPTIONIST_2019_CPE_V2' # Must be in the "scenarios" list above
+  current_scenario: 'GARBAGE_2019V2_CPE' # Must be in the "scenarios" list above
