@@ -48,6 +48,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # Scenario data
         self.people_name_by_id = {}
+        self.people_image_by_id = {}
         self.people_drink_by_id = {}
         self.people_age_by_id = {}
         self.steps = None
@@ -56,10 +57,10 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self._living_room = self.find_by_id(self._locations, "livingRoom")
         self._entrance = self.find_by_id(self._locations, "entrance")
         self.people_name_by_id[0] = {}
-        self.people_name_by_id[0]["name"] = "John"
-        self.people_name_by_id[0]["image"] = None
+        self.people_name_by_id[0] = "John"
+        self.people_image_by_id[0] = None
         self.people_age_by_id[0] = None
-        self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")
+        self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")['name']
 
         # Debug options
         self.allow_navigation = False
@@ -147,28 +148,28 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
 
         # - Ask name
-        self.people_name_by_id[1] = {}
         askinfog1_ask_name_max_counts = 3  # TODO Move this as config parameter
         askinfog1_ask_name = self.find_by_id(self.steps, "askinfog1_ask_name")
         askinfog1_confirm_name = self.find_by_id(self.steps, "askinfog1_confirm_name")
-        self.people_name_by_id[1]["name"] = self.ask_name_and_confirm(askinfog1_ask_name_max_counts, askinfog1_ask_name, askinfog1_confirm_name)
+        self.people_name_by_id[1] = self.ask_name_and_confirm(askinfog1_ask_name_max_counts, askinfog1_ask_name, askinfog1_confirm_name)
 
         # - Take picture and send it to Pepper
-        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[1]["name"])
+        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[1])
         self.takePictureAndSaveIt(picture_file_path)
-        remote_file_path = ".local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[1]["name"])
+        remote_file_path = ".local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[1])
         os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
-        self.people_name_by_id[1]["image"] = "img/peoples/{0}.png".format(self.people_name_by_id[1]["name"])
+        self.people_image_by_id[1] = "img/peoples/{0}.png".format(self.people_name_by_id[1])
 
         # - Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath( picture_file_path, self.people_name_by_id[1]["name"], 10.0)
+        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath( picture_file_path, self.people_name_by_id[1], 10.0)
 
         # - Ask drink
         askinfog1_ask_drink_max_counts = 3  # TODO Move this as config parameter
         askinfog1_ask_drink = self.find_by_id(self.steps, "askinfog1_ask_drink")
         askinfog1_confirm_drink = self.find_by_id(self.steps, "askinfog1_confirm_drink")
-        self.people_drink_by_id[1] = self.ask_drink_and_confirm(askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1]["name"])
+        self.people_drink_by_id[1] = self.ask_drink_and_confirm(
+            askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])['name']
 
         # - Ask age
         askinfog1_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -187,7 +188,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # - Ask to follow
         gotolr1_ask_to_follow = self.find_by_id(self.steps, "gotolr1_ask_to_follow")
-        gotolr1_ask_to_follow["speech"]["name"] = self.people_name_by_id[1]["name"]
+        gotolr1_ask_to_follow["speech"]["name"] = self.people_name_by_id[1]
         self._lm_wrapper.ask_to_follow(gotolr1_ask_to_follow["speech"], self._living_room, self.NO_TIMEOUT)
 
         # - Go to living room
@@ -246,7 +247,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # ###################################################################################################
 
         # Find second guest
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["FindG2"], self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["EnterG2"], self.NO_TIMEOUT)
 
         # - Reset Head position to talk
         self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)
@@ -266,7 +267,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper.call_human(findg2_detect_human["speech"], 3.0, self.NO_TIMEOUT)
         # self.simulate_ros_work(1.0, "SIMULATING HUMAN DETECTION")
 
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["FindG2"], self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["EnterG2"], self.NO_TIMEOUT)
 
         # ###################################################################################################
 
@@ -278,29 +279,29 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
 
         #First Ask name
-        self.people_name_by_id[2] = {}
         askinfog2_ask_name_max_counts = 3  # TODO Move this as config parameter
         askinfog2_ask_name = self.find_by_id(self.steps, "askinfog2_ask_name")
         askinfog2_confirm_name = self.find_by_id(self.steps, "askinfog2_confirm_name")
-        self.people_name_by_id[2]["name"] = self.ask_name_and_confirm(
+        self.people_name_by_id[2] = self.ask_name_and_confirm(
             askinfog2_ask_name_max_counts, askinfog2_ask_name, askinfog2_confirm_name)
 
         #Take a picture and save it
-        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[2]["name"])
+        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[2])
         self.takePictureAndSaveIt(picture_file_path)
-        remote_file_path = "/home/nao/.local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[2]["name"])
+        remote_file_path = "/home/nao/.local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[2])
         os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
-        self.people_name_by_id[2]["image"] = "img/peoples/{0}.png".format(self.people_name_by_id[2]["name"])
+        self.people_image_by_id[2] = "img/peoples/{0}.png".format(self.people_name_by_id[2])
 
         # Learn face from name
         # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath(picture_file_path, self.people_name_by_id[2]["name"], 10.0)
+        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath(picture_file_path, self.people_name_by_id[2], 10.0)
 
         # Then ask drink
         askinfog2_ask_drink_max_counts = 3  # TODO Move this as config parameter
         askinfog2_ask_drink = self.find_by_id(self.steps, "askinfog2_ask_drink")
         askinfog2_confirm_drink = self.find_by_id(self.steps, "askinfog2_confirm_drink")
-        self.people_drink_by_id[2] = self.ask_drink_and_confirm(askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2]["name"])
+        self.people_drink_by_id[2] = self.ask_drink_and_confirm(
+            askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])["name"]
 
         # - Ask age
         askinfog2_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -317,7 +318,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # - Ask to follow
         gotolr2_ask_to_follow = self.find_by_id(self.steps, "gotolr2_ask_to_follow")
-        gotolr2_ask_to_follow["speech"]["name"] = self.people_name_by_id[2]["name"]
+        gotolr2_ask_to_follow["speech"]["name"] = self.people_name_by_id[2]
         self._lm_wrapper.ask_to_follow(gotolr2_ask_to_follow["speech"], self._living_room, self.NO_TIMEOUT)
 
         # - Go to living room
@@ -526,7 +527,6 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         people_introduced = {}
         for name in self.people_name_by_id.values():
             people_introduced[name] = False
-        newbie_name = self.people_name_by_id[max(self.people_name_by_id.keys())]
         # Picture file
         picture_file_path = "{0}/introducing.png".format(self.pictures_folder)
         # Set head position
@@ -540,110 +540,110 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
         angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
         # Beware the infinity loop
-        while True:
-            # Take a picture and save it (3 tries possible)
-            for i in range(3):
-                ok_picture = self.takePictureAndSaveIt(picture_file_path)
-                if ok_picture == True:
-                    break
-            else:
-                rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
-                break
-            while (self.takePictureAndSaveIt(picture_file_path) == False):
-                rospy.logwarn("Cannot take a picture")
-            # Find people in the image
-            state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
-            # Loop on people found
-            if result_getObject is not None:
-                if len(result_getObject.labelFound) > 0:
-                    # Get people names
-                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
-                    # If we recognize a face
-                    if result_getPeopleName is not None:
-                        if len(result_getPeopleName.peopleNames) > 0:
-                            # Test
-                            print result_getPeopleName.peopleNames
-                            print result_getPeopleName.peopleNamesScore
-                            # Compute people bounding box area
-                            name_by_area = {}
-                            for people, name in zip(result_getPeopleName.peopleMetaList.peopleList, result_getPeopleName.peopleNames):
-                                box_x0 = people.details.boundingBox.points[0].x
-                                box_x1 = people.details.boundingBox.points[1].x
-                                box_y0 = people.details.boundingBox.points[0].y
-                                box_y1 = people.details.boundingBox.points[1].y
-                                box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
-                                name_by_area[box_area] = name
-                            # Inverse sort of the people aera : closest people first
-                            name_by_area_ordered = collections.OrderedDict(sorted(name_by_area.items(), reverse=True))
-                            # Test all the names we found
-                            for (name_of_people_found, i_name_of_people_found) in zip(name_by_area_ordered.values(), range(len(name_by_area_ordered.values()))):
-                                # If the persone has not been recognize we jump to the next one
-                                if name_of_people_found == "None":
-                                    if person_might_be_standing == 0:
-                                        person_might_be_standing = 1
-                                    continue
-                                # Checked if we find correspondences with any known name
-                                for name_of_people_known in self.people_name_by_id.values():
-                                    # First possibility : The person found is a guest
-                                    if (   (name_of_people_found == name_of_people_known)
-                                       and (people_introduced[name_of_people_known] == False)):
-                                        # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
-                                        # Introduce new_guest_to_john
-                                        guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
-                                        self.introduce_guest_to_other(step_id, guest_id)
-                                        # Release arm
-                                        self.releaseArms()
-                                        # Update internal variables
-                                        nb_people_introduced += 1
-                                        people_introduced[name_of_people_known] = True
-                                    # Second possibility : The person found is the host
-                                    # TODO We find the host by elimination : maybe to improve upon
-                                    elif (   (name_of_people_found == "Unknown")
-                                         and (people_introduced["John"] == False)):
-                                        if self.people_name_by_id[0]["image"] is None:
-                                            remote_file_path = "/home/nao/.local/share/PackageManager/apps/R2019/html/img/peoples/John.png"
-                                            os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
-                                            self.people_name_by_id[0]["image"] = "img/peoples/John.png"
-                                        # Point to John
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
-                                        # Introduce John to new guest
-                                        self.introduce_host_to_guest(step_id)
-                                        # Release arm
-                                        self.releaseArms()
-                                        # Update internal variables
-                                        nb_people_introduced += 1
-                                        people_introduced["John"] = True
-                                        # Ask age if we have'nt already got it.
-                                        if self.people_age_by_id[0] is None:
-                                            askhost_ask_age_max_counts = 3  # TODO Move this as config parameter
-                                            askhost_ask_age = self.find_by_id(self.steps, "introduceg1_ask_host_age")
-                                            askhost_confirm_age = self.find_by_id(self.steps, "introduceg1_confirm_host_age")
-                                            self.people_age_by_id[0] = self.ask_age_and_confirm(askhost_ask_age_max_counts, askhost_ask_age, askhost_confirm_age)
-                                    else:
-                                        # Mismatch
-                                        pass
-            # Check if everyone has been introduced
-            if nb_people_introduced < nb_people_here:
-                # Set head position
-                if person_might_be_standing == 1:
-                    # Need to Head up
-                    self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
-                    person_might_be_standing = 2
-                else:
-                    # Reset Head position
-                    if person_might_be_standing == 2:
-                        self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
-                    # Turn a bit to find someone else
-                    if len(angle_list) > 0:
-                        angle = angle_list.pop(0)
-                        if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
-                        #print "I TURN !!!!"
-                    else:
-                        break
-            else:
-                # End introducing
-                break
+        # while True:
+        #     # Take a picture and save it (3 tries possible)
+        #     for i in range(3):
+        #         ok_picture = self.takePictureAndSaveIt(picture_file_path)
+        #         if ok_picture == True:
+        #             break
+        #     else:
+        #         rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
+        #         break
+        #     while (self.takePictureAndSaveIt(picture_file_path) == False):
+        #         rospy.logwarn("Cannot take a picture")
+        #     # Find people in the image
+        #     state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
+        #     # Loop on people found
+        #     if result_getObject is not None:
+        #         if len(result_getObject.labelFound) > 0:
+        #             # Get people names
+        #             state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
+        #             # If we recognize a face
+        #             if result_getPeopleName is not None:
+        #                 if len(result_getPeopleName.peopleNames) > 0:
+        #                     # Test
+        #                     print result_getPeopleName.peopleNames
+        #                     print result_getPeopleName.peopleNamesScore
+        #                     # Compute people bounding box area
+        #                     name_by_area = {}
+        #                     for people, name in zip(result_getPeopleName.peopleMetaList.peopleList, result_getPeopleName.peopleNames):
+        #                         box_x0 = people.details.boundingBox.points[0].x
+        #                         box_x1 = people.details.boundingBox.points[1].x
+        #                         box_y0 = people.details.boundingBox.points[0].y
+        #                         box_y1 = people.details.boundingBox.points[1].y
+        #                         box_area = abs(box_x0 - box_x1)*abs(box_y0 - box_y1)
+        #                         name_by_area[box_area] = name
+        #                     # Inverse sort of the people aera : closest people first
+        #                     name_by_area_ordered = collections.OrderedDict(sorted(name_by_area.items(), reverse=True))
+        #                     # Test all the names we found
+        #                     for (name_of_people_found, i_name_of_people_found) in zip(name_by_area_ordered.values(), range(len(name_by_area_ordered.values()))):
+        #                         # If the persone has not been recognize we jump to the next one
+        #                         if name_of_people_found == "None":
+        #                             if person_might_be_standing == 0:
+        #                                 person_might_be_standing = 1
+        #                             continue
+        #                         # Checked if we find correspondences with any known name
+        #                         for name_of_people_known in self.people_name_by_id.values():
+        #                             # First possibility : The person found is a guest
+        #                             if (   (name_of_people_found == name_of_people_known)
+        #                                and (people_introduced[name_of_people_known] == False)):
+        #                                 # Point to Guest
+        #                                 state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
+        #                                 # Introduce new_guest_to_john
+        #                                 guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
+        #                                 self.introduce_guest_to_other(step_id, guest_id)
+        #                                 # Release arm
+        #                                 self.releaseArms()
+        #                                 # Update internal variables
+        #                                 nb_people_introduced += 1
+        #                                 people_introduced[name_of_people_known] = True
+        #                             # Second possibility : The person found is the host
+        #                             # TODO We find the host by elimination : maybe to improve upon
+        #                             elif (   (name_of_people_found == "Unknown")
+        #                                  and (people_introduced["John"] == False)):
+        #                                 if self.people_image_by_id[0] is None:
+        #                                     remote_file_path = "/home/nao/.local/share/PackageManager/apps/R2019/html/img/peoples/John.png"
+        #                                     os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
+        #                                     self.people_image_by_id[0] = "img/peoples/John.png"
+        #                                 # Point to John
+        #                                 state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
+        #                                 # Introduce John to new guest
+        #                                 self.introduce_host_to_guest(step_id)
+        #                                 # Release arm
+        #                                 self.releaseArms()
+        #                                 # Update internal variables
+        #                                 nb_people_introduced += 1
+        #                                 people_introduced["John"] = True
+        #                                 # Ask age if we have'nt already got it.
+        #                                 if self.people_age_by_id[0] is None:
+        #                                     askhost_ask_age_max_counts = 3  # TODO Move this as config parameter
+        #                                     askhost_ask_age = self.find_by_id(self.steps, "introduceg1_ask_host_age")
+        #                                     askhost_confirm_age = self.find_by_id(self.steps, "introduceg1_confirm_host_age")
+        #                                     self.people_age_by_id[0] = self.ask_age_and_confirm(askhost_ask_age_max_counts, askhost_ask_age, askhost_confirm_age)
+        #                             else:
+        #                                 # Mismatch
+        #                                 pass
+        #     # Check if everyone has been introduced
+        #     if nb_people_introduced < nb_people_here:
+        #         # Set head position
+        #         if person_might_be_standing == 1:
+        #             # Need to Head up
+        #             self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
+        #             person_might_be_standing = 2
+        #         else:
+        #             # Reset Head position
+        #             if person_might_be_standing == 2:
+        #                 self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+        #             # Turn a bit to find someone else
+        #             if len(angle_list) > 0:
+        #                 angle = angle_list.pop(0)
+        #                 if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
+        #                 #print "I TURN !!!!"
+        #             else:
+        #                 break
+        #     else:
+        #         # End introducing
+        #         break
         return
 
     def introduce_guest_to_others(self, step_id, guest_id):
@@ -652,42 +652,46 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         """
         #
         introduceg_introduce_guest = self.find_by_id(self.steps, step_id)
-        introduceg_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[guest_id]["name"]
-        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]["name"]
-        self._lm_wrapper.introduce(introduceg_introduce_guest["speech"], self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id], self.NO_TIMEOUT)
+        introduceg_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[guest_id]
+        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]
+        self._lm_wrapper.introduce(
+            introduceg_introduce_guest["speech"],
+            self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id], self.people_image_by_id[guest_id], self.NO_TIMEOUT)
 
     def introduce_host_to_guest(self, step_id):
         """
         Introduce the host to a given guest
         """
         introduceh_introduce_guest = self.find_by_id(self.steps, step_id)
-        introduceh_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[0]["name"]
-        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]["name"]
-        self._lm_wrapper.introduce(introduceh_introduce_guest["speech"], self.people_name_by_id[0], self.people_drink_by_id[0], self.NO_TIMEOUT)
+        introduceh_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[0]
+        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]
+        self._lm_wrapper.introduce(
+            introduceh_introduce_guest["speech"],
+            self.people_name_by_id[0], self.people_drink_by_id[0], self.people_image_by_id[0], self.NO_TIMEOUT)
 
     def find_an_empty_chair(self, guest_id):
         """
         Find an empty chair for a guest
         """
         # Tell guest we are looking for a chair
-        seatg_find_empty_chair = self.find_by_id(self.steps, "seatg{0}_find_empty_seat".format(guets_id))
+        seatg_find_empty_chair = self.find_by_id(self.steps, "seatg{0}_find_empty_seat".format(guest_id))
         self._lm_wrapper.generic(self.NO_TIMEOUT, seatg_find_empty_chair["speech"])
         # Set head position
         self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_FOR_CHAIR, self.HEAD_YAW_CENTER, True)
-        # Turn around to introduce guests
-        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
-        angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
-        for angle in angle_list:
-            # Find and point the chair in the image
-            state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["chair"], 0, False, False, 2, 50.0)
-            # Loop on people found
-            if result_lookAtObject is not None:
-                if result_lookAtObject.nb_label > 0:
-                    self.sit_here_guest(guest_id)
-                    self.releaseArms()
-                    return
-            # Turn a bit to find somewhere else
-            if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
+        # # Turn around to introduce guests
+        # # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
+        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        # for angle in angle_list:
+        #     # Find and point the chair in the image
+        #     state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["chair"], 0, False, False, 2, 50.0)
+        #     # Loop on people found
+        #     if result_lookAtObject is not None:
+        #         if result_lookAtObject.nb_label > 0:
+        #             self.sit_here_guest(guest_id)
+        #             self.releaseArms()
+        #             return
+        #     # Turn a bit to find somewhere else
+        #     if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
         return
 
     def sit_here_guest(self, guest_id):
