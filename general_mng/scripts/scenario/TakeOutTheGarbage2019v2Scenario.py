@@ -40,6 +40,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._enableObjectDetectionMngAction = False
         self._enableLookAtObjectMngAction = False
         self._enableMultiplePeopleDetectionAction = False
+        self._enableMinFrontValueService = True
 
         self._enableMoveHeadPoseService = True
 
@@ -49,7 +50,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
    
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("10.10.65.3", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("10.10.107.177", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         ws = "/home/xia0ben/pepper_ws"
@@ -66,6 +67,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
 
+        # Debug options
+        self.allow_navigation = False
 
     def startScenario(self):
         rospy.loginfo("""
@@ -84,9 +87,21 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         #################################################### Go to start point ########################################
         ###############################################################################################################
 
-        goto_initial_pose = self.find_step(steps, "goto_initial_pose")
-        orderState0=self.sendNavOrderAction("NP","CRRCloseToGoal","ENTRANCE_GARBAGE_START_POINT_01",120.0)
+        ###################################################################################################
 
+        # Wait for door to open
+        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["waitDoorOpen"], self.NO_TIMEOUT)
+
+        # - Detect door opening
+        waitdooropen_detect = self.find_by_id(self.steps, "waitdooropen_detect")
+        self.waitForDoorToOpen(float(waitdooropen_detect["arguments"]["check_freq"]))
+
+        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["waitDoorOpen"], self.NO_TIMEOUT)
+
+        ###################################################################################################
+
+        goto_initial_pose = self.find_step(steps, "goto_initial_pose")
+        if self.allow_navigation: orderState0 = self.sendNavOrderAction("NP","CRRCloseToGoal","ENTRANCE_GARBAGE_START_POINT_01",120.0)
 
         ###############################################################################################################
         #################################################### 1first bin################################################
@@ -100,8 +115,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         bean1_location = self.find_location(self._location, gotolr1_ask_to_b1["arguments"]["location"])
         self._lm_wrapper.go_to(gotolr1_ask_to_b1["speech"], bean1_location, self.NO_TIMEOUT)
         goto_initial_pose = self.find_step(steps, "goto_initial_pose")
-        orderState0a=self.sendNavOrderAction("NP","CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02",120.0)
-        orderState0b=self.sendNavOrderAction("NP","CRRCloseToGoal", "LIVINGROOM_BIN_01",120.0)
+        if self.allow_navigation: orderState0a=self.sendNavOrderAction("NP","CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02",120.0)
+        if self.allow_navigation: orderState0b=self.sendNavOrderAction("NP","CRRCloseToGoal", "LIVINGROOM_BIN_01",120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
 
 
@@ -141,9 +156,9 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ##Start go to release point
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
         carryb1_go_to_the_collection_zone= self.find_step(steps, "carryb1_go-to-the-collection-zone")
-        orderState1a =self.sendNavOrderAction("NP","CRRCloseToGoal","LIVINGROOM_TO_ENTRANCE_01",120.0)
-        orderState1b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_02", 120.0)
-        orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+        if self.allow_navigation: orderState1a =self.sendNavOrderAction("NP","CRRCloseToGoal","LIVINGROOM_TO_ENTRANCE_01",120.0)
+        if self.allow_navigation: orderState1b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_02", 120.0)
+        if self.allow_navigation: orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
 
 
@@ -169,12 +184,12 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
         self._lm_wrapper.go_to(goto2r1_ask_to_b1["speech"], bean2_location, self.NO_TIMEOUT)
 
-        orderState2a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_01", 120.0)
-        orderState2b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
-        # orderState2c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_01", 120.0)
-        orderState2d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_02", 120.0)
-        orderState2e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_BIN_02", 120.0)
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        if self.allow_navigation: orderState2a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_01", 120.0)
+        if self.allow_navigation: orderState2b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
+        # if self.allow_navigation: orderState2c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_01", 120.0)
+        if self.allow_navigation: orderState2d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_02", 120.0)
+        if self.allow_navigation: orderState2e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_BIN_02", 120.0)
+        if self.allow_navigation: self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
 
 
         ## Start take Garbage
@@ -205,7 +220,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
          ##Go to carry Pose
         self.poseToCarryGarbage()
-        self.sendTtsOrderAction("TTS","Every thing is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
+        self.sendTtsOrderAction("TTS","Everything is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
         #self._lm_wrapper.confirm( {"title":'-',"said":'Every thing is ok, can i go ?'}, self.NO_TIMEOUT)
         self._lm_wrapper.confirm( {"title":'Confirmation Can I Go ?'}, self.NO_TIMEOUT)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
@@ -214,11 +229,11 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
         carryb2_go_to_the_collection_zone= self.find_step(steps, "carryb2_go-to-the-collection-zone")
 
-        orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_BEDROOM_01", 120.0)
-        orderState3b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
-        orderState3c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
-        orderState3d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "", 120.0)
-        orderState3e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+        if self.allow_navigation: orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_BEDROOM_01", 120.0)
+        if self.allow_navigation: orderState3b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_LIVINGROOM_02", 120.0)
+        if self.allow_navigation: orderState3c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_01", 120.0)
+        if self.allow_navigation: orderState3d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_02", 120.0)
+        if self.allow_navigation: orderState3e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_GARBAGE_COLLECTION_ZONE_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
 
