@@ -23,7 +23,7 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("pepper4", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("10.10.65.3", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
         ws = "/home/xia0ben/pepper_ws"
@@ -84,7 +84,9 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         gotoinspection_go_to = self.find_by_id(self.steps, "gotoinspection_go_to")
         self._lm_wrapper.go_to(gotoinspection_go_to["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoinspection_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_ENTRANCE_02", 100.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 100.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_01", 100.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["goToInspection"], self.NO_TIMEOUT)
 
@@ -106,10 +108,13 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["goToEntrance"], self.NO_TIMEOUT)
 
         # - Go to entrance
-        gotoentrance_go_to = self.find_by_id(self.steps, "gotoinspection_go_to")
+        gotoentrance_go_to = self.find_by_id(self.steps, "gotoentrance_go_to")
         self._lm_wrapper.go_to(gotoentrance_go_to["speech"], self._entrance, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoentrance_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_KITCHEN_02", 100.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_DOOR_01", 100.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_01", 100.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_02", 100.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["goToEntrance"], self.NO_TIMEOUT)
 
@@ -159,7 +164,7 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         return None
 
     def ask_validation_and_confirm(self, ask_step_data, confirm_step_data):
-        ask_validation_max_count = confirm_step_data["nb_max_retries"]
+        ask_validation_max_count = confirm_step_data["arguments"]["nb_max_retries"]
         ask_validation_counter = 0
         while True:
             ask_speech = ask_step_data["speech"]

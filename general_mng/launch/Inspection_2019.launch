@@ -4,7 +4,7 @@
     <arg name="nao_ip" default="$(optenv NAO_IP 192.168.1.189)" />
     <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
     <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" />
-    <arg name="map_file" default="$(find pepper_nav_custom)/maps/robocup2019/robocup_2019_1_mod2.yaml"/>
+    <arg name="map_file" default="$(find pepper_nav_custom)/maps/robocup-2019/robocup_2019_2_mod1.yaml"/>
 
     <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
         <param name="confPath" value="$(arg mapManagerConfPath)"/>
