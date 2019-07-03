@@ -264,10 +264,10 @@ class AbstractScenarioAction:
         goalObjDetection.labels=labels
         goalObjDetection.moveHead=True
         #Outputs
-        state, result = __detectObjects(goal, timeout)
+        state, result = self.__detectObjects(goal, timeout)
         return state, result
 
-    def detectObjectsWithGivenSightFromImgTopic(self, label, timeout):
+    def detectObjectsWithGivenSightFromImgTopic(self, labels, timeout):
         """
         Darknet will try to detect objects in the current image flow
         """
@@ -276,10 +276,10 @@ class AbstractScenarioAction:
         goalObjDetection.labels=labels
         goalObjDetection.moveHead=False
         #Outputs
-        state, result = __detectObjects(goal, timeout)
+        state, result = self.__detectObjects(goalObjDetection, timeout)
         return state, result
 
-    def detectObjectsWithGivenSightFromImgPath(self, label, path, timeout):
+    def detectObjectsWithGivenSightFromImgPath(self, labels, path, timeout):
         """
         Darknet will try to detect objects in a image file
         """
@@ -289,7 +289,7 @@ class AbstractScenarioAction:
         goalObjDetection.path=path
         goalObjDetection.moveHead=False
         #Outputs
-        state, result = __detectObjects(goal, timeout)
+        state, result = self.__detectObjects(goalObjDetection, timeout)
         return state, result
 
     def __detectObjects(self, goal, timeout):
@@ -298,9 +298,9 @@ class AbstractScenarioAction:
         Send an ObjectDetection goal to the related action server and return the results.
         """
         try:
-            rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",str(goalObjDetection).replace('\n',', '))
+            rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",str(goal).replace('\n',', '))
             # send the current goal to the action server
-            self._actionObjectDetectionMng_server.send_goal(goalObjDetection)
+            self._actionObjectDetectionMng_server.send_goal(goal)
             # wait action server result
             finished_before_timeout=self._actionObjectDetectionMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionObjectDetectionMng_server.get_state()
@@ -327,7 +327,7 @@ class AbstractScenarioAction:
         goalLookAtObj.base = base
         goalLookAtObj.finger = finger
         #Outputs
-        state, result = self.__lookAtObject(goal, timeout)
+        state, result = self.__lookAtObject(goalLookAtObj, timeout)
         return state, result
 
     def lookAtObjectFromImgPath(self, labels, path, index, head, base, finger, timeout):
@@ -343,7 +343,7 @@ class AbstractScenarioAction:
         goalLookAtObj.base = base
         goalLookAtObj.finger = finger
         #Outputs
-        state, result = self.__lookAtObject(goal, timeout)
+        state, result = self.__lookAtObject(goalLookAtObj, timeout)
         return state, result
 
     def __lookAtObject(self, goal, timeout):
@@ -383,7 +383,7 @@ class AbstractScenarioAction:
         state, result = self.__learnPeopleMeta(goalLearnPeople, timeout)
         return state, result
 
-    def __learnPeopleMeta(self, goalLearnPeople, timeout):
+    def __learnPeopleMeta(self, goal, timeout):
         """
         Private Function.
         Send a LearnPeopleMeta goal to the related action server and return the results
@@ -391,7 +391,7 @@ class AbstractScenarioAction:
         try:
             rospy.loginfo("### LEARN PEOPLE ATTRIBUTES ACTION PENDING")
             # send the current goal to the action server
-            self._actionLearnPeopleMeta_server.send_goal(goalLearnPeople)
+            self._actionLearnPeopleMeta_server.send_goal(goal)
             # wait action server result
             finished_before_timeout = self._actionLearnPeopleMeta_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state = self._actionLearnPeopleMeta_server.get_state()
@@ -418,7 +418,7 @@ class AbstractScenarioAction:
         state, result = self.__detectMetaPeople(goalMetaPeople, timout)
         return state, result
 
-    def __detectMetaPeople(self, goalMetaPeople, timeout):
+    def __detectMetaPeople(self, goal, timeout):
         """
         Private Function.
         Send a detectPeopleMeta goal to the related action server and return the results
@@ -426,7 +426,7 @@ class AbstractScenarioAction:
         try:
             rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
             # send the current goal to the action server
-            self._actionMultiplePeopleDetection_server.send_goal(goalMetaPeople)
+            self._actionMultiplePeopleDetection_server.send_goal(goal)
             # wait action server result
             finished_before_timeout=self._actionMultiplePeopleDetection_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionMultiplePeopleDetection_server.get_state()
