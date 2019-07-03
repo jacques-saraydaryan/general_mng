@@ -157,6 +157,39 @@ class LocalManagerWrapper:
     # Start of API between GeneralManager and HRI
     ####################################################################################################################
 
+    def generic(self, timeout, speech, image=None, video=None, p_list=None):
+        """
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout int
+        :param speech: the text that will be use by the Local Manager for tablet and vocal
+        :type speech dict
+        :param image: the path for TODO
+        :type image dict
+        :param video:
+        :type video dict
+        :param p_list:
+        :type p_list list
+        :return:
+        """
+        data = {}
+
+        if image and type(image) == dict:
+            if "pathOnTablet" in image and "alternative":
+                data['image'] = image
+
+        if video and type(video) == dict:
+            if "pathOnTablet" in video and "alternative" in video:
+                data['video'] = video
+
+        if p_list and type(p_list) == list:
+            data['list'] = p_list
+
+        if speech and type(speech) == dict:
+            data['speech'] = speech
+
+        status, result = self._execute_request("generic", json.dumps(data), timeout)
+        return status
+
     def ask_name(self, speech, people, timeout):
         """
         Start the view 'askName'
@@ -258,7 +291,7 @@ class LocalManagerWrapper:
     def detail_drinks(self, timeout):
         raise NotImplementedError()
 
-    def present_person(self, speech, name_to_present, drink_to_present, names_present_to, timeout):
+    def introduce(self, speech, name_to_present, drink_to_present, timeout):
         """
         Present one person and its favorite drink to a list of other persons
 
@@ -281,8 +314,7 @@ class LocalManagerWrapper:
                 'who': {
                     'name': name_to_present,
                     'drink': drink_to_present
-                },
-                'to': names_present_to
+                }
             }
         })
         status, result = self._execute_request("presentPerson", payload, timeout)
