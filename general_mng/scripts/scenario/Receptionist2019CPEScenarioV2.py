@@ -1,7 +1,7 @@
 __author__ = 'Benoit Renault'
 import rospy
 import collections
-import os
+import os, sys
 
 from AbstractScenario import AbstractScenario
 from AbstractScenarioAction import AbstractScenarioAction
@@ -12,6 +12,7 @@ from LocalManagerWrapper import LocalManagerWrapper
 import json
 import time
 import math
+import Image
 
 
 class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
@@ -59,7 +60,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_name_by_id[0] = {}
         self.people_name_by_id[0] = "John"
         self.people_image_by_id[0] = None
-        self.people_age_by_id[0] = None
+        self.people_age_by_id[0] = 23
         self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")['name']
 
         # Debug options
@@ -69,7 +70,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         """
         Get all parameters for the node.
         """
-        self.nao_ip = rospy.get_param("nao_ip", "pepper3")
+        self.nao_ip = rospy.get_param("nao_ip", "10.10.65.3")
         self.nao_port = rospy.get_param("nao_port", "9559")
         self.lm_prefix = rospy.get_param("prefix", "R2019")
         self.jsons_data_folder = rospy.get_param("jsons_data_folder", "/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons")
@@ -108,7 +109,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         gotodoor0_go_to = self.find_by_id(self.steps, "gotodoor0_go_to")
         self._lm_wrapper.go_to(gotodoor0_go_to["speech"], gotodoor0_go_to["arguments"]["location"], self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor0_go_to["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_RECEPTIONIST_WAIT_GUEST_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoDoor0"], self.NO_TIMEOUT)
 
@@ -154,15 +155,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_name_by_id[1] = self.ask_name_and_confirm(askinfog1_ask_name_max_counts, askinfog1_ask_name, askinfog1_confirm_name)
 
         # - Take picture and send it to Pepper
-        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[1])
-        self.takePictureAndSaveIt(picture_file_path)
-        remote_file_path = ".local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[1])
-        os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
-        self.people_image_by_id[1] = "img/peoples/{0}.png".format(self.people_name_by_id[1])
-
-        # - Learn face from name
-        # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath( picture_file_path, self.people_name_by_id[1], 10.0)
+        self.take_photo_and_confirm(guest_id_number=1)
 
         # - Ask drink
         askinfog1_ask_drink_max_counts = 3  # TODO Move this as config parameter
@@ -195,7 +188,9 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         gotolr1_go_to = self.find_by_id(self.steps, "gotolr1_go_to")
         self._lm_wrapper.go_to(gotolr1_go_to["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr1_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.moveTurn(math.pi)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR1"], self.NO_TIMEOUT)
 
@@ -240,7 +235,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)
 
         # - Navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotodoor1_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_TO_ENTRANCE_01", 120.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_RECEPTIONIST_WAIT_GUEST_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoDoor1"], self.NO_TIMEOUT)
 
@@ -286,15 +282,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             askinfog2_ask_name_max_counts, askinfog2_ask_name, askinfog2_confirm_name)
 
         #Take a picture and save it
-        picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[2])
-        self.takePictureAndSaveIt(picture_file_path)
-        remote_file_path = "/home/nao/.local/share/PackageManager/apps/R2019/html/img/peoples/{0}.png".format(self.people_name_by_id[2])
-        os.system('scp "{0}" "nao@{1}:{2}"'.format(picture_file_path, self.nao_ip, remote_file_path) )
-        self.people_image_by_id[2] = "img/peoples/{0}.png".format(self.people_name_by_id[2])
-
-        # Learn face from name
-        # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-        state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath(picture_file_path, self.people_name_by_id[2], 10.0)
+        self.take_photo_and_confirm(guest_id_number=2)
 
         # Then ask drink
         askinfog2_ask_drink_max_counts = 3  # TODO Move this as config parameter
@@ -325,18 +313,20 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         gotolr2_go_to = self.find_by_id(self.steps, "gotolr2_go_to")
         self._lm_wrapper.go_to(gotolr2_go_to["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotolr2_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation: self.moveTurn(math.pi)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR2"], self.NO_TIMEOUT)
 
         ###################################################################################################
 
-        # Introduce guest 1
+        # Introduce guest 2
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["IntroduceG2"], self.NO_TIMEOUT)
 
         # - introduceg1_say_intent
         introduceg2_say_intent = self.find_by_id(self.steps, "introduceg2_say_intent")
-        self._lm_wrapper.say(introduceg2_say_intent["speech"], self.NO_TIMEOUT)
+        self._lm_wrapper.generic(self.NO_TIMEOUT, introduceg2_say_intent["speech"])
 
         # - Find and introduce people to each others
         self.introduce_people_to_each_others("introduceg2_introduce_guest")
@@ -359,7 +349,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["FinishScenario"], self.NO_TIMEOUT)
 
         # - Finish Scenario
-        # self.send_action_to_local_manager("finishscenario_finish-scenario")
+        self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "Well, I'm done !",
+                                                   "title":"My scenario is finished !"})
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["FinishScenario"], self.NO_TIMEOUT)
 
@@ -413,6 +404,62 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             if step["id"] == step_id:
                 return index
         return None
+
+    def take_photo_and_confirm(self, guest_id_number, nb_max_retries=3):
+        nb_retries = 0
+        while True:
+            self._lm_wrapper.generic(self.NO_TIMEOUT,
+                                     {"said": "Please look at me right in the eyes, and wait while I take a photo of you.",
+                                      "title": "Please look at me right in the eyes, and wait while I take a photo of you... \n This may take a little while."})
+            # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
+            picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[1])
+            self.takePictureAndSaveIt(picture_file_path)
+            remote_file_path = ".local/share/PackageManager/apps/R2019/html/img/peoples/{0}_mod.png".format(
+                self.people_name_by_id[1])
+            picture_to_send_file_path = "{0}/{1}_mod.png".format(self.pictures_folder, self.people_name_by_id[1])
+            relative_file_path = "img/peoples/{0}_mod.png".format(self.people_name_by_id[1])
+            self.resize_img(picture_file_path, picture_to_send_file_path)
+            scp_command = 'scp "{0}" "nao@{1}:{2}"'.format(picture_to_send_file_path, self.nao_ip, remote_file_path)
+            os.system(scp_command)
+            self._lm_wrapper.generic(self.NO_TIMEOUT,
+                                     speech={
+                                         "said": "This is the photograph I have taken.",
+                                         "title": "This is the photograph I have taken."},
+                                     image={"pathOnTablet": relative_file_path, "alternative": relative_file_path})
+            time.sleep(5.0)
+            ask_photo_confirmed = self._lm_wrapper.confirm(speech={
+                                         "said": "Was it your face on the photograph?",
+                                         "title": "Was it your face on the photograph?"}, timeout=self.NO_TIMEOUT)
+
+            if ask_photo_confirmed:
+                rospy.loginfo("Guest photo confirmed !")
+                self.people_image_by_id[guest_id_number] = "img/peoples/{0}.png".format(self.people_name_by_id[guest_id_number])
+                # Learn face from name
+                state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath(picture_file_path,
+                                                                                                self.people_name_by_id[
+                                                                                                    guest_id_number], 10.0)
+                return
+
+            if nb_max_retries >= nb_retries:
+                rospy.logwarn("Could not get photo with confirmation, using whatever we have !")
+                self.people_image_by_id[guest_id_number] = "img/peoples/{0}.png".format(self.people_name_by_id[guest_id_number])
+                # Learn face from name
+                state_learnPeopleMeta, result_learnPeopleMeta = self.learnPeopleMetaFromImgPath(picture_file_path,
+                                                                                                self.people_name_by_id[
+                                                                                                    guest_id_number], 10.0)
+                return
+
+            nb_retries += 1
+
+    def resize_img(self, in_image_path, out_image_path):
+        size = 512, 512
+        if in_image_path != out_image_path:
+            try:
+                im = Image.open(in_image_path)
+                im.thumbnail(size, Image.ANTIALIAS)
+                im.save(out_image_path, "PNG")
+            except IOError:
+                print "cannot create thumbnail for '%s'" % in_image_path
 
     def ask_name_and_confirm(self, ask_name_max_count, ask_step_data, confirm_step_data):
         ask_name_counter = 0
@@ -557,7 +604,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         #     if result_getObject is not None:
         #         if len(result_getObject.labelFound) > 0:
         #             # Get people names
-        #             state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
+        #             state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 120.0)
         #             # If we recognize a face
         #             if result_getPeopleName is not None:
         #                 if len(result_getPeopleName.peopleNames) > 0:

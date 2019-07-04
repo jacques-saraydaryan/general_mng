@@ -160,7 +160,7 @@ class LocalManagerWrapper:
     def generic(self, timeout, speech, image=None, video=None, p_list=None):
         """
         :param timeout: maximum time to wait for a reaction from the local manager
-        :type timeout int
+        :type timeout float
         :param speech: the text that will be use by the Local Manager for tablet and vocal
         :type speech dict
         :param image: the path for TODO

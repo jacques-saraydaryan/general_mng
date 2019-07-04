@@ -4,10 +4,13 @@
     <arg name="nao_ip" default="$(optenv NAO_IP 192.168.1.189)" />
     <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
     <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" />
+    <arg name="map_file" default="$(find pepper_nav_custom)/maps/robocup-2019/robocup_2019_2_mod1.yaml"/>
 
     <param name="nao_ip" value="$(arg nao_ip)"/>
-    <param name="jsons_data_folder" value="/home/catkin_robocup2019/src/robocup-main/robocup_pepper-scenario_data_generator/jsons"/>
-    <param name="pictures_folder" value="/home/catkin_robocup2019/pictures"/>
+    <arg name="jsons_data_folder" default="/home/catkin_robocup2019/src/robocup-main/robocup_pepper-scenario_data_generator/jsons"/>
+    <arg name="pictures_folder" default="/home/catkin_robocup2019/pictures"/>
+    <param name="jsons_data_folder" value="$(arg jsons_data_folder)"/>
+    <param name="pictures_folder" value="$(arg pictures_folder)"/>
 
     <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
         <param name="confPath" value="$(arg mapManagerConfPath)"/>
@@ -27,6 +30,7 @@
     <include file="$(find navigation_manager)/launch/navigation_mng_overall.launch">
         <arg name="nao_ip" value="$(arg nao_ip)"/>
         <arg name="nao_port" value="$(arg nao_port)"/>
+        <arg name="map_file" value="$(arg map_file)"/>
     </include>
 
 
