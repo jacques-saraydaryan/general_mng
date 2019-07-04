@@ -51,12 +51,12 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
    
         # TODO : Remove Hardocoded values and get them from config
-        #self._lm_wrapper = LocalManagerWrapper("10.10.107.177", 9559, "R2019")
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.221", 9559, "R2019")
+        # self._lm_wrapper = LocalManagerWrapper("10.10.107.177", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("10.10.65.3", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-       #ws = "/home/xia0ben/pepper_ws"
-        ws = "/home/astro/catkin_robocup2019"
+        ws = "/home/xia0ben/pepper_ws"
+        # ws = "/home/astro/catkin_robocup2019"
         # ws = "/home/astro/catkin_robocup2019"
         with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/takeOutGarbage/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
@@ -71,7 +71,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
 
         # Debug options
-        self.allow_navigation = False
+        self.allow_navigation = True
+        self.allow_wait_door_open = True
 
     def startScenario(self):
         rospy.loginfo("""
@@ -85,6 +86,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         step_id_to_index = self._lm_wrapper.timeboard_send_steps_list(steps, self._scenario["name"], self.NO_TIMEOUT)[1]
         self._lm_wrapper.timeboard_set_timer_state(True, self.NO_TIMEOUT)
 
+        scenario_start_time = time.time()
 
         ###############################################################################################################
         #################################################### Go to start point ########################################
@@ -95,7 +97,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
         # - Detect door opening
         waitdooropen_detect = self.find_step(steps, "waitdooropen_detect")
-        self.waitForDoorToOpen(float(waitdooropen_detect["arguments"]["check_freq"]))
+        if self.allow_wait_door_open: self.waitForDoorToOpen(float(waitdooropen_detect["arguments"]["check_freq"]))
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["waitDoorOpen"], self.NO_TIMEOUT)
 
@@ -146,19 +148,21 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
             #self.sendTtsOrderAction("TTS",call3r1_take_bin1["speech"]["said"] ,"NO_WAIT_END","English",60.0)
             self._lm_wrapper.generic( self.NO_TIMEOUT,call3r1_take_bin1["speech"])
             video2 = self.find_video(self._videos, call3r1_take_bin1["arguments"]["what"])
-            self._lm_wrapper.show_video({"title":'How to give the garbage to the pepper',"description":'this video shows how to give the garbage to the pepper '},video2,self.NO_TIMEOUT)
+            self._lm_wrapper.show_video({"title":'How to give the garbage to the pepper',"description":'this video shows how to give the garbage to the pepper. The knot must go inside the hand. '},video2,self.NO_TIMEOUT)
 
              ##Go to carry Pose
             self.poseToCarryGarbage()
             #self.sendTtsOrderAction("TTS","Every thing is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
-            cf_status,cf1_result=self._lm_wrapper.confirm( {"title":'Confirmation Can I Go ?',"said":'Every thing is ok, can i go ?',"description": "-" }, self.NO_TIMEOUT)
+            cf_status,cf1_result=self._lm_wrapper.confirm( {"title":'Confirm if the bag did not fall',"said":'Please confirm that the bag did not fall.',"description": "-" }, self.NO_TIMEOUT)
             nb_retry=nb_retry+1
         
         ################################
         ### 1. Go to collection zone ###
         ################################
 
-        self._lm_wrapper.generic( self.NO_TIMEOUT,{"said": "let's go!", "description": "-", "title":"let's go to the collection zone!\n please don't stay in front of me"})
+        self._lm_wrapper.generic( self.NO_TIMEOUT,{"said": "let's go!, Referee could you please open the door to the collection zone ?",
+                                                   "description": "-",
+                                                   "title":"let's go!, Referee could you please open the door to the collection zone ?\n please don't stay in front of me"})
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB1"], self.NO_TIMEOUT)
 
         ##Start go to release point
@@ -189,91 +193,93 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ###############################################################################################################
         #################################################### 2nd bin###################################################
         ###############################################################################################################
-
-        ################################
-        ### 2. Go to the second Bin   ###
-        ################################
-
-         # Go to the second B
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
-        goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
-        ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
-        bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
-        self._lm_wrapper.go_to(goto2r1_ask_to_b1["speech"], bean2_location, self.NO_TIMEOUT)
-
-        if self.allow_navigation: orderState2a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_KITCHEN_01", 120.0)
-        if self.allow_navigation: orderState2b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_KITCHEN_02", 120.0)
-        if self.allow_navigation: orderState2c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_BIN_01", 120.0)
-        if self.allow_navigation: orderState2d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_BIN_01", 120.0)
-        if self.allow_navigation: self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
-
-        ################################
-        ### 2. Take the second Bin    ###
-        ################################
-
-        ## Start take Garbage
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
-
-
-        call1r1_take_bin2 = self.find_step(steps, "takeb2_call-human")
-        cf2_result=False
-        nb_retry=0
-        while not cf2_result and nb_retry<3:
-            #FIXME need to check also the waittime
-            self._lm_wrapper.call_human(call1r1_take_bin2["speech"],3.0,self.NO_TIMEOUT)
-            call2r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-prepare-the-bag")
-
-            #self.sendTtsOrderAction("TTS",call2r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
-            self._lm_wrapper.generic( self.NO_TIMEOUT,call2r1_take_bin2["speech"])
-            video = self.find_video(self._videos, call2r1_take_bin2["arguments"]["what"])
-            self._lm_wrapper.show_video({"title":'How to close the garbage',"description":'this video shows how to close the garbage '},video,self.NO_TIMEOUT)
-
-            ##Be ready to take garbage
-            self.poseToTakeGarbage()
-
-            call3r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-put-the-bag-into-pepper's-hand")
-            #self.sendTtsOrderAction("TTS",call3r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
-            self._lm_wrapper.generic( self.NO_TIMEOUT,call3r1_take_bin2["speech"])
-
-            #self._lm_wrapper.call_human(call3r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
-            video2 = self.find_video(self._videos, call3r1_take_bin2["arguments"]["what"])
-            self._lm_wrapper.show_video({"title":'How to give the garbage to the pepper',"description":'this video shows how to give the garbage to the pepper '},video2,self.NO_TIMEOUT)
-
-            ##Go to carry Pose
-            self.poseToCarryGarbage()
-            #self.sendTtsOrderAction("TTS","Everything is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
-            cf_status,cf2_result=self._lm_wrapper.confirm( {"title":'Confirmation Can I Go ?',"said":'Every thing is ok, can i go ?', "description":"-"}, self.NO_TIMEOUT)
-            nb_retry=nb_retry+1
-        
-        ################################
-        ### 2. Go to collection zone ###
-        ################################
-
-        self._lm_wrapper.generic( self.NO_TIMEOUT,{"said": "let's go! ", "description": "-", "title":"let's go! to the collection zone \n please don't stay in front of me"})
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
-
-        ##Start go to release point
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
-        carryb2_go_to_the_collection_zone= self.find_step(steps, "carryb2_go-to-the-collection-zone")
-
-        if self.allow_navigation: orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_DOOR_02", 120.0)
-        if self.allow_navigation: orderState1b =self.sendNavOrderAction("NP","CRRCloseToGoal","KITCHEN_TO_DOOR_01",120.0)
-        if self.allow_navigation: orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_02", 120.0)
-        if self.allow_navigation: orderState1d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_01", 120.0)
-
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
-
-        ################################
-        ###  2. Release bin          ###
-        ################################
-
-        ##Arrived on release zone
-        ##Release Garbage
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["DropB2"], self.NO_TIMEOUT)
-        self.poseToReleaseGarbage()
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB2"], self.NO_TIMEOUT)
-        ##Release Arm at the end
-        self.releaseArms()
+        #
+        # ################################
+        # ### 2. Go to the second Bin   ###
+        # ################################
+        #
+        #  # Go to the second B
+        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        # goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
+        # ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
+        # bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
+        # self._lm_wrapper.go_to(goto2r1_ask_to_b1["speech"], bean2_location, self.NO_TIMEOUT)
+        #
+        # if self.allow_navigation: orderState2a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_KITCHEN_01", 120.0)
+        # if self.allow_navigation: orderState2b = self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_KITCHEN_02", 120.0)
+        # if self.allow_navigation: orderState2c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_BIN_01", 120.0)
+        # if self.allow_navigation: orderState2d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_BIN_01", 120.0)
+        # if self.allow_navigation: self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        #
+        # ################################
+        # ### 2. Take the second Bin    ###
+        # ################################
+        #
+        # ## Start take Garbage
+        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
+        #
+        #
+        # call1r1_take_bin2 = self.find_step(steps, "takeb2_call-human")
+        # cf2_result=False
+        # nb_retry=0
+        # while not cf2_result and nb_retry<3:
+        #     #FIXME need to check also the waittime
+        #     self._lm_wrapper.call_human(call1r1_take_bin2["speech"],3.0,self.NO_TIMEOUT)
+        #     call2r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-prepare-the-bag")
+        #
+        #     #self.sendTtsOrderAction("TTS",call2r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
+        #     self._lm_wrapper.generic( self.NO_TIMEOUT,call2r1_take_bin2["speech"])
+        #     video = self.find_video(self._videos, call2r1_take_bin2["arguments"]["what"])
+        #     self._lm_wrapper.show_video({"title":'How to close the garbage',"description":'this video shows how to close the garbage '},video,self.NO_TIMEOUT)
+        #
+        #     ##Be ready to take garbage
+        #     self.poseToTakeGarbage()
+        #
+        #     call3r1_take_bin2 = self.find_step(steps, "takeb2_explain-how-to-put-the-bag-into-pepper's-hand")
+        #     #self.sendTtsOrderAction("TTS",call3r1_take_bin2["speech"]["said"] ,"NO_WAIT_END","English",60.0)
+        #     self._lm_wrapper.generic( self.NO_TIMEOUT,call3r1_take_bin2["speech"])
+        #
+        #     #self._lm_wrapper.call_human(call3r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
+        #     video2 = self.find_video(self._videos, call3r1_take_bin2["arguments"]["what"])
+        #     self._lm_wrapper.show_video({"title":'How to give the garbage to the pepper',"description":'this video shows how to give the garbage to the pepper '},video2,self.NO_TIMEOUT)
+        #
+        #     ##Go to carry Pose
+        #     self.poseToCarryGarbage()
+        #     #self.sendTtsOrderAction("TTS","Everything is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
+        #     cf_status,cf2_result=self._lm_wrapper.confirm( {"title":'Confirm if the bag did not fall',"said":'Please confirm that the bag did not fall.', "description":"-"}, self.NO_TIMEOUT)
+        #     nb_retry=nb_retry+1
+        #
+        # ################################
+        # ### 2. Go to collection zone ###
+        # ################################
+        #
+        # self._lm_wrapper.generic( self.NO_TIMEOUT,{"said": "let's go!, Referee could you please open the door to the collection zone ? ",
+        #                                            "description": "-",
+        #                                            "title":"let's go!, Referee could you please open the door to the collection zone ? \n please don't stay in front of me"})
+        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["TakeB2"], self.NO_TIMEOUT)
+        #
+        # ##Start go to release point
+        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
+        # carryb2_go_to_the_collection_zone= self.find_step(steps, "carryb2_go-to-the-collection-zone")
+        #
+        # if self.allow_navigation: orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_DOOR_02", 120.0)
+        # if self.allow_navigation: orderState1b =self.sendNavOrderAction("NP","CRRCloseToGoal","KITCHEN_TO_DOOR_01",120.0)
+        # if self.allow_navigation: orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_02", 120.0)
+        # if self.allow_navigation: orderState1d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+        #
+        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
+        #
+        # ################################
+        # ###  2. Release bin          ###
+        # ################################
+        #
+        # ##Arrived on release zone
+        # ##Release Garbage
+        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["DropB2"], self.NO_TIMEOUT)
+        # self.poseToReleaseGarbage()
+        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB2"], self.NO_TIMEOUT)
+        # ##Release Arm at the end
+        # self.releaseArms()
 
         #self._lm_wrapper.timeboard_send_step_done(step_id_to_index["finishscenario_finish-scenario"], self.NO_TIMEOUT)
 
