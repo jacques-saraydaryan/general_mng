@@ -185,3 +185,15 @@ class AbstractScenarioService:
         except rospy.ServiceException as e:
             rospy.logerr("Service take_picture_service could not process request: {error}".format(error=e))
             return False
+
+    def turnToInterestPoint(self, IT_name):
+        """
+        Turn toward a given interest point.
+        Input must be the name of the interest point.
+        """
+        try:
+            self._turnToInterestPointSP(IT_name)
+            return True
+        except rospy.ServiceException as e:
+            rospy.logerr("Service turn_to_interest_point could not process request: {error}".format(error=e))
+            return False
