@@ -438,9 +438,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             # - Reset Head position to talk
             self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)
             ask_photo_confirmed = self._lm_wrapper.confirm(speech={
-                                         "said": "Was it your face on the photograph?",
-                                         "title": "Was it your face on the photograph?"}, timeout=self.NO_TIMEOUT)[1]
-
+                                         "said": "Was your face entirely in the photograph?",
+                                         "title": "Was your face entirely in the photograph?"}, timeout=self.NO_TIMEOUT)[1]
             if ask_photo_confirmed:
                 rospy.loginfo("Guest photo confirmed !")
                 self.people_image_by_id[guest_id_number] = "img/peoples/{0}.png".format(self.people_name_by_id[guest_id_number])
