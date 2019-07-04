@@ -52,11 +52,11 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
    
         # TODO : Remove Hardocoded values and get them from config
         # self._lm_wrapper = LocalManagerWrapper("10.10.107.177", 9559, "R2019")
-        self._lm_wrapper = LocalManagerWrapper("10.10.65.3", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("192.168.42.221", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        ws = "/home/xia0ben/pepper_ws"
-        # ws = "/home/astro/catkin_robocup2019"
+        #ws = "/home/xia0ben/pepper_ws"
+        ws = "/home/astro/catkin_robocup2019"
         # ws = "/home/astro/catkin_robocup2019"
         with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/takeOutGarbage/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
@@ -131,7 +131,9 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         call1r1_take_bin1 = self.find_step(steps, "takeb1_call-human")
         cf1_result=False
         nb_retry=0
+        self.current_arm='l'
         while not cf1_result and nb_retry<3:
+            
             #FIXME need to check also the waittime
             self._lm_wrapper.call_human(call1r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
             call2r1_take_bin1 = self.find_step(steps, "takeb1_explain-how-to-prepare-the-bag")
@@ -154,7 +156,19 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
             self.poseToCarryGarbage()
             #self.sendTtsOrderAction("TTS","Every thing is ok, can i go ?" ,"NO_WAIT_END","English",60.0)
             cf_status,cf1_result=self._lm_wrapper.confirm( {"title":'Confirm if the bag did not fall',"said":'Please confirm that the bag did not fall.',"description": "-" }, self.NO_TIMEOUT)
+            
+            
             nb_retry=nb_retry+1
+            ## change arm in case of failure
+            if not cf1_result and nb_retry<3:
+                self.poseToReleaseGarbage()
+                self.releaseArms()
+                if self.current_arm=='l':
+                    self.current_arm='r'
+                else:
+                    self.current_arm='l'
+            
+            
         
         ################################
         ### 1. Go to collection zone ###
@@ -199,7 +213,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # ################################
         #
         #  # Go to the second B
-        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        # seposeToReleaseArmlf._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
         # goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
         # ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
         # bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
@@ -329,13 +343,13 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
     
 
     def poseToTakeGarbage(self):
-        result = self._gotoTakePose(arm_l_or_r='l',turn_rad=0.0,stiffness=0.7)
+        result = self._gotoTakePose(arm_l_or_r=self.current_arm,turn_rad=0.0,stiffness=0.7)
 
     def poseToReleaseGarbage(self):
-        result = self._gotoTakePose(arm_l_or_r='l',turn_rad=0.5,stiffness=0.7)
+        result = self._gotoTakePose(arm_l_or_r=self.current_arm,turn_rad=0.5,stiffness=0.7)
 
     def poseToCarryGarbage(self):
-        result = self._gotoCarryPose(arm_l_or_r='l',keep_pose=True,stiffness=0.9)
+        result = self._gotoCarryPose(arm_l_or_r=self.current_arm,keep_pose=True,stiffness=0.9)
 
     def releaseArms(self):
         result = self._releaseArms(stiffness=0.7)
