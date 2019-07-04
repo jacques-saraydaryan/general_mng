@@ -66,6 +66,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # Debug options
         self.allow_navigation = False
         self.allow_wait_door_open = True
+        self.recog_with_picture = False
 
     def __configure(self):
         """
@@ -156,14 +157,12 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # global_step_ask_info_g1_start_time = time.time()
 
-        # - Head's up
-        self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
-
         # - Ask name
         askinfog1_ask_name_max_counts = 3  # TODO Move this as config parameter
         askinfog1_ask_name = self.find_by_id(self.steps, "askinfog1_ask_name")
         askinfog1_confirm_name = self.find_by_id(self.steps, "askinfog1_confirm_name")
         self.people_name_by_id[1] = self.ask_name_and_confirm(askinfog1_ask_name_max_counts, askinfog1_ask_name, askinfog1_confirm_name)
+
 
         # - Take picture and send it to Pepper
         self.take_photo_and_confirm(guest_id_number=1)
@@ -173,7 +172,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         askinfog1_ask_drink = self.find_by_id(self.steps, "askinfog1_ask_drink")
         askinfog1_confirm_drink = self.find_by_id(self.steps, "askinfog1_confirm_drink")
         self.people_drink_by_id[1] = self.ask_drink_and_confirm(
-            askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])['name']
+            askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])
 
         # - Ask age
         askinfog1_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -300,7 +299,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         askinfog2_ask_drink = self.find_by_id(self.steps, "askinfog2_ask_drink")
         askinfog2_confirm_drink = self.find_by_id(self.steps, "askinfog2_confirm_drink")
         self.people_drink_by_id[2] = self.ask_drink_and_confirm(
-            askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])["name"]
+            askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])
 
         # - Ask age
         askinfog2_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -420,6 +419,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
     def take_photo_and_confirm(self, guest_id_number, nb_max_retries=3):
         nb_retries = 0
         while True:
+            # - Head's up
+            self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
             self._lm_wrapper.generic(self.NO_TIMEOUT,
                                      {"said": "Please look at me right in the eyes, and wait while I take a photo of you.",
                                       "title": "Please look at me right in the eyes, and wait while I take a photo of you... \n This may take a little while."})
@@ -439,10 +440,11 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                          "title": "This is the photograph I have taken."},
                                      image={"pathOnTablet": relative_file_path, "alternative": relative_file_path})
             time.sleep(3.0)
+            # - Reset Head position to talk
+            self.moveheadPose(self.HEAD_PITCH_FOR_SPEECH_POSE, self.HEAD_YAW_CENTER, True)
             ask_photo_confirmed = self._lm_wrapper.confirm(speech={
                                          "said": "Was your face entirely in the photograph?",
                                          "title": "Was your face entirely in the photograph?"}, timeout=self.NO_TIMEOUT)[1]
-
             if ask_photo_confirmed:
                 rospy.loginfo("Guest photo confirmed !")
                 self.people_image_by_id[guest_id_number] = "img/peoples/{0}.png".format(self.people_name_by_id[guest_id_number])
@@ -577,13 +579,14 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                 return tentative_validation
 
     def introduce_people_to_each_others_hardcoded(self):
-        self.turn_to_interest_point("LIVINGROOM_GUEST_VAGUE_IT_01")
-        self.pointAt()
-        self._lm_wrapper.generic(self.NO_TIMEOUT,
-                                 speech={
-                                     "said": "This is {name}, their favorite drink is {drink}".format(name=name, drink=drink),
-                                     "title": "This is the photograph I have taken."})
-        self.turn_to_interest_point("LIVINGROOM_JUST_VAGUE_IT_01")
+        pass
+        # self.turn_to_interest_point("LIVINGROOM_GUEST_VAGUE_IT_01")
+        # self.pointAt()
+        # self._lm_wrapper.generic(self.NO_TIMEOUT,
+        #                          speech={
+        #                              "said": "This is {name}, their favorite drink is {drink}".format(name=name, drink=drink),
+        #                              "title": "This is the photograph I have taken."})
+        # self.turn_to_interest_point("LIVINGROOM_JUST_VAGUE_IT_01")
 
 
     def introduce_people_to_each_others(self, step_id):
@@ -596,8 +599,13 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         people_introduced = {}
         for name in self.people_name_by_id.values():
             people_introduced[name] = False
-        # Picture file
-        picture_file_path = "{0}/introducing.png".format(self.pictures_folder)
+        # Input
+        if self.recog_with_picture:
+            # Picture file
+            picture_file_path = "{0}/introducing.png".format(self.pictures_folder)
+        else:
+            # Remap darknet topic
+            self.remap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         # Set head position
         self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
         # Indicator to set head position in the future
@@ -610,25 +618,28 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
         # Beware the infinity loop
         while True:
-            # Take a picture and save it (3 tries possible)
-            for i in range(3):
-                ok_picture = self.takePictureAndSaveIt(picture_file_path)
-                if ok_picture == True:
+            if self.recog_with_picture:
+                # Take a picture and save it (3 tries possible)
+                for i in range(3):
+                    ok_picture = self.takePictureAndSaveIt(picture_file_path)
+                    if ok_picture == True:
+                        break
+                else:
+                    rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
                     break
+                # Detect persons
+                state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
             else:
-                rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
-                break
-            while (self.takePictureAndSaveIt(picture_file_path) == False):
-                rospy.logwarn("Cannot take a picture")
-            # Find people in the image
-            # state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
-            state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgTopic(["person"], 50.0)
+                # Detect persons
+                state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgTopic(["person"], 50.0)
             # Loop on people found
             if result_getObject is not None:
                 if len(result_getObject.labelFound) > 0:
                     # Get people names
-                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
-                    # state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
+                    if self.recog_with_picture:
+                        state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
+                    else:
+                        state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
                     # If we recognize a face
                     if result_getPeopleName is not None:
                         if len(result_getPeopleName.peopleNames) > 0:
@@ -659,8 +670,10 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                     if (   (name_of_people_found == name_of_people_known)
                                        and (people_introduced[name_of_people_known] == False)):
                                         # Point to Guest
-                                        # state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
+                                        if self.recog_with_picture:
+                                            state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
+                                        else:
+                                            state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce new_guest_to_john
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         self.introduce_guest_to_others(step_id, guest_id)
@@ -716,6 +729,10 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             else:
                 # End introducing
                 break
+        # Input
+        if self.recog_with_picture == False:
+            # Remap darknet topic
+            self.unremap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         return
 
     def introduce_guest_to_others(self, step_id, guest_id):
@@ -725,7 +742,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         #
         introduceg_introduce_guest = self.find_by_id(self.steps, step_id)
         introduceg_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[guest_id]
-        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]['name']
+        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]["name"]
         self._lm_wrapper.introduce(
             introduceg_introduce_guest["speech"],
             self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id], self.people_image_by_id[guest_id], self.NO_TIMEOUT)
@@ -736,7 +753,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         """
         introduceh_introduce_guest = self.find_by_id(self.steps, step_id)
         introduceh_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[0]
-        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]['name']
+        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]["name"]
         self._lm_wrapper.introduce(
             introduceh_introduce_guest["speech"],
             self.people_name_by_id[0], self.people_drink_by_id[0], self.people_image_by_id[0], self.NO_TIMEOUT)
@@ -745,6 +762,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         """
         Find an empty chair for a guest
         """
+        # Remap darknet topic
+        self.remap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         # Tell guest we are looking for a chair
         seatg_find_empty_chair = self.find_by_id(self.steps, "seatg{0}_find_empty_seat".format(guest_id))
         self._lm_wrapper.generic(self.NO_TIMEOUT, seatg_find_empty_chair["speech"])
@@ -764,6 +783,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                     return
             # Turn a bit to find somewhere else
             if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
+        # Remap darknet topic
+        self.unremap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         return
 
     def sit_here_guest(self, guest_id):
