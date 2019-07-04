@@ -8,6 +8,7 @@ from dialogue_hri_srvs.srv import PointAt
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import ReleaseArms
 from dialogue_hri_srvs.srv import TakePicture
+from dialogue_hri_srvs.srv import TurnToInterestPoint
 
 
 class AbstractScenarioService:
@@ -27,6 +28,7 @@ class AbstractScenarioService:
     _enableResetPersonMetaInfoMapService = False
     _enableReleaseArmsService = False
     _enableTakePictureService = False
+    _enableTurnToInterestPointService = False
 
     def __init__(self):
         pass
@@ -102,6 +104,16 @@ class AbstractScenarioService:
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the take_picture_service service.")
 
+        # Connect to take_picture_service service
+        if self._enableTurnToInterestPointService:
+            rospy.loginfo("Connecting to the turn_to_interest_point service...")
+            self._turnToInterestPointSP = rospy.ServiceProxy('turn_to_interest_point', TurnToInterestPoint)
+            try:
+                turn_to_interest_point_srv_is_up = rospy.wait_for_service('turn_to_interest_point', timeout=10.0)
+                rospy.loginfo("Connected to the turn_to_interest_point service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the turn_to_interest_point service.")
+
     def moveheadPose(self, pitch_value, yaw_value, track):
         try:
             return self._moveHeadPoseSP(pitch_value, yaw_value, track)
@@ -166,4 +178,16 @@ class AbstractScenarioService:
             return True
         except rospy.ServiceException as e:
             rospy.logerr("Service take_picture_service could not process request: {error}".format(error=e))
+            return False
+
+    def turnToInterestPoint(self, IT_name):
+        """
+        Turn toward a given interest point.
+        Input must be the name of the interest point.
+        """
+        try:
+            self._turnToInterestPointSP(IT_name)
+            return True
+        except rospy.ServiceException as e:
+            rospy.logerr("Service turn_to_interest_point could not process request: {error}".format(error=e))
             return False
