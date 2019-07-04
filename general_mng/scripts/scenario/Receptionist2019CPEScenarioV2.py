@@ -435,8 +435,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                      image={"pathOnTablet": relative_file_path, "alternative": relative_file_path})
             time.sleep(3.0)
             ask_photo_confirmed = self._lm_wrapper.confirm(speech={
-                                         "said": "Was ?",
-                                         "title": "Was it your face on the photograph?"}, timeout=self.NO_TIMEOUT)[1]
+                                         "said": "Was your face entirely in the photograph?",
+                                         "title": "Was your face entirely in the photograph?"}, timeout=self.NO_TIMEOUT)[1]
 
             if ask_photo_confirmed:
                 rospy.loginfo("Guest photo confirmed !")
