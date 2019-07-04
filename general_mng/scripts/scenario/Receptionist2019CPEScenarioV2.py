@@ -64,7 +64,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")
 
         # Debug options
-        self.allow_navigation = False
+        self.allow_navigation = True
 
     def __configure(self):
         """
@@ -169,7 +169,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         askinfog1_ask_drink = self.find_by_id(self.steps, "askinfog1_ask_drink")
         askinfog1_confirm_drink = self.find_by_id(self.steps, "askinfog1_confirm_drink")
         self.people_drink_by_id[1] = self.ask_drink_and_confirm(
-            askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])['name']
+            askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])
 
         # - Ask age
         askinfog1_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -296,7 +296,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         askinfog2_ask_drink = self.find_by_id(self.steps, "askinfog2_ask_drink")
         askinfog2_confirm_drink = self.find_by_id(self.steps, "askinfog2_confirm_drink")
         self.people_drink_by_id[2] = self.ask_drink_and_confirm(
-            askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])["name"]
+            askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])
 
         # - Ask age
         askinfog2_ask_age_max_counts = 3  # TODO Move this as config parameter
@@ -606,15 +606,15 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # Beware the infinity loop
         while True:
             # Take a picture and save it (3 tries possible)
-            for i in range(3):
-                ok_picture = self.takePictureAndSaveIt(picture_file_path)
-                if ok_picture == True:
-                    break
-            else:
-                rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
-                break
-            while (self.takePictureAndSaveIt(picture_file_path) == False):
-                rospy.logwarn("Cannot take a picture")
+            # for i in range(3):
+            #     ok_picture = self.takePictureAndSaveIt(picture_file_path)
+            #     if ok_picture == True:
+            #         break
+            # else:
+            #     rospy.logerr("Couldnot retrieve a picture from the robot. Failed to introduce people.")
+            #     break
+            # while (self.takePictureAndSaveIt(picture_file_path) == False):
+            #     rospy.logwarn("Cannot take a picture")
             # Find people in the image
             # state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
             state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgTopic(["person"], 50.0)
@@ -720,7 +720,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         #
         introduceg_introduce_guest = self.find_by_id(self.steps, step_id)
         introduceg_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[guest_id]
-        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]['name']
+        introduceg_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[guest_id]["name"]
         self._lm_wrapper.introduce(
             introduceg_introduce_guest["speech"],
             self.people_name_by_id[guest_id], self.people_drink_by_id[guest_id], self.people_image_by_id[guest_id], self.NO_TIMEOUT)
@@ -731,7 +731,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         """
         introduceh_introduce_guest = self.find_by_id(self.steps, step_id)
         introduceh_introduce_guest["speech"]["who1_name"] = self.people_name_by_id[0]
-        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]['name']
+        introduceh_introduce_guest["speech"]["who1_drink"] = self.people_drink_by_id[0]["name"]
         self._lm_wrapper.introduce(
             introduceh_introduce_guest["speech"],
             self.people_name_by_id[0], self.people_drink_by_id[0], self.people_image_by_id[0], self.NO_TIMEOUT)
