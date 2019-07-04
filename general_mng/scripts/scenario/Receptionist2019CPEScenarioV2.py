@@ -564,6 +564,16 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                 #  I guess I will just consider everything is fine.
                 return tentative_validation
 
+    def introduce_people_to_each_others_hardcoded(self):
+        self.turn_to_interest_point("LIVINGROOM_GUEST_VAGUE_IT_01")
+        self.pointAt()
+        self._lm_wrapper.generic(self.NO_TIMEOUT,
+                                 speech={
+                                     "said": "This is {name}, their favorite drink is {drink}".format(name=name, drink=drink),
+                                     "title": "This is the photograph I have taken."})
+        self.turn_to_interest_point("LIVINGROOM_JUST_VAGUE_IT_01")
+
+
     def introduce_people_to_each_others(self, step_id):
         """
         Pepper turn on himself to find people and to introduce the to the group
