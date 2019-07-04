@@ -41,8 +41,8 @@
     </node>
 
     <include file="$(find ros_people_mng_node)/launch/people_mng.launch">
-        <arg name="camera_topic" value="/openpose/camera_in"/>
-        <arg name="camera_topic_manager" value="/openpose/camera_in"/>
+        <arg name="camera_topic" value="/pepper_robot/camera/front/image_raw"/>
+        <arg name="camera_topic_manager" value="/pepper_robot/camera/front/image_raw"/>
     </include>
 
 </launch>

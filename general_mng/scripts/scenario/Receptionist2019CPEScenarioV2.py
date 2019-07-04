@@ -433,10 +433,10 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                          "said": "This is the photograph I have taken.",
                                          "title": "This is the photograph I have taken."},
                                      image={"pathOnTablet": relative_file_path, "alternative": relative_file_path})
-            time.sleep(5.0)
+            time.sleep(3.0)
             ask_photo_confirmed = self._lm_wrapper.confirm(speech={
-                                         "said": "Was it your face on the photograph?",
-                                         "title": "Was it your face on the photograph?"}, timeout=self.NO_TIMEOUT)
+                                         "said": "Was ?",
+                                         "title": "Was it your face on the photograph?"}, timeout=self.NO_TIMEOUT)[1]
 
             if ask_photo_confirmed:
                 rospy.loginfo("Guest photo confirmed !")
@@ -616,12 +616,14 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             while (self.takePictureAndSaveIt(picture_file_path) == False):
                 rospy.logwarn("Cannot take a picture")
             # Find people in the image
-            state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
+            # state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgPath(["person"], picture_file_path, 50.0)
+            state_getObject, result_getObject = self.detectObjectsWithGivenSightFromImgTopic(["person"], 50.0)
             # Loop on people found
             if result_getObject is not None:
                 if len(result_getObject.labelFound) > 0:
                     # Get people names
-                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
+                    state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgTopic(50.0)
+                    # state_getPeopleName, result_getPeopleName = self.getPeopleNameFromImgPath(picture_file_path, 50.0)
                     # If we recognize a face
                     if result_getPeopleName is not None:
                         if len(result_getPeopleName.peopleNames) > 0:
@@ -652,7 +654,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                     if (   (name_of_people_found == name_of_people_known)
                                        and (people_introduced[name_of_people_known] == False)):
                                         # Point to Guest
-                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
+                                        # state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgPath(["person"], picture_file_path, i_name_of_people_found, False, False, 2, 50.0)
+                                        state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["person"], i_name_of_people_found, False, False, 2, 50.0)
                                         # Introduce new_guest_to_john
                                         guest_id = self.people_name_by_id.keys()[self.people_name_by_id.values().index(name_of_people_known)]
                                         self.introduce_guest_to_others(step_id, guest_id)
