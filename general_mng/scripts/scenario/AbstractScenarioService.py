@@ -8,6 +8,7 @@ from dialogue_hri_srvs.srv import PointAt
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import ReleaseArms
 from dialogue_hri_srvs.srv import TakePicture
+from dialogue_hri_srvs.srv import TurnToInterestPoint
 
 
 class AbstractScenarioService:
@@ -27,6 +28,7 @@ class AbstractScenarioService:
     _enableResetPersonMetaInfoMapService = False
     _enableReleaseArmsService = False
     _enableTakePictureService = False
+    _enableTurnToInterestPointService = False
 
     def __init__(self):
         pass
@@ -102,6 +104,16 @@ class AbstractScenarioService:
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the take_picture_service service.")
 
+        # Connect to turn_to_interest_point service
+        if self._enableTurnToInterestPointService:
+            rospy.loginfo("Connecting to the turn_to_interest_point service...")
+            self._turnToInterestPointSP = rospy.ServiceProxy('turn_to_interest_point', TurnToInterestPoint)
+            try:
+                turn_to_interest_point_srv_is_up = rospy.wait_for_service('turn_to_interest_point', timeout=10.0)
+                rospy.loginfo("Connected to the turn_to_interest_point service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the turn_to_interest_point service.")
+
     def moveheadPose(self, pitch_value, yaw_value, track):
         try:
             return self._moveHeadPoseSP(pitch_value, yaw_value, track)
@@ -125,6 +137,12 @@ class AbstractScenarioService:
             return self._resetPeopleMetaInfoMapSP()
         except rospy.ServiceException as e:
             rospy.logerr("Service reset_people_meta_info_map_srv could not process request: {error}".format(error=e))
+
+    def turn_to_interest_point(self, interest_point_label):
+        try:
+            return self._turnToInterestPointSP(interest_point_label)
+        except rospy.ServiceException as e:
+            rospy.logerr("Service turn_to_interest_point_srv could not process request: {error}".format(error=e))
 
     def waitForDoorToOpen(self, check_freq=10.0):
         """
