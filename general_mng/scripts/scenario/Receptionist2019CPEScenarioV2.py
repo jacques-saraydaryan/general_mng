@@ -65,6 +65,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # Debug options
         self.allow_navigation = False
+        self.allow_wait_door_open = True
 
     def __configure(self):
         """
@@ -111,6 +112,9 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # Go to door
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoDoor0"], self.NO_TIMEOUT)
+
+        # - Detect door opening
+        if self.allow_wait_door_open: self.waitForDoorToOpen(10.0)
 
         # - Go to door
         gotodoor0_go_to = self.find_by_id(self.steps, "gotodoor0_go_to")
@@ -389,6 +393,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self._enableResetPersonMetaInfoMapService = True
         self._enableReleaseArmsService = True
         self._enableTakePictureService = True
+        self._enableMinFrontValueService = True
 
         AbstractScenarioAction.configure_intern(self)
         AbstractScenarioService.configure_intern(self)
