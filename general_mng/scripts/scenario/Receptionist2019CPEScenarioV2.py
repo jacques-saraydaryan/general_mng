@@ -64,7 +64,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_drink_by_id[0] = self.find_by_id(self._drinks, "coke")
 
         # Debug options
-        self.allow_navigation = False
+        self.allow_navigation = True
         self.allow_wait_door_open = True
         self.recog_with_picture = False
 
@@ -121,6 +121,7 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         gotodoor0_go_to = self.find_by_id(self.steps, "gotodoor0_go_to")
         self._lm_wrapper.go_to(gotodoor0_go_to["speech"], gotodoor0_go_to["arguments"]["location"], self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "DOOR_TO_ENTRANCE_02", 120.0)
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_RECEPTIONIST_WAIT_GUEST_01", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoDoor0"], self.NO_TIMEOUT)
@@ -174,11 +175,11 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_drink_by_id[1] = self.ask_drink_and_confirm(
             askinfog1_ask_drink_max_counts, askinfog1_ask_drink, askinfog1_confirm_drink, self.people_name_by_id[1])
 
-        # - Ask age
-        askinfog1_ask_age_max_counts = 3  # TODO Move this as config parameter
-        askinfog1_ask_age = self.find_by_id(self.steps, "askinfog1_ask_age")
-        askinfog1_confirm_age = self.find_by_id(self.steps, "askinfog1_confirm_age")
-        self.people_age_by_id[1] = self.ask_age_and_confirm(askinfog1_ask_age_max_counts, askinfog1_ask_age, askinfog1_confirm_age)
+        # # - Ask age
+        # askinfog1_ask_age_max_counts = 3  # TODO Move this as config parameter
+        # askinfog1_ask_age = self.find_by_id(self.steps, "askinfog1_ask_age")
+        # askinfog1_confirm_age = self.find_by_id(self.steps, "askinfog1_confirm_age")
+        # self.people_age_by_id[1] = self.ask_age_and_confirm(askinfog1_ask_age_max_counts, askinfog1_ask_age, askinfog1_confirm_age)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["AskInfoG1"], self.NO_TIMEOUT)
 
@@ -200,7 +201,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         if self.allow_navigation: self.moveTurn(math.pi)
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
+        # if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "View_GUEST_1", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR1"], self.NO_TIMEOUT)
 
@@ -223,6 +225,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         # Seat first guest
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["SeatG1"], self.NO_TIMEOUT)
         # global_step_seat_g1_start_time = time.time()
+
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "View_SOFA", 120.0)
 
         # - Find empty seat
         self.find_an_empty_chair(1)
@@ -301,11 +305,11 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.people_drink_by_id[2] = self.ask_drink_and_confirm(
             askinfog2_ask_drink_max_counts, askinfog2_ask_drink, askinfog2_confirm_drink, self.people_name_by_id[2])
 
-        # - Ask age
-        askinfog2_ask_age_max_counts = 3  # TODO Move this as config parameter
-        askinfog2_ask_age = self.find_by_id(self.steps, "askinfog2_ask_age")
-        askinfog2_confirm_age = self.find_by_id(self.steps, "askinfog2_confirm_age")
-        self.people_age_by_id[2] = self.ask_age_and_confirm(askinfog2_ask_age_max_counts, askinfog2_ask_age, askinfog2_confirm_age)
+        # # - Ask age
+        # askinfog2_ask_age_max_counts = 3  # TODO Move this as config parameter
+        # askinfog2_ask_age = self.find_by_id(self.steps, "askinfog2_ask_age")
+        # askinfog2_confirm_age = self.find_by_id(self.steps, "askinfog2_confirm_age")
+        # self.people_age_by_id[2] = self.ask_age_and_confirm(askinfog2_ask_age_max_counts, askinfog2_ask_age, askinfog2_confirm_age)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["AskInfoG2"], self.NO_TIMEOUT)
 
@@ -325,7 +329,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
         if self.allow_navigation: self.moveTurn(math.pi)
         if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02", 120.0)
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
+        # if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "LIVINGROOM_SOFA_OBSERVATION_01", 120.0)
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "View_GUEST_1", 120.0)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoLR2"], self.NO_TIMEOUT)
 
@@ -347,6 +352,8 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
 
         # Seat second guest
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["SeatG2"], self.NO_TIMEOUT)
+
+        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", "View_SOFA", 120.0)
 
         # - Find empty seat
         self.find_an_empty_chair(2)
@@ -425,12 +432,12 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                                      {"said": "Please look at me right in the eyes, and wait while I take a photo of you.",
                                       "title": "Please look at me right in the eyes, and wait while I take a photo of you... \n This may take a little while."})
             # TODO whatif the face is not properly seen ? --> Make specific scenario view that sends feedback !
-            picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[1])
+            picture_file_path = "{0}/{1}.png".format(self.pictures_folder, self.people_name_by_id[guest_id_number])
             self.takePictureAndSaveIt(picture_file_path)
             remote_file_path = ".local/share/PackageManager/apps/R2019/html/img/peoples/{0}_mod.png".format(
                 self.people_name_by_id[1])
-            picture_to_send_file_path = "{0}/{1}_mod.png".format(self.pictures_folder, self.people_name_by_id[1])
-            relative_file_path = "img/peoples/{0}_mod.png".format(self.people_name_by_id[1])
+            picture_to_send_file_path = "{0}/{1}_mod.png".format(self.pictures_folder, self.people_name_by_id[guest_id_number])
+            relative_file_path = "img/peoples/{0}_mod.png".format(self.people_name_by_id[guest_id_number])
             self.resize_img(picture_file_path, picture_to_send_file_path)
             scp_command = 'scp "{0}" "nao@{1}:{2}"'.format(picture_to_send_file_path, self.nao_ip, remote_file_path)
             os.system(scp_command)
@@ -607,15 +614,18 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
             # Remap darknet topic
             self.remap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         # Set head position
-        self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+        # self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+        self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_AT_PEOPLE, self.HEAD_YAW_CENTER, True)
         # Indicator to set head position in the future
         # 0 : head is centered
         # 1 : need to head up
         # 2 : head is up
-        person_might_be_standing = 0
+        # person_might_be_standing = 0
+        person_might_be_standing = 2
         # Angle list to turn around to find guests
         # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
-        angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        angle_list = [-180.0, -25.0, 50.0, 130, 50]
         # Beware the infinity loop
         while True:
             if self.recog_with_picture:
@@ -719,13 +729,18 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                     # Reset Head position
                     if person_might_be_standing == 2:
                         self.moveheadPose(self.HEAD_PITCH_CENTER, self.HEAD_YAW_CENTER, True)
+                        person_might_be_standing = 0
                     # Turn a bit to find someone else
                     if len(angle_list) > 0:
                         angle = angle_list.pop(0)
-                        if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
+                        # if self.allow_navigation:
+                        self.moveTurn(angle*math.pi/180.0)
                         #print "I TURN !!!!"
+                        self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "I'm looking for people",
+                                                                   "title":"I'm looking for people"})
                     else:
                         break
+                time.sleep(5.0)
             else:
                 # End introducing
                 break
@@ -771,10 +786,13 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self.moveheadPose(self.HEAD_PITCH_FOR_LOOK_FOR_CHAIR, self.HEAD_YAW_CENTER, True)
         # Turn around to introduce guests
         # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, 200.0, -225.0, 250.0, -275.0, 300.0, -325.0, 350.0]
-        angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        # angle_list = [-25.0, 50.0, -75.0, 100.0, -125.0, 150.0, -175.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0, -25.0]
+        angle_list = [-25.0, 50.0, -65.0, 90.0]
         for angle in angle_list:
+            self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "I'm looking for a place",
+                                                       "title":"I'm looking for a place"})
             # Find and point the chair in the image
-            state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["bench", "sofa"], 0, False, False, 2, 50.0)
+            state_lookAtObject, result_lookAtObject = self.lookAtObjectFromImgTopic(["bench", "sofa", "chair"], 0, False, False, 2, 50.0)
             # Loop on people found
             if result_lookAtObject is not None:
                 if result_lookAtObject.nb_label > 0:
@@ -782,7 +800,10 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
                     self.releaseArms()
                     return
             # Turn a bit to find somewhere else
-            if self.allow_navigation: self.moveTurn(angle*math.pi/180.0)
+            # if self.allow_navigation:
+            self.moveTurn(angle*math.pi/180.0)
+            time.sleep(3.0)
+
         # Remap darknet topic
         self.unremap_topic("/pepper_robot/camera/front/image_raw", "/darknet/dummy/image")
         return
