@@ -49,23 +49,21 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         AbstractScenarioBus.__init__(self,config)
         AbstractScenarioAction.__init__(self,config)
 
+        # Node Configuration
+        self.__configure()
    
         # TODO : Remove Hardocoded values and get them from config
         # self._lm_wrapper = LocalManagerWrapper("10.10.107.177", 9559, "R2019")
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.221", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper(self.nao_ip, self.nao_port, self.lm_prefix)
 
-        # with open(config.scenario_filepath) as data:
-        #ws = "/home/xia0ben/pepper_ws"
-        ws = "/home/astro/catkin_robocup2019"
-        # ws = "/home/astro/catkin_robocup2019"
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/takeOutGarbage/scenario.json".format(ws)) as data:
+        with open("{0}/takeOutGarbage/scenario.json".format(self.jsons_data_folder)) as data:
             self._scenario = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
+        with open("{0}/locations.json".format(self.jsons_data_folder)) as data:
             self._location = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/videos.json".format(
-                ws)) as data:
+        with open("{0}/videos.json".format(
+                self.jsons_data_folder)) as data:
             self._videos = json.load(data)
 
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)
@@ -73,6 +71,16 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # Debug options
         self.allow_navigation = True
         self.allow_wait_door_open = True
+
+    def __configure(self):
+        """
+        Get all parameters for the node.
+        """
+        self.nao_ip = rospy.get_param("nao_ip", "10.10.65.3")
+        self.nao_port = rospy.get_param("nao_port", "9559")
+        self.lm_prefix = rospy.get_param("prefix", "R2019")
+        self.jsons_data_folder = rospy.get_param("jsons_data_folder",
+                                                 "/home/xia0ben/pepper_ws/src/robocup-main/robocup_pepper-scenario_data_generator/jsons")
 
     def startScenario(self):
         rospy.loginfo("""
@@ -95,6 +103,9 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # Wait for door to open
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["waitDoorOpen"], self.NO_TIMEOUT)
 
+        self._lm_wrapper.generic(self.NO_TIMEOUT,
+                                 {"said": "-",
+                                  "title": "-"})
         # - Detect door opening
         waitdooropen_detect = self.find_step(steps, "waitdooropen_detect")
         if self.allow_wait_door_open: self.waitForDoorToOpen(float(waitdooropen_detect["arguments"]["check_freq"]))
@@ -201,7 +212,10 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB1"], self.NO_TIMEOUT)
         ##Release Arm at the end
         self.releaseArms()
-        
+
+        # - Finish Scenario
+        self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "Well, I'm done !",
+                                                   "title":"My scenario is finished !"})
 
 
         ###############################################################################################################
@@ -349,7 +363,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         result = self._gotoTakePose(arm_l_or_r=self.current_arm,turn_rad=0.5,stiffness=0.7)
 
     def poseToCarryGarbage(self):
-        result = self._gotoCarryPose(arm_l_or_r=self.current_arm,keep_pose=True,stiffness=0.9)
+        result = self._gotoCarryPose(arm_l_or_r=self.current_arm,keep_pose=True,stiffness=1.0)
 
     def releaseArms(self):
         result = self._releaseArms(stiffness=0.7)

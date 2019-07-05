@@ -115,6 +115,9 @@ class Receptionist2019CPEScenarioV2(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoDoor0"], self.NO_TIMEOUT)
 
         # - Detect door opening
+        self._lm_wrapper.generic(self.NO_TIMEOUT,
+                                 {"said": "-",
+                                  "title": "-"})
         if self.allow_wait_door_open: self.waitForDoorToOpen(10.0)
 
         # - Go to door

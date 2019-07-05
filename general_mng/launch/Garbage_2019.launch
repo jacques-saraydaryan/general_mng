@@ -6,6 +6,9 @@
     <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" />
     <arg name="map_file" default="$(find pepper_nav_custom)/maps/robocup-2019/robocup_2019_2_mod1.yaml"/>
 
+    <param name="nao_ip" value="$(arg nao_ip)"/>
+    <arg name="jsons_data_folder" default="/home/catkin_robocup2019/src/robocup-main/robocup_pepper-scenario_data_generator/jsons"/>
+    <param name="jsons_data_folder" value="$(arg jsons_data_folder)"/>
 
     <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
         <param name="confPath" value="$(arg mapManagerConfPath)"/>
