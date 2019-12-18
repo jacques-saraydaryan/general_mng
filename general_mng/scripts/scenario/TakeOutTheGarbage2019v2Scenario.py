@@ -6,7 +6,6 @@ import time
 import random
 import actionlib
 
-
 import json
 
 import time
@@ -71,6 +70,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # Debug options
         self.allow_navigation = True
         self.allow_wait_door_open = True
+        self.debug_go_to_first_bin = True
 
     def __configure(self):
         """
@@ -121,17 +121,17 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ################################
 
         # Go to the first Bin
-        self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
-        gotolr1_ask_to_b1 = self.find_step(steps, "gotob1_go-to-the-first-bin")
-        ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
-        bean1_location = self.find_location(self._location, gotolr1_ask_to_b1["arguments"]["location"])
-        self._lm_wrapper.go_to(gotolr1_ask_to_b1["speech"], bean1_location, self.NO_TIMEOUT)
-        goto_initial_pose = self.find_step(steps, "goto_initial_pose")
-        if self.allow_navigation: orderState0a=self.sendNavOrderAction("NP","CRRCloseToGoal", "DOOR_TO_ENTRANCE_02",120.0)
-        if self.allow_navigation: orderState0b=self.sendNavOrderAction("NP","CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02",120.0)
-        if self.allow_navigation: orderState0c=self.sendNavOrderAction("NP","CRRCloseToGoal", "LIVINGROOM_BIN_01",120.0)
-        self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
-
+        if self.debug_go_to_first_bin:
+            self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
+            gotolr1_ask_to_b1 = self.find_step(steps, "gotob1_go-to-the-first-bin")
+            ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
+            bean1_location = self.find_location(self._location, gotolr1_ask_to_b1["arguments"]["location"])
+            self._lm_wrapper.go_to(gotolr1_ask_to_b1["speech"], bean1_location, self.NO_TIMEOUT)
+            goto_initial_pose = self.find_step(steps, "goto_initial_pose")
+            if self.allow_navigation: orderState0a=self.sendNavOrderAction("NP","CRRCloseToGoal", "DOOR_TO_ENTRANCE_02",120.0)
+            if self.allow_navigation: orderState0b=self.sendNavOrderAction("NP","CRRCloseToGoal", "ENTRANCE_TO_LIVINGROOM_02",120.0)
+            if self.allow_navigation: orderState0c=self.sendNavOrderAction("NP","CRRCloseToGoal", "LIVINGROOM_BIN_01",120.0)
+            self._lm_wrapper.timeboard_send_step_done(step_id_to_index["GotoB1"], self.NO_TIMEOUT)
 
         ################################
         ### 1. Take the first Bin    ###
@@ -147,12 +147,12 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
             
             #FIXME need to check also the waittime
             self._lm_wrapper.call_human(call1r1_take_bin1["speech"],3.0,self.NO_TIMEOUT)
-            call2r1_take_bin1 = self.find_step(steps, "takeb1_explain-how-to-prepare-the-bag")
+            # call2r1_take_bin1 = self.find_step(steps, "takeb1_explain-how-to-prepare-the-bag")
 
             #self.sendTtsOrderAction("TTS",call2r1_take_bin1["speech"]["said"] ,"NO_WAIT_END","English",60.0)
-            self._lm_wrapper.generic( self.NO_TIMEOUT, call2r1_take_bin1["speech"])
-            video = self.find_video(self._videos, call2r1_take_bin1["arguments"]["what"])
-            self._lm_wrapper.show_video({"title":'How to close the garbage',"description":'this video shows how to close the garbage '},video,self.NO_TIMEOUT)
+            # self._lm_wrapper.generic( self.NO_TIMEOUT, call2r1_take_bin1["speech"])
+            # video = self.find_video(self._videos, call2r1_take_bin1["arguments"]["what"])
+            # self._lm_wrapper.show_video({"title":'How to close the garbage',"description":'this video shows how to close the garbage '},video,self.NO_TIMEOUT)
 
             ##Be ready to take garbage
             self.poseToTakeGarbage()
@@ -198,7 +198,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         if self.allow_navigation: orderState1c =self.sendNavOrderAction("NP","CRRCloseToGoal","KITCHEN_WAYPOINT_TO_DOOR_01",120.0)
         if self.allow_navigation: orderState1d =self.sendNavOrderAction("NP","CRRCloseToGoal","KITCHEN_TO_DOOR_01",120.0)
         if self.allow_navigation: orderState1e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_02", 120.0)
-        if self.allow_navigation: orderState1f = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+        if self.allow_navigation: orderState1e = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_03", 120.0)
+        if self.allow_navigation: orderState1f = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_03", 120.0)
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB1"], self.NO_TIMEOUT)
 
         ################################
@@ -213,11 +214,6 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         ##Release Arm at the end
         self.releaseArms()
 
-        # - Finish Scenario
-        self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "Well, I'm done !",
-                                                   "title":"My scenario is finished !"})
-
-
         ###############################################################################################################
         #################################################### 2nd bin###################################################
         ###############################################################################################################
@@ -227,7 +223,7 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # ################################
         #
         #  # Go to the second B
-        # seposeToReleaseArmlf._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
+        # self._lm_wrapper.timeboard_set_current_step(step_id_to_index["GotoB2"], self.NO_TIMEOUT)
         # goto2r1_ask_to_b1 = self.find_step(steps, "gotob2_go-to-the-second-bin")
         # ##FIXME Error on python side on the pepper --> [WARN ] [Arg Fetcher]: Key not found: said
         # bean2_location = self.find_location(self._location, goto2r1_ask_to_b1["arguments"]["location"])
@@ -293,7 +289,8 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # if self.allow_navigation: orderState3a = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_WAYPOINT_TO_DOOR_02", 120.0)
         # if self.allow_navigation: orderState1b =self.sendNavOrderAction("NP","CRRCloseToGoal","KITCHEN_TO_DOOR_01",120.0)
         # if self.allow_navigation: orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_02", 120.0)
-        # if self.allow_navigation: orderState1d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_01", 120.0)
+        # if self.allow_navigation: orderState1c = self.sendNavOrderAction("NP", "CRRCloseToGoal", "KITCHEN_TO_DOOR_03", 120.0)
+        # if self.allow_navigation: orderState1d = self.sendNavOrderAction("NP", "CRRCloseToGoal", "OUTSIDE_GARBAGE_COLLECTION_ZONE_02", 120.0)
         #
         # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["CarryB2"], self.NO_TIMEOUT)
         #
@@ -308,8 +305,12 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
         # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["DropB2"], self.NO_TIMEOUT)
         # ##Release Arm at the end
         # self.releaseArms()
+        #
+        # self._lm_wrapper.timeboard_send_step_done(step_id_to_index["finishscenario_finish-scenario"], self.NO_TIMEOUT)
 
-        #self._lm_wrapper.timeboard_send_step_done(step_id_to_index["finishscenario_finish-scenario"], self.NO_TIMEOUT)
+        # - Finish Scenario
+        self._lm_wrapper.generic(self.NO_TIMEOUT, {"said": "Well, I'm done !",
+                                                   "title":"My scenario is finished !"})
 
 
     def gmBusListener(self,msg): 

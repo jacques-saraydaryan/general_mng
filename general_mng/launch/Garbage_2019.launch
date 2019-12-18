@@ -50,4 +50,7 @@
     </include>
     -->
 
+
+    <remap from="pepper_robot/camera/front/image_raw" to="image"/>
+
 </launch>
