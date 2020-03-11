@@ -2,20 +2,6 @@ GeneralManager:
   #config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
   config_folder: '/home/xia0ben/pepper_ws/data/general_management'
   all_scenarios:
-    - 'COCKTAIL_PARTY'
-    - 'TEST_NAVIG'
-    - 'DOOR_OPENED_NAVIG'
-    - 'TEST_DIALOGUE'
-    - 'TEST_COCKTAIL_PARTY_V3'
-    - 'TEST_COCKTAIL_PARTY_V2'
-    - 'TEST_HOOMANO'
-    - 'SPRV1'
-    - 'SPRV2'
-    - 'INSPECTION'
-    - 'GPRSV1'
-    - 'GPRSV2CPE'
-    - 'GARBAGE_2019V2_CPE'
-    - 'RECEPTIONIST_2019_CPE'
-    - 'TEST_FACE_LEARN_AND_FIND_POINT'
-    - 'INSPECTION_2019'
-  current_scenario: 'INSPECTION_2019' # Must be in the "scenarios" list above
+    - 'DoorOpenAndNavigScenarioV1'
+    - 'NavigationPerceptionV1'
+  current_scenario: 'NavigationPerceptionV1' # Must be in the "scenarios" list above
