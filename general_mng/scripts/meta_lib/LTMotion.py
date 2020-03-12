@@ -14,6 +14,7 @@ from dialogue_hri_srvs.srv import ReleaseArms
 from pepper_pose_for_nav.srv import MoveHeadAtPosition
 from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
+from dialogue_hri_srvs.srv import TurnToInterestPoint
 
 
 class LTMotion(LTAbstract):
@@ -93,6 +94,16 @@ class LTMotion(LTAbstract):
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the release_arms service.")
 
+        # Connect to turn_to_interest_point service
+        if self._enableTurnToInterestPointService:
+            rospy.loginfo("Connecting to the turn_to_interest_point service...")
+            self._turnToInterestPointSP = rospy.ServiceProxy('turn_to_interest_point', TurnToInterestPoint)
+            try:
+                turn_to_interest_point_srv_is_up = rospy.wait_for_service('turn_to_interest_point', timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("Connected to the turn_to_interest_point service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the turn_to_interest_point service.")
+
 
     def reset(self):
         self.configure_intern()
@@ -105,7 +116,7 @@ class LTMotion(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._look_at_object,
+            LTAbstract.ACTION: self.__look_at_object,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -139,7 +150,7 @@ class LTMotion(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._move_head_pose
+            LTAbstract.SERVICE: self.__move_head_pose
         }
 
         fct = switcher[service_mode]
@@ -171,7 +182,7 @@ class LTMotion(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._move_turn
+            LTAbstract.SERVICE: self.__move_turn
         }
 
         fct = switcher[service_mode]
@@ -201,7 +212,7 @@ class LTMotion(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._point_at
+            LTAbstract.SERVICE: self.__point_at
         }
 
         fct = switcher[service_mode]
@@ -233,7 +244,7 @@ class LTMotion(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._release_arms
+            LTAbstract.SERVICE: self.__release_arms
         }
 
         fct = switcher[service_mode]
@@ -256,11 +267,53 @@ class LTMotion(LTAbstract):
                 return response
         return response
 
+
+    def turn_to_interest_point(self, interest_point_label, service_mode=LTAbstract.SERVICE):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__turn_to_interest_point
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for turn_to_interest_point" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(interest_point_label)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during turn_to_interest_point interest_point_label:[%s] " % (interest_point_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes turn_to_interest_point interest_point_label:[%s] " % (interest_point_label)
+                response.result = result
+                return response
+        return response
+
     #######################################
     # MOTION ACTION
     ######################################
 
-    def _look_at_object(self, labels, index, head, base, finger, timeout):
+    def __turn_to_interest_point(self, interest_point_label):
+        try:
+            result = self._turnToInterestPointSP(interest_point_label)
+            return GoalStatus.SUCCEEDED, result
+        except rospy.ServiceException as e:
+            rospy.logerr("Service turn_to_interest_point_srv could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service turn_to_interest_point_srv could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+
+    def __look_at_object(self, labels, index, head, base, finger, timeout):
         try:
             goalLookAtObj = LookAtObjectGoal()
             goalLookAtObj.labels = labels
@@ -289,7 +342,7 @@ class LTMotion(LTAbstract):
             rospy.logwarn("###### LOOK AT OBJECT MNG ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED, None
 
-    def _move_head_pose(self, pitch_value, yaw_value, track):
+    def __move_head_pose(self, pitch_value, yaw_value, track):
         try:
             result = self._moveHeadPoseSP(pitch_value, yaw_value, track)
             return GoalStatus.SUCCEEDED, result
@@ -297,27 +350,39 @@ class LTMotion(LTAbstract):
         except rospy.ServiceException as e:
             rospy.logerr("Service move_head_pose_srv could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service move_head_pose_srv could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
 
-    def _move_turn(self, rad):
+    def __move_turn(self, rad):
         try:
             result = self._moveTurnSP(rad)
             return GoalStatus.SUCCEEDED, result
         except rospy.ServiceException as e:
             rospy.logerr("Service move_turn_service could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service move_turn_service could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
 
-    def _point_at(self, x, y, z, head, arm, duration):
+    def __point_at(self, x, y, z, head, arm, duration):
         try:
             result = self._pointAtSP(x, y, z, head, arm, duration)
             return GoalStatus.SUCCEEDED, result
         except rospy.ServiceException as e:
             rospy.logerr("Service point_at could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service point_at could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
 
-    def _release_arms(self):
+    def __release_arms(self):
         try:
             result = self._releaseArmsSP(self.RELEASE_ARM_STIFFNESS)
             return GoalStatus.SUCCEEDED, result
         except rospy.ServiceException as e:
+            rospy.logerr("Service release_arms could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
             rospy.logerr("Service release_arms could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None

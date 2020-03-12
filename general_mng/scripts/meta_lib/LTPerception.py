@@ -18,6 +18,7 @@ import cv2
 from rospy.exceptions import ROSException, ROSInterruptException
 from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
+from dialogue_hri_srvs.srv import TakePicture
 
 
 class LTPerception(LTAbstract):
@@ -31,6 +32,7 @@ class LTPerception(LTAbstract):
     _enableGetPeopleNameAction = True
     _enableMinFrontValueService = False
     _enableResetPersonMetaInfoMapService = False
+    _enableTakePictureService = False
 
     def __init__(self):
         self.configure_intern()
@@ -104,6 +106,16 @@ class LTPerception(LTAbstract):
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the min_front_value_srv service.")
 
+        # Connect to take_picture_service service
+        if self._enableTakePictureService:
+            rospy.loginfo("Connecting to the take_picture_service service...")
+            self._takePictureSP = rospy.ServiceProxy('take_picture_service', TakePicture)
+            try:
+                take_picture_srv_is_up = rospy.wait_for_service('take_picture_service', timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("Connected to the take_picture_service service.")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the take_picture_service service.")
+
     def reset(self):
         self.configure_intern()
 
@@ -111,12 +123,45 @@ class LTPerception(LTAbstract):
     # PERCEPTION API
     ######################################
 
-    def get_object_in_front_robot(self, labels, move_head, timeout, service_mode=LTAbstract.ACTION):
+    # def get_object_in_front_robot(self, labels, move_head, timeout, service_mode=LTAbstract.ACTION):
+    #     response = LTServiceResponse()
+    #
+    #     # Check different service mode
+    #     switcher = {
+    #         LTAbstract.ACTION: self.__get_object_in_front_robot,
+    #         LTAbstract.BUS: None,
+    #         LTAbstract.SERVICE: None
+    #     }
+    #
+    #     fct = switcher[service_mode]
+    #
+    #     # if service mode not available return an Failure
+    #     if fct is None:
+    #         response.status = LTServiceResponse.FAILURE_STATUS
+    #         response.msg = " is not available for get_object_in_front_robot" % (service_mode)
+    #         return response
+    #     else:
+    #         feedback, result = fct(labels, move_head, timeout)
+    #         response.process_state(feedback)
+    #
+    #         if response.status == LTServiceResponse.FAILURE_STATUS:
+    #             response.msg = " Failure during get_object_in_front_robot to labels:[%s], move_head:[%s]" % (
+    #                 labels, move_head)
+    #             return response
+    #         else:
+    #             # FIXME to be completed with all ACTION status in GoalStatus
+    #             response.msg = " Operation success get_object_in_front_robot to to labels:[%s], move_head:[%s]" % (
+    #                 labels, move_head)
+    #             response.payload = result
+    #             return response
+    #     return response
+
+    def detect_objects_with_look_around(self, labels, timeout, service_mode=LTAbstract.ACTION):
         response = LTServiceResponse()
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._get_object_in_front_robot,
+            LTAbstract.ACTION: self.__detect_objects_with_look_around,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -126,20 +171,119 @@ class LTPerception(LTAbstract):
         # if service mode not available return an Failure
         if fct is None:
             response.status = LTServiceResponse.FAILURE_STATUS
-            response.msg = " is not available for get_object_in_front_robot" % (service_mode)
+            response.msg = " is not available for detect_objects_with_look_around" % (service_mode)
             return response
         else:
-            feedback, result = fct(labels, move_head, timeout)
+            feedback, result = fct(labels, timeout)
             response.process_state(feedback)
 
             if response.status == LTServiceResponse.FAILURE_STATUS:
-                response.msg = " Failure during get_object_in_front_robot to labels:[%s], move_head:[%s]" % (
-                    labels, move_head)
+                response.msg = " Failure during detect_objects_with_look_around to labels:[%s]" % (
+                    labels)
                 return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
-                response.msg = " Operation success get_object_in_front_robot to to labels:[%s], move_head:[%s]" % (
-                    labels, move_head)
+                response.msg = " Operation success detect_objects_with_look_around to to labels:[%s]s" % (
+                    labels)
+                response.payload = result
+                return response
+        return response
+
+    def detect_objects_with_given_sight_from_img_topic(self, labels, timeout, service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__detect_objects_with_given_sight_from_img_topic,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for detect_objects_with_given_sight_from_img_topic" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(labels, timeout)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during detect_objects_with_given_sight_from_img_topic to labels:[%s]" % (
+                    labels)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success detect_objects_with_given_sight_from_img_topic to to labels:[%s]s" % (
+                    labels)
+                response.payload = result
+                return response
+        return response
+
+    def detect_objects_with_given_sight_from_img_path(self, labels, path, timeout, service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__detect_objects_with_given_sight_from_img_path,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for detect_objects_with_given_sight_from_img_topic" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(labels, path, timeout)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during detect_objects_with_given_sight_from_img_topic to labels:[%s] path:[%s]" % (
+                    labels,path)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success detect_objects_with_given_sight_from_img_topic to labels:[%s] path:[%s]" % (
+                    labels,path)
+                response.payload = result
+                return response
+        return response
+
+    def take_picture_and_save_it(self, path, service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__take_picture_and_save_it,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for take_picture_and_save_it" % (service_mode)
+            return response
+        else:
+            feedback, result = fct( path)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during take_picture_and_save_it to path:[%s]" % (
+                    path)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success take_picture_and_save_it to path:[%s]" % (
+                    path)
                 response.payload = result
                 return response
         return response
@@ -149,7 +293,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._learn_people_meta_from_img_topic,
+            LTAbstract.ACTION: self.__learn_people_meta_from_img_topic,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -182,7 +326,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._learn_people_meta_from_img_path,
+            LTAbstract.ACTION: self.__learn_people_meta_from_img_path,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -215,7 +359,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._learn_people_meta,
+            LTAbstract.ACTION: self.__learn_people_meta,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -248,7 +392,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._detect_meta_people,
+            LTAbstract.ACTION: self.__detect_meta_people,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -279,7 +423,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._detect_meta_people_from_img_path,
+            LTAbstract.ACTION: self.__detect_meta_people_from_img_path,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -312,7 +456,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._detect_meta_people,
+            LTAbstract.ACTION: self.__detect_meta_people,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -345,7 +489,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._get_people_name_from_img_topic,
+            LTAbstract.ACTION: self.__get_people_name_from_img_topic,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -376,7 +520,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._get_people_name,
+            LTAbstract.ACTION: self.__get_people_name,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -407,7 +551,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._get_people_name_from_img_path,
+            LTAbstract.ACTION: self.__get_people_name_from_img_path,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -442,7 +586,7 @@ class LTPerception(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._reset_people_meta_info_map,
+            LTAbstract.SERVICE: self.__reset_people_meta_info_map,
         }
 
         fct = switcher[service_mode]
@@ -478,7 +622,7 @@ class LTPerception(LTAbstract):
         switcher = {
             LTAbstract.ACTION: None,
             LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self._wait_for_door_to_open,
+            LTAbstract.SERVICE: self.__wait_for_door_to_open,
         }
 
         fct = switcher[service_mode]
@@ -508,17 +652,54 @@ class LTPerception(LTAbstract):
     # PERCEPTION ACTION
     ######################################
 
-    def _get_object_in_front_robot(self, labels, move_head, timeout):
+    def __detect_objects_with_look_around(self, labels, timeout):
+        """
+        Pepper will move its head to find the desired objects with Darknet and the image flow.
+        """
+
+        # Create the goal
+        goalObjDetection = ObjectDetectionGoal()
+        goalObjDetection.labels = labels
+        goalObjDetection.moveHead = True
+        # Outputs
+        state, result = self.__detectObjects(goalObjDetection, timeout)
+
+        return state, result
+
+    def __detect_objects_with_given_sight_from_img_topic(self, labels, timeout):
+        """
+        Darknet will try to detect objects in the current image flow
+        """
+        # Create the goal
+        goalObjDetection = ObjectDetectionGoal()
+        goalObjDetection.labels = labels
+        goalObjDetection.moveHead = False
+        # Outputs
+        state, result = self.__detectObjects(goalObjDetection, timeout)
+        return state, result
+
+    def __detect_objects_with_given_sight_from_img_path(self, labels, path, timeout):
+        """
+        Darknet will try to detect objects in a image file
+        """
+        # Create the goal
+        goalObjDetection = ObjectDetectionGoal()
+        goalObjDetection.labels = labels
+        goalObjDetection.path = path
+        goalObjDetection.moveHead = False
+        # Outputs
+        state, result = self.__detectObjects(goalObjDetection, timeout)
+        return state, result
+
+    def __detectObjects(self, goal, timeout):
+        """
+        Private function.
+        Send an ObjectDetection goal to the related action server and return the results.
+        """
         try:
-            goalObjDetection = ObjectDetectionGoal()
-            goalObjDetection.labels = labels
-            goalObjDetection.moveHead = move_head
-
-            rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",
-                          str(goalObjDetection).replace('\n', ', '))
-
+            rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s", str(goal).replace('\n', ', '))
             # send the current goal to the action server
-            self._actionObjectDetectionMng_server.send_goal(goalObjDetection)
+            self._actionObjectDetectionMng_server.send_goal(goal)
             # wait action server result
             finished_before_timeout = self._actionObjectDetectionMng_server.wait_for_result(
                 rospy.Duration.from_sec(timeout))
@@ -534,21 +715,65 @@ class LTPerception(LTAbstract):
             rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED, None
 
-    def _learn_people_meta_from_img_topic(self, name, timeout):
+##--------------------
+
+
+    # def __get_object_in_front_robot(self, labels, move_head, timeout):
+    #     try:
+    #         goalObjDetection = ObjectDetectionGoal()
+    #         goalObjDetection.labels = labels
+    #         goalObjDetection.moveHead = move_head
+    #
+    #         rospy.loginfo("### OBJECT DETECTION MNG GET OBJECT ACTION PENDING : %s",
+    #                       str(goalObjDetection).replace('\n', ', '))
+    #
+    #         # send the current goal to the action server
+    #         self._actionObjectDetectionMng_server.send_goal(goalObjDetection)
+    #         # wait action server result
+    #         finished_before_timeout = self._actionObjectDetectionMng_server.wait_for_result(
+    #             rospy.Duration.from_sec(timeout))
+    #         state = self._actionObjectDetectionMng_server.get_state()
+    #         result = self._actionObjectDetectionMng_server.get_result()
+    #         rospy.loginfo("###### OBJECT DETECTION MNG GET OBJECT ACTION END , State: %s", str(state))
+    #         # if timeout cancel all goals on the action server
+    #         if finished_before_timeout:
+    #             self._actionObjectDetectionMng_server.cancel_all_goals()
+    #         # return both state : action state, success:3, failure:4, timeout:1 and result (information send back naoqi)
+    #         return state, result
+    #     except Exception as e:
+    #         rospy.logwarn("###### OBJECT DETECTION MNG ACTION FAILURE , State: %s", str(e))
+    #     return GoalStatus.ABORTED, None
+
+    def __take_picture_and_save_it(self, path):
+        """
+        Take a picture with the naoqi request API and then save it in a dedicated file in png format.
+        path must be the picture absolute path.
+        """
+        try:
+            result = self._takePictureSP(path)
+            return GoalStatus.SUCCEEDED, result
+        except rospy.ServiceException as e:
+            rospy.logerr("Service take_picture_service could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service take_picture_service could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+
+    def __learn_people_meta_from_img_topic(self, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
         goalLearnPeople = LearnPeopleFromImgGoal(name=name)
-        state, result = self._learn_people_meta(goalLearnPeople, timeout)
+        state, result = self.__learn_people_meta(goalLearnPeople, timeout)
         return state, result
 
-    def _learn_people_meta_from_img_path(self, img_path, name, timeout):
+    def __learn_people_meta_from_img_path(self, img_path, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
         img_loaded = cv2.imread(img_path)
         msg_img = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
         goalLearnPeople = LearnPeopleFromImgGoal(name=name, img=msg_img)
-        state, result = self._learn_people_meta(goalLearnPeople, timeout)
+        state, result = self.__learn_people_meta(goalLearnPeople, timeout)
         return state, result
 
-    def _learn_people_meta(self, goalLearnPeople, timeout):
+    def __learn_people_meta(self, goalLearnPeople, timeout):
         try:
             rospy.loginfo("### LEARN PEOPLE ATTRIBUTES ACTION PENDING")
             # send the current goal to the action server
@@ -568,19 +793,19 @@ class LTPerception(LTAbstract):
             rospy.logwarn("###### LEARN PEOPLE ATTRIBUTES FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED, None
 
-    def _detect_meta_people_from_img_topic(self, timeout):
+    def __detect_meta_people_from_img_topic(self, timeout):
         goalMetaPeople = ProcessPeopleFromImgGoal()
-        state, result = self._detect_meta_people(goalMetaPeople, timeout)
+        state, result = self.__detect_meta_people(goalMetaPeople, timeout)
         return state, result
 
-    def _detect_meta_people_from_img_path(self, img_path, timeout):
+    def __detect_meta_people_from_img_path(self, img_path, timeout):
         img_loaded1 = cv2.imread(img_path)
         msg_im1 = self._bridge.cv2_to_imgmsg(img_loaded1, encoding="bgr8")
         goalMetaPeople = ProcessPeopleFromImgGoal(img=msg_im1)
-        state, result = self._detect_meta_people(goalMetaPeople, timeout)
+        state, result = self.__detect_meta_people(goalMetaPeople, timeout)
         return state, result
 
-    def _detect_meta_people(self, goalMetaPeople, timeout):
+    def __detect_meta_people(self, goalMetaPeople, timeout):
         try:
             rospy.loginfo("### DETECT META PEOPLE ACTION PENDING")
             # send the current goal to the action server
@@ -600,19 +825,19 @@ class LTPerception(LTAbstract):
             rospy.logwarn("###### DETECT META PEOPLE FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED, None
 
-    def _get_people_name_from_img_topic(self, timeout):
+    def __get_people_name_from_img_topic(self, timeout):
         goalPeopleName = GetPeopleNameFromImgGoal()
-        state, result = self._get_people_name(goalPeopleName, timeout)
+        state, result = self.__get_people_name(goalPeopleName, timeout)
         return state, result
 
-    def _get_people_name_from_img_path(self, img_path, timeout):
+    def __get_people_name_from_img_path(self, img_path, timeout):
         img_loaded = cv2.imread(img_path)
         img_msg = self._bridge.cv2_to_imgmsg(img_loaded, encoding="bgr8")
         goalPeopleName = ProcessPeopleFromImgGoal(img=img_msg)
-        state, result = self._get_people_name(goalPeopleName, timeout)
+        state, result = self.__get_people_name(goalPeopleName, timeout)
         return state, result
 
-    def _get_people_name(self, goalPeopleName, timeout):
+    def __get_people_name(self, goalPeopleName, timeout):
         try:
             rospy.loginfo("### GET PEOPLE NAME ACTION PENDING")
             # send the current goal to the action server
@@ -635,7 +860,7 @@ class LTPerception(LTAbstract):
 
         return GoalStatus.ABORTED, None
 
-    def _reset_people_meta_info_map(self):
+    def __reset_people_meta_info_map(self):
         try:
             result = self._resetPeopleMetaInfoMapSP()
             return GoalStatus.SUCCEEDED, result
@@ -646,7 +871,7 @@ class LTPerception(LTAbstract):
             rospy.logerr("Service min_front_value_srv could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None
 
-    def _wait_for_door_to_open(self, check_freq, min_dist):
+    def __wait_for_door_to_open(self, check_freq, min_dist):
         """
         Check the min front value at a given frequency.
 

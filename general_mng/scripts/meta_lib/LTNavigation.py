@@ -47,7 +47,7 @@ class LTNavigation(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._send_nav_order_action,
+            LTAbstract.ACTION: self.__send_nav_order_action,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -79,7 +79,7 @@ class LTNavigation(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._send_nav_order_to_pt_action,
+            LTAbstract.ACTION: self.__send_nav_order_to_pt_action,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -110,7 +110,7 @@ class LTNavigation(LTAbstract):
     # NAVIGATION ACTION
     ######################################
 
-    def _send_nav_order_action(self, action, mode, itP, timeout):
+    def __send_nav_order_action(self, action, mode, itP, timeout):
         try:
 
             goal = NavMngGoal()
@@ -130,7 +130,7 @@ class LTNavigation(LTAbstract):
             rospy.logwarn("###### NAV ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED
 
-    def _send_nav_order_to_pt_action(self, action, mode, x, y, timeout):
+    def __send_nav_order_to_pt_action(self, action, mode, x, y, timeout):
         try:
             goal = NavMngGoal()
             goal.action = action

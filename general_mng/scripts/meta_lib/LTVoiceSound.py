@@ -69,7 +69,7 @@ class LTVoiceSound(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._send_tts_order_action,
+            LTAbstract.ACTION: self.__send_tts_order_action,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -101,7 +101,7 @@ class LTVoiceSound(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._send_dialogue_order_action,
+            LTAbstract.ACTION: self.__send_dialogue_order_action,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -134,7 +134,7 @@ class LTVoiceSound(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self._add_in_pepper_memory,
+            LTAbstract.ACTION: self.__add_in_pepper_memory,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }
@@ -166,7 +166,7 @@ class LTVoiceSound(LTAbstract):
     # VOICE ACTION
     ######################################
 
-    def _send_tts_order_action(self, action, txt, mode, lang, timeout):
+    def __send_tts_order_action(self, action, txt, mode, lang, timeout):
         try:
             goalTts = TtsHriGoal()
             goalTts.action = action
@@ -183,7 +183,7 @@ class LTVoiceSound(LTAbstract):
             rospy.logwarn("###### TTS ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED
 
-    def _send_dialogue_order_action(self, signal_to_emit, signal_to_wait, timeout):
+    def __send_dialogue_order_action(self, signal_to_emit, signal_to_wait, timeout):
         try:
             goalDialogue = DialogueSendSignalGoal()
             # signal send to naoqi
@@ -207,7 +207,7 @@ class LTVoiceSound(LTAbstract):
             rospy.logwarn("###### TTS ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED, None
 
-    def _add_in_pepper_memory(self, memory_location, json_payload, timeout):
+    def __add_in_pepper_memory(self, memory_location, json_payload, timeout):
         goalAddInMemory = AddInMemoryGoal()
         goalAddInMemory.memory_location = memory_location
         goalAddInMemory.payload = json_payload
