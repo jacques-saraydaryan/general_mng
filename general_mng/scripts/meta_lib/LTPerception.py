@@ -30,9 +30,10 @@ class LTPerception(LTAbstract):
     _enableLearnPeopleMetaAction = True
     _enableMultiplePeopleDetectionAction = True
     _enableGetPeopleNameAction = True
-    _enableMinFrontValueService = False
-    _enableResetPersonMetaInfoMapService = False
-    _enableTakePictureService = False
+    _enableMinFrontValueService = True
+    _enableResetPersonMetaInfoMapService = True
+    _enableResetPersonMetaInfoMapService = True
+    _enableTakePictureService = True
 
     def __init__(self):
         self.configure_intern()

@@ -14,6 +14,7 @@ class LTAbstract:
 
     ACTION_WAIT_TIMEOUT = 1.0
     SERVICE_WAIT_TIMEOUT = 1.0
+    REMOTE_DEVICE_WAIT_TIMEOUT = 1.0
 
     configurationReady = False
 

@@ -1,6 +1,6 @@
 GeneralManager:
   #config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
-  config_folder: '/home/xia0ben/pepper_ws/data/general_management'
+  config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
   all_scenarios:
     - 'DoorOpenAndNavigScenarioV1'
     - 'NavigationPerceptionV1'
