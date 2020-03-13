@@ -10,9 +10,9 @@ from tts_hri.msg import TtsHriGoal, TtsHriAction
 from dialogue_hri_actions.msg import DialogueSendSignalAction, DialogueSendSignalGoal, AddInMemoryAction, AddInMemoryGoal
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from object_management.msg import LookAtObjectAction, LookAtObjectGoal, LookAtObjectResult
-from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
-from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
-from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
+# from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
+# from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
+# from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
 # from dialogue_hri_actions.msg import RequestToLocalManagerGoal, RequestToLocalManagerAction
 
 from actionlib_msgs.msg import GoalStatus
@@ -162,10 +162,10 @@ class AbstractScenarioAction:
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionNavMng_server.get_state()
-            if state == GoalStatus.ABORTED:
-                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
-            else:
+            if state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
+            else:
+                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             return state
         except Exception as e:
              rospy.logwarn("###### NAV ACTION FAILURE , State: %s",str(e))
@@ -184,10 +184,10 @@ class AbstractScenarioAction:
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state=self._actionNavMng_server.get_state()
-            if state == GoalStatus.ABORTED:
-                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
+            if state == GoalStatus.SUCCEEDED:
+                rospy.loginfo("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.logwarn("###### NAV ACTION END , State: %s",self.action_status_to_string(state))
             return state
 
         except Exception as e:

@@ -43,20 +43,18 @@ class TakeOutTheGarbage2019v2Scenario(AbstractScenario,AbstractScenarioBus,Abstr
 
         self._enableMoveHeadPoseService = True
 
-
         AbstractScenarioBus.__init__(self,config)
         AbstractScenarioAction.__init__(self,config)
-
    
-        # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("192.168.42.221", 9559, "R2019")
+        # TODO : Remove Hardcoded values and get them from config
+        self._lm_wrapper = LocalManagerWrapper("127.0.0.1", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        with open("/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management/jsons/takeOutGarbage/scenario.json") as data:
+        with open("/home/nao/ros_robocup_ws/data/scenarios/takeOutGarbage/scenario.json") as data:
             self._scenario = json.load(data)
-        with open("/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management/jsons/locations.json") as data:
+        with open("/home/nao/ros_robocup_ws/data/misc/locations.json") as data:
             self._location=json.load(data)
-        with open("/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management/jsons/videos.json") as data:
+        with open("/home/nao/ros_robocup_ws/data/misc/videos.json") as data:
             self._videos=json.load(data)
 
         self._getPoint_service = rospy.ServiceProxy('get_InterestPoint', getitP_service)

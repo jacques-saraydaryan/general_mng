@@ -1,9 +1,9 @@
 <launch>
     <env name="PYTHONPATH" value="$(env PYTHONPATH)" />
 
-    <arg name="nao_ip" default="$(optenv NAO_IP 192.168.1.189)" />
+    <arg name="nao_ip" default="$(optenv NAO_IP 127.0.0.1)" />
     <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
-    <arg name="mapManagerConfPath" default="/home/xia0ben/pepper_ws/data/world_mng/interest_points/" />
+    <arg name="mapManagerConfPath" default="/home/nao/ros_robocup_ws/data/POIs/interest_points/" />
 
     <node pkg="map_manager" type="MapManager.py" name="map_manager" required="false" output="screen">
         <param name="confPath" value="$(arg mapManagerConfPath)"/>

@@ -10,6 +10,7 @@ from LocalManagerWrapper import LocalManagerWrapper
 import json
 import time
 import math
+from actionlib_msgs.msg import GoalStatus
 
 
 class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
@@ -23,15 +24,15 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         # self._lm_wrapper = LocalManagerWrapper(config.ip_address, config.tcp_port, config.prefix)
 
         # TODO : Remove Hardocoded values and get them from config
-        self._lm_wrapper = LocalManagerWrapper("pepper4", 9559, "R2019")
+        self._lm_wrapper = LocalManagerWrapper("127.0.0.1", 9559, "R2019")
 
         # with open(config.scenario_filepath) as data:
-        ws = "/home/xia0ben/pepper_ws"
+        ws = "/home/nao/ros_robocup_ws"
         # ws = "/home/astro/catkin_robocup2019"
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/inspection/scenario.json".format(ws)) as data:
+        with open("{0}/data/scenarios/inspection_cpe/scenario.json".format(ws)) as data:
             self._scenario = json.load(data)
 
-        with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
+        with open("{0}/data/misc/locations.json".format(ws)) as data:
             self._locations = json.load(data)
 
 
@@ -84,7 +85,11 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         gotoinspection_go_to = self.find_by_id(self.steps, "gotoinspection_go_to")
         self._lm_wrapper.go_to(gotoinspection_go_to["speech"], self._living_room, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoinspection_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation:
+            reached = GoalStatus.ABORTED
+            while reached != GoalStatus.SUCCEEDED:
+                reached = self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoinspection_go_to["arguments"]["interestPoint"], 50.0)
+                time.sleep(1.)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["goToInspection"], self.NO_TIMEOUT)
 
@@ -105,10 +110,14 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         self._lm_wrapper.timeboard_set_current_step(step_id_to_index["goToEntrance"], self.NO_TIMEOUT)
 
         # - Go to entrance
-        gotoentrance_go_to = self.find_by_id(self.steps, "gotoinspection_go_to")
+        gotoentrance_go_to = self.find_by_id(self.steps, "gotoentrance_go_to")
         self._lm_wrapper.go_to(gotoentrance_go_to["speech"], self._entrance, self.NO_TIMEOUT)
         self.moveheadPose(self.HEAD_PITCH_FOR_NAV_POSE, self.HEAD_YAW_CENTER, True)  # Reset Head position to navigate
-        if self.allow_navigation: self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoentrance_go_to["arguments"]["interestPoint"], 50.0)
+        if self.allow_navigation:
+            reached = GoalStatus.ABORTED
+            while reached != GoalStatus.SUCCEEDED:
+                reached = self.sendNavOrderAction("NP", "CRRCloseToGoal", gotoentrance_go_to["arguments"]["interestPoint"], 50.0)
+                time.sleep(1.)
 
         self._lm_wrapper.timeboard_send_step_done(step_id_to_index["goToEntrance"], self.NO_TIMEOUT)
 
