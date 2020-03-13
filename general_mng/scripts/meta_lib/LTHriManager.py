@@ -28,7 +28,7 @@ class LTHriManager(LTAbstract):
 
     _enableNavAction = True
 
-    def __init__(self,ip_address, tcp_port=9559, prefix="HRI_MNG_"):
+    def __init__(self, ip_address="127.0.0.1", tcp_port=9559, prefix="HRI_MNG_"):
         self.configure_intern(ip_address, tcp_port, prefix)
 
         #Inform configuration is ready
@@ -573,122 +573,122 @@ class LTHriManager(LTAbstract):
     def serve_drinks(self, timeout):
         raise NotImplementedError()
 
-        # Timeboard API
+    # Timeboard API
 
-        def timeboard_send_step_done(self, step_indexes, timeout):
-            """
-            Set done a list of steps
-            :param step_indexes: A list of indexes of the steps
-            :type step_indexes: list
-            :param timeout: maximum time to wait for a reaction from the local manager
-            :type timeout: float
-            """
-            response = LTServiceResponse()
-            payload = json.dumps({
-                'id': str(uuid.uuid4()),
-                'timestamp': time.time(),
-                'args': {
-                    'indexes': [step_indexes] if type(step_indexes) == int else step_indexes
-                }
-            })
-            status, result = self._execute_request("stepDone", payload, timeout)
-            return status
+    def timeboard_send_step_done(self, step_indexes, timeout):
+        """
+        Set done a list of steps
+        :param step_indexes: A list of indexes of the steps
+        :type step_indexes: list
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        response = LTServiceResponse()
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'indexes': [step_indexes] if type(step_indexes) == int else step_indexes
+            }
+        })
+        status, result = self._execute_request("stepDone", payload, timeout)
+        return status
 
-        def timeboard_send_steps_list(self, steps, scenario_name, timeout):
-            """
-            Change all steps in timeboard
-            :param steps: The list of steps extracted from the scenario json file
-            :type steps: list
-            :param scenario_name: name of the scenario to which the steps belong
-            :type scenario_name: string
-            :param timeout: maximum time to wait for a reaction from the local manager
-            :type timeout: float
-            """
-            response = LTServiceResponse()
-            step_list = []
-            step_id_to_index = {}
-            index = 0
-            for step in steps:
-                if not step['action']:
-                    step_list.append({'name': step['name'], 'eta': step['eta'], 'id': step['id']})
-                    step_id_to_index[step['id']] = index
-                    index += 1
+    def timeboard_send_steps_list(self, steps, scenario_name, timeout):
+        """
+        Change all steps in timeboard
+        :param steps: The list of steps extracted from the scenario json file
+        :type steps: list
+        :param scenario_name: name of the scenario to which the steps belong
+        :type scenario_name: string
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        response = LTServiceResponse()
+        step_list = []
+        step_id_to_index = {}
+        index = 0
+        for step in steps:
+            if not step['action']:
+                step_list.append({'name': step['name'], 'eta': step['eta'], 'id': step['id']})
+                step_id_to_index[step['id']] = index
+                index += 1
 
-            payload = json.dumps({
-                'id': str(uuid.uuid4()),
-                'timestamp': time.time(),
-                'args': {
-                    'scenarioName': scenario_name,
-                    'stepsList': step_list
-                }
-            })
-            status, result = self._execute_request("stepsList", payload, timeout)
-            response.process_state(status)
-            response.payload = step_id_to_index
-            return response
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'scenarioName': scenario_name,
+                'stepsList': step_list
+            }
+        })
+        status, result = self._execute_request("stepsList", payload, timeout)
+        response.process_state(status)
+        response.payload = step_id_to_index
+        return response
 
-        def timeboard_send_step_skipped(self, step_indexes, timeout):
-            """
-            Set skipped a list of steps
-            :param step_indexes: A list of indexes of the steps
-            :type step_indexes: list
-            :param timeout: maximum time to wait for a reaction from the local manager
-            :type timeout: float
-            """
-            response = LTServiceResponse()
-            payload = json.dumps({
-                'id': str(uuid.uuid4()),
-                'timestamp': time.time(),
-                'args': {
-                    'indexes': step_indexes
-                }
-            })
-            status, result = self._execute_request("stepSkipped", payload, timeout)
-            response.process_state(status)
-            return response
+    def timeboard_send_step_skipped(self, step_indexes, timeout):
+        """
+        Set skipped a list of steps
+        :param step_indexes: A list of indexes of the steps
+        :type step_indexes: list
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        response = LTServiceResponse()
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'indexes': step_indexes
+            }
+        })
+        status, result = self._execute_request("stepSkipped", payload, timeout)
+        response.process_state(status)
+        return response
 
-        def timeboard_set_current_step(self, step_index, timeout):
-            """
-            Set current a steps
-            :param step_index: the index of the step
-            :type step_index: int
-            :param timeout: maximum time to wait for a reaction from the local manager
-            :type timeout: float
-            """
-            response = LTServiceResponse()
-            payload = json.dumps({
-                'id': str(uuid.uuid4()),
-                'timestamp': time.time(),
-                'args': {
-                    'index': step_index
-                }
-            })
-            status, result = self._execute_request("currentStep", payload, timeout)
-            response.process_state(status)
-            return response
+    def timeboard_set_current_step(self, step_index, timeout):
+        """
+        Set current a steps
+        :param step_index: the index of the step
+        :type step_index: int
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        response = LTServiceResponse()
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'index': step_index
+            }
+        })
+        status, result = self._execute_request("currentStep", payload, timeout)
+        response.process_state(status)
+        return response
 
-        def timeboard_set_timer_state(self, activate, timeout):
-            """
-            Sets local manager timer state so that timeboard actually counts the passing of time
-            :param activate: target state of the timer
-            :type activate: bool
-            :param timeout: maximum time to wait for a reaction from the local manager
-            :type timeout: float
-            """
-            response = LTServiceResponse()
-            LOCAL_MANAGER_TIMER_ON_MSG = 'TOGGLE_TIMER/ON'
-            LOCAL_MANAGER_TIMER_OFF_MSG = "TOGGLE_TIMER/OFF"
+    def timeboard_set_timer_state(self, activate, timeout):
+        """
+        Sets local manager timer state so that timeboard actually counts the passing of time
+        :param activate: target state of the timer
+        :type activate: bool
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        response = LTServiceResponse()
+        LOCAL_MANAGER_TIMER_ON_MSG = 'TOGGLE_TIMER/ON'
+        LOCAL_MANAGER_TIMER_OFF_MSG = "TOGGLE_TIMER/OFF"
 
-            payload = json.dumps({
-                'id': str(uuid.uuid4()),
-                'timestamp': time.time(),
-                'args': {
-                    'state': LOCAL_MANAGER_TIMER_ON_MSG if activate else LOCAL_MANAGER_TIMER_OFF_MSG
-                }
-            })
-            status, result = self._execute_request("toggleTimer", payload, timeout)
-            response.process_state(status)
-            return response
+        payload = json.dumps({
+            'id': str(uuid.uuid4()),
+            'timestamp': time.time(),
+            'args': {
+                'state': LOCAL_MANAGER_TIMER_ON_MSG if activate else LOCAL_MANAGER_TIMER_OFF_MSG
+            }
+        })
+        status, result = self._execute_request("toggleTimer", payload, timeout)
+        response.process_state(status)
+        return response
 
     #######################################
     # HRI MANAGEMENT METHODS

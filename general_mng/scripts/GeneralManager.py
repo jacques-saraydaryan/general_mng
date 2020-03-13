@@ -2,111 +2,130 @@
 
 import rospy
 import yaml
+import threading
 from std_msgs.msg import String
 import importlib
-
-
-# Command Samples
-# rostopic pub /gm_start std_msgs/String "data: 'START'"
+from os import walk, path
 
 
 class GeneralManager:
-    CONFIG_FOLDER = ''
-    CURRENT_SCENARIO = None
-    _scenarioMap = {}
-    _currentScenario = None
-    START_STATUS = "START"
+    """
+    Command Samples:
+        rostopic pub /gm_start std_msgs/String "data: '<YOUR_SCENARIO_NAME (NOT FULL PATH, NO EXTENSION !)>'"
+    """
+
+    STARTED_STATUS = "START"
     PENDING_STATUS = "PENDING"
+
+    _current_scenario = None
     # FIXME ADD ROS PARAM
     _current_status = PENDING_STATUS
 
     def __init__(self, config):
         rospy.init_node('general_manager')
-        self.configure(config)
-        # self.waitDoorOpened()
-        pass
-
-    #######################################################################
-    #######                Configure Current Node                    ######
-    #######################################################################
-    def configure(self, config):
-        self._start_sub = rospy.Subscriber("gm_start", String, self.gmStartCallback)
-        self._start_pub = rospy.Publisher("/gm_start", String, queue_size=1)
 
         # load face files form data directory
-        self.CONFIG_FOLDER = config["GeneralManager"]["config_folder"]
-        self.CURRENT_SCENARIO = config["GeneralManager"]["current_scenario"]
+        self.scenarios_data_folder = config["scenarios_data_folder"]
+        self.default_scenario_name = '' if "default_scenario_name" not in config else config["default_scenario_name"]
 
-        rospy.loginfo("Param: config_folder:" + str(self.CONFIG_FOLDER))
-        rospy.loginfo("Param: current_scenario:" + str(self.CURRENT_SCENARIO))
-        rospy.loginfo('configure ok')
-        scenario_config = None
+        self._start_sub = rospy.Subscriber("/gm_start", String, self.gm_start_callback)
 
-        try:
-            # mod = importlib.import_module(".scenario."+self.CURRENT_SCENARIO)
-            print("scenario."+self.CURRENT_SCENARIO)
-            module = importlib.import_module("scenario."+self.CURRENT_SCENARIO)
-            self._current_scenario_class = getattr(module, self.CURRENT_SCENARIO)
-        except ImportError as error:
-            # Output expected ImportErrors.
-            rospy.logerr(error.__class__.__name__ + ": " + error.message)
-        except Exception as exception:
-            rospy.logerr(exception)
-            rospy.logerr(exception.__class__.__name__ + ": " + exception.message)
+        if self.default_scenario_name != '':
+            self._current_scenario = self.load_scenario(self.default_scenario_name)
 
+        # self._current_scenario.start_scenario()  # UNCOMMENT FOR DEBUG PURPOSES
 
+    def load_scenario(self, scenario_name):
+        scenario_path = self.search_scenario_path_by_filename(scenario_name)
 
+        if scenario_path is None:
+            scenario_path = self.search_scenario_path_by_content(scenario_name)
 
-        try:
-            scenario_config = self.loadConfig()
-        except Exception as e:
-            rospy.logwarn("Unable to load config file: %s" % e)
+        if scenario_path is None:
+            rospy.logerr("Could not find a scenario data file in folder {0} matching name {1}.".format(
+                self.scenarios_data_folder, scenario_name
+            ))
+            return None
 
         try:
-            self._currentScenario = self._current_scenario_class(scenario_config)
-            self._currentScenario.initScenario()
-        except Exception as e:
-            rospy.logerr("Unable Load SCENARIO Object: %s" % e)
+            scenario_data = yaml.safe_load(scenario_path)
 
-        # FOR DEBUG :
-        self.execute()
+            if "imports" in scenario_data:
+                for key, rel_path in scenario_data["imports"].items():
+                    with open(path.join(scenario_path, rel_path)) as imported_json_file:
+                        scenario_data["imports"][key] = yaml.safe_load(imported_json_file)
 
-    def execute(self):
-        if self._currentScenario == None:
-            rospy.logwarn("Current Scenario is not ready (maybe not currently loaded), unable to start scenario...")
+            try:
+                scenario_module = importlib.import_module("scenario." + scenario_name)
+                try:
+                    scenario_class = getattr(scenario_module, scenario_name)
+                    try:
+                        return scenario_class(scenario_data, scenario_path)
+                    except Exception as e:
+                        rospy.logerr("Scenario data and class were loaded properly"
+                                     "but scenario object could not be created.")
+                        rospy.logerr(e.__class__.__name__ + ": " + e.message)
+                except AttributeError as e:
+                    rospy.logerr("Could not find a class in scenario python module with name " + scenario_name)
+                    rospy.logerr(e.__class__.__name__ + ": " + e.message)
+            except ImportError as e:
+                rospy.logerr("Could not find a scenario python module with name " + scenario_name)
+                rospy.logerr(e.__class__.__name__ + ": " + e.message)
+        except yaml.YAMLError as e:
+            rospy.logerr("File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.")
+            rospy.logerr(e.__class__.__name__ + ": " + e.message)
+
+    def execute_current_scenario(self):
+        if self._current_scenario is None:
+            rospy.logwarn("No scenario is currently loaded."
+                          "Maybe wait a bit more to send a START command or load a new one.")
             return
         else:
-            if self._currentScenario.configurationReady:
-                self._currentScenario.startScenario()
+            if self._current_scenario.configuration_ready:
+                self._current_scenario.start_scenario()
             else:
-                rospy.logwarn("Current Scenario is not ready, wait minutes and try again...")
+                rospy.logwarn("Currently loaded scenario is not ready. Maybe wait a bit more to send a START command.")
 
-    #######################################################################
-    #######                LOAD Scenario config.                     ######
-    #######################################################################
-    def loadConfig(self):
-        scenarioFile = self.CONFIG_FOLDER + "/" + self.CURRENT_SCENARIO + "_SCENARIO.json"
-        rospy.loginfo("Opening scenario configuration file: %s" % scenarioFile)
-        with open(scenarioFile) as json_data:
-            jsonContent = yaml.safe_load(json_data)
-            rospy.loginfo("Scenario configuration file content: %s" % jsonContent)
-            # jsonString=json.load(jsonContent)
-            # jsonObject = json.load(jsonString, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-            ##rospy.loginfo("Scenario configuraiton Object content: %s" % str(jsonObject))
-            rospy.loginfo('name: ' + jsonContent['name'])
-            rospy.loginfo('description: ' + jsonContent['description'])
-            return jsonContent
-
-    def gmStartCallback(self, msg):
-        if self._current_status == self.START_STATUS:
+    def gm_start_callback(self, msg):
+        lock = threading.Lock()
+        lock.acquire()
+        if self._current_status == self.STARTED_STATUS:
             rospy.loginfo('SCENARIO IS ALREADY STARTED...')
             return
+        self._current_status = self.STARTED_STATUS
+        lock.release()
+
         rospy.loginfo('START CMD: ' + msg.data)
-        if msg.data == self.START_STATUS:
-            self._current_status = self.START_STATUS
-            self.execute()
-            self._current_status = self.PENDING_STATUS
-            rospy.loginfo('-----------------------------------END CURRENT SCENARIO-----------------------')
+        if msg.data == 'START':
+            self.execute_current_scenario()
+        else:
+            scenario_name = msg.data
+            self._current_scenario = self.load_scenario(scenario_name)
+            self.execute_current_scenario()
+        self._current_status = self.PENDING_STATUS
+        self._current_scenario = None
+        rospy.loginfo('-----------------------------------END CURRENT SCENARIO-----------------------')
+
+    def search_scenario_path_by_filename(self, scenario_name):
+        for (dirpath, dirnames, filenames) in walk(self.scenarios_data_folder):
+            for filename in filenames:
+                if scenario_name == path.splitext(filename)[0]:
+                    return path.join(dirpath, filename)
+        return None
+
+    def search_scenario_path_by_content(self, scenario_name):
+        for (dirpath, dirnames, filenames) in walk(self.scenarios_data_folder):
+            for filename in filenames:
+                file_path = path.join(dirpath, filename)
+                with open(file_path) as cur_file:
+                    try:
+                        file_data = yaml.safe_load(cur_file)
+                        if 'name' in file_data and file_data['name'] == scenario_name:
+                            return file_path
+                    except yaml.YAMLError as e:
+                        rospy.logerr("File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.".format(file_path))
+                        rospy.logerr(e.__class__.__name__ + ": " + e.message)
+        return None
 
 
 if __name__ == '__main__':
@@ -115,11 +134,9 @@ if __name__ == '__main__':
     dirname = os.path.dirname(__file__)
     filepath = os.path.join(dirname, '../config/common_gm.yaml')
 
-
     with open(filepath) as data:
         gm_config = yaml.safe_load(data)
 
     gm = GeneralManager(gm_config)
 
     rospy.spin()
-

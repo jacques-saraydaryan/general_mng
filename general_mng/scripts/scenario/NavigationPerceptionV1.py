@@ -1,5 +1,4 @@
 __author__ = 'Jacques Saraydaryan'
-from abc import ABCMeta, abstractmethod
 import rospy
 from AbstractScenario import AbstractScenario
 
@@ -13,14 +12,19 @@ class NavigationPerceptionV1(AbstractScenario):
     _oneActionPending = None
 
     def __init__(self, config):
-        self.configurationReady=False
+        self.configuration_ready = False
+        self.init_scenario(config)
 
+    def init_scenario(self, config):
+        self.lt_perception = LTPerception()
+        self.lt_navigation = LTNavigation()
+        self.lt_hri = LTHriManager("192.168.1.222", 9559, "HRI_MNG_")
 
-    def startScenario(self):
-        rospy.loginfo("")
-        rospy.loginfo("######################################")
-        rospy.loginfo("Starting the NavigationPerceptionV1 Scenario...")
-        rospy.loginfo("######################################")
+        if self.lt_perception.configurationReady == True and self.lt_navigation.configurationReady == True and self.lt_hri.configurationReady == True:
+            self.configurationReady = True
+
+    def start_scenario(self):
+        self.print_name(self.__name__)
 
         # Wait door opening
         result = self.lt_perception.wait_for_door_to_open()
@@ -31,7 +35,7 @@ class NavigationPerceptionV1(AbstractScenario):
         # result = self.lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", 1.8, 7.4, 60.0)
         # self.print_result(result)
 
-        name="BIG_HERO"
+        name = "BIG_HERO"
 
         # learn a people Face associates to a name
         result = self.lt_perception.learn_people_meta_from_img_topic(name, 10.0)
@@ -50,17 +54,6 @@ class NavigationPerceptionV1(AbstractScenario):
         except Exception as e:
             rospy.logwarn("payload is not compliant:"+str(e))
 
-
         # start navigation C
         result = self.lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", 2.0, 1.0, 60.0)
         self.print_result(result)
-
-
-    def initScenario(self):
-        self.lt_perception = LTPerception()
-        self.lt_navigation = LTNavigation()
-        self.lt_hri = LTHriManager("192.168.1.222", 9559, "HRI_MNG_")
-
-        if self.lt_perception.configurationReady == True and self.lt_navigation.configurationReady == True and self.lt_hri.configurationReady == True:
-            self.configurationReady = True
-

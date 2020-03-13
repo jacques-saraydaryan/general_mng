@@ -34,7 +34,6 @@ class Inspection2019Scenario(AbstractScenario, AbstractScenarioBus,
         with open("{0}/src/robocup-main/robocup_pepper-scenario_data_generator/jsons/locations.json".format(ws)) as data:
             self._locations = json.load(data)
 
-
         # Scenario data
         self.steps = None
 

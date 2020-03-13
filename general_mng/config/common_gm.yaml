@@ -1,7 +1,2 @@
-GeneralManager:
-  #config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
-  config_folder: '/home/jsaraydaryan/ros_robotcupathome_ws/src/data/general_management'
-  all_scenarios:
-    - 'DoorOpenAndNavigScenarioV1'
-    - 'NavigationPerceptionV1'
-  current_scenario: 'NavigationPerceptionV1' # Must be in the "scenarios" list above
+scenarios_data_folder: '/home/nao/ros_robocup_ws/data/scenarios'
+default_scenario_name: 'Inspection'

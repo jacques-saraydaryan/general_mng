@@ -1,6 +1,4 @@
 __author__ = 'Jacques Saraydaryan'
-from abc import ABCMeta, abstractmethod
-import rospy
 from AbstractScenario import AbstractScenario
 
 from meta_lib.LTPerception import LTPerception
@@ -12,19 +10,22 @@ class DoorOpenAndNavigScenarioV1(AbstractScenario):
     _oneActionPending = None
 
     def __init__(self, config):
-        self.configurationReady=False
+        self.configuration_ready = False
+        self.init_scenario(config)
 
+    def init_scenario(self, config):
+        self.lt_perception = LTPerception()
+        self.lt_navigation = LTNavigation()
 
-    def startScenario(self):
-        rospy.loginfo("")
-        rospy.loginfo("######################################")
-        rospy.loginfo("Starting the DoorOpenAndNavigScenario Scenario...")
-        rospy.loginfo("######################################")
+        if self.lt_perception.configurationReady == True and self.lt_navigation.configurationReady == True:
+            self.configurationReady = True
+
+    def start_scenario(self):
+        self.print_name(self.__name__)
 
         # Wait door opening
         result = self.lt_perception.wait_for_door_to_open()
         self.print_result(result)
-
 
         # start navigation
         result = self.lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", 1.8, 7.4, 60.0)
@@ -35,12 +36,3 @@ class DoorOpenAndNavigScenarioV1(AbstractScenario):
 
         result = self.lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", 2.0, 1.0, 60.0)
         self.print_result(result)
-
-
-    def initScenario(self):
-        self.lt_perception = LTPerception()
-        self.lt_navigation = LTNavigation()
-
-        if self.lt_perception.configurationReady == True and self.lt_navigation.configurationReady == True:
-            self.configurationReady = True
-
