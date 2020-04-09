@@ -48,11 +48,12 @@ class GeneralManager:
             return None
 
         try:
-            scenario_data = yaml.safe_load(scenario_path)
+            with open(scenario_path) as json_scenario:
+                scenario_data = yaml.safe_load(json_scenario)
 
             if "imports" in scenario_data:
                 for key, rel_path in scenario_data["imports"].items():
-                    with open(path.join(scenario_path, rel_path)) as imported_json_file:
+                    with open(path.join(self.scenarios_data_folder, rel_path)) as imported_json_file:
                         scenario_data["imports"][key] = yaml.safe_load(imported_json_file)
 
             try:
@@ -60,7 +61,7 @@ class GeneralManager:
                 try:
                     scenario_class = getattr(scenario_module, scenario_name)
                     try:
-                        return scenario_class(scenario_data, scenario_path)
+                        return scenario_class(scenario_data, self.scenarios_data_folder)
                     except Exception as e:
                         rospy.logerr("Scenario data and class were loaded properly"
                                      "but scenario object could not be created.")

@@ -1,9 +1,3 @@
-__author__ = 'Jacques Saraydaryan'
-
-from abc import ABCMeta, abstractmethod
-from LTAbstract import LTAbstract
-from LTServiceResponse import LTServiceResponse
-from actionlib_msgs.msg import GoalStatus
 
 __author__ = 'Jacques Saraydaryan'
 
@@ -11,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 from LTAbstract import LTAbstract
 from LTServiceResponse import LTServiceResponse
 from actionlib_msgs.msg import GoalStatus
+from HriManager.msg import GmToHriAction, GmToHriGoal, GmToHriFeedback
 
 import actionlib
 import rospy
@@ -20,6 +15,120 @@ import qi
 import threading
 import json
 import uuid
+
+class LTHriManagerPalbator(LTAbstract):
+
+    GOAL = "goal"
+    RESULT = "result"
+
+    _enableNavAction = True
+
+    def __init__(self):
+        self.client_action_GmToHri=actionlib.SimpleActionClient("action_GmToHri",GmToHriAction)
+
+        #Inform configuration is ready
+        self.configurationReady = True
+
+    def _execute_request(self, payload, timeout):
+        """
+        Send the goal to HRIManager as an ActionClient and wait for result.
+
+        :param payload: json converted in string containing action parameters
+        :type payload: string
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        start_time = time.time()
+        rospy.loginfo("{class_name} : REQUEST RECEIVED FROM SCENARIO".format(class_name=self.__class__))
+        goal=GmToHriGoal(payload)
+        rospy.loginfo("{class_name} : GOAL TO SEND ".format(class_name=self.__class__)+str(goal))
+        self.client_action_GmToHri.send_goal(goal)
+        rospy.loginfo("{class_name} : GOAL SENT TO ACTION".format(class_name=self.__class__))
+        
+
+        # Wait for result to be received
+        try:
+            rospy.loginfo("{class_name} : WAITING FOR ACTION RESULT ".format(class_name=self.__class__))
+            self.client_action_GmToHri.wait_for_result()
+            result_action=self.client_action_GmToHri.get_result()
+            rospy.loginfo("{class_name} : GOT GOAL FROM ACTION".format(class_name=self.__class__))
+            resultat=result_action.Gm_To_Hri_output
+            json_resultat=json.loads(resultat)
+            rospy.loginfo("{class_name}  JSON RESULT: ".format(class_name=self.__class__)+str(json_resultat))
+
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Could not receive result: {error}. ABORT !".format(
+                class_name=self.__class__, error=e))
+            return GoalStatus.ABORTED, None
+
+        # Return result for action
+        lock = threading.Lock()
+        lock.acquire()
+        result=json_resultat
+        lock.release()
+        return GoalStatus.SUCCEEDED, result
+
+    def timeboard_send_steps_list(self, steps, scenario_name, timeout):
+        """
+        Send all steps to HRIManager
+
+        :param steps: The list of steps extracted from the scenario json file
+        :type steps: list
+        :param scenario_name: name of the scenario to which the steps belong
+        :type scenario_name: string
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        
+        payload = json.dumps({
+            'timestamp': time.time(),
+            "action": "stepsList",
+            "scenario": scenario_name,
+            "stepsList": steps,
+            })
+        status, result = self._execute_request(payload, timeout)
+        return status,result
+    
+    def timeboard_set_current_step(self, step_index, timeout):
+        """
+        Set the current step
+
+        :param step_index: the index of the step
+        :type step_index: int
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+      
+        payload = json.dumps({
+                'timestamp': time.time(),
+                'action': "currentStep",
+                "stepIndex": step_index,
+            })
+        status, result = self._execute_request(payload, timeout)
+        return status, result
+    
+    def timeboard_set_current_step_with_data(self, step_index, data, timeout):
+        """
+        Set the current step
+
+        :param step_index: the index of the step
+        :type step_index: int
+        :param data: the data to use with the current step
+        :type data: dict
+        :param timeout: maximum time to wait for a reaction from the local manager
+        :type timeout: float
+        """
+        
+        payload = json.dumps({
+                'timestamp': time.time(),
+                'action': "currentStep",
+                "stepIndex": step_index,
+                "data": data
+            })
+        status, result = self._execute_request(payload, timeout)
+        return status, result
+
 
 class LTHriManager(LTAbstract):
 

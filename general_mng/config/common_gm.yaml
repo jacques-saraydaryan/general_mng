@@ -1,2 +1,4 @@
-scenarios_data_folder: '/home/nao/ros_robocup_ws/data/scenarios'
-default_scenario_name: 'Inspection'
+# default_scenario_name: 'Inspection'
+# scenarios_data_folder: '/home/nao/ros_robocup_ws/data/scenarios'
+scenarios_data_folder: '/home/student/Bureau/TESTS_ws/src/general_mng/general_mng/data'
+default_scenario_name: 'Receptionist2020CPEScenario'
