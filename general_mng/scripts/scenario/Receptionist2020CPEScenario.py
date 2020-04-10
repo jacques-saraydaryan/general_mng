@@ -11,9 +11,7 @@ import math
 from copy import deepcopy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
-
-
-
+import os
 
 class Receptionist2020CPEScenario(AbstractScenario):
 
@@ -24,15 +22,19 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         self.initScenario()
 
-        self._lm_wrapper = LTHriManagerPalbator()
+        self._scenario_path_folder = scenario_path_folder
 
         self._scenario=config
         self._scenario['name']='receptionist'
+
+        _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
+        self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
         self._drinks = self._scenario['imports']['drinks']
         self._locations = self._scenario['imports']['locations']
         self._people = self._scenario['imports']['people']
         self._videos = self._scenario['imports']['videos']
+        
 
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__))
         # Scenario data
@@ -46,12 +48,13 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # - Constants
         # self._living_room = self.find_by_id(self._locations, "livingRoom")
         # self._entrance = self.find_by_id(self._locations, "entrance")
-        try:
-            self.people_name_by_id['John'] = "John"
-            self.people_age_by_id['John'] = 40
-            self.people_drink_by_id['John'] = 'Coke'
-        except Exception as e:
-            rospy.logerr("SCN : "+str(e))
+        self._path_guests_infos = self._scenario['variables']['guestsInfos']
+
+        known_person = self._scenario['variables']['known_person']
+        for key in known_person.keys():
+            self.people_name_by_id[key] = known_person[key]['name']
+            self.people_drink_by_id[key] = known_person[key]['drink']
+            self.people_age_by_id[key] = known_person[key]['age']
 
         rospy.loginfo("SCN : DATA STORED: person: "+str(self.people_name_by_id) +" drink : "+str(self.people_drink_by_id)+" age : "+str(self.people_age_by_id))
 
@@ -71,6 +74,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.configuration_ready = True
 
     def gm_wait(self,indexStep):
+        """
+        Function dealing with the Wait action. The robot just waits for a timer to end.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION WAIT")
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         time.sleep(3)
@@ -80,12 +89,24 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def gm_ask_open_door(self,indexStep):
+        """
+        Function dealing with the askOpenDoor action. The robot waits the referee to open the door and say Next or click on the tablet.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION ASK OPEN DOOR")
         return self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)[1]
 
     def gm_ask_to_follow(self,indexStep):
+        """
+        Function dealing with the askToFollow action. The robot invites the guest to follow him.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION ASK TO FOLLOW")
-        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._people),self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
         result={
             "NextIndex": indexStep+1
@@ -93,6 +114,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def gm_go_to(self,indexStep):
+        """
+        Function dealing with the goTo action. The robot goes to the choosen interest point depending on the scenario.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION GO TO")
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         if self.allow_navigation:
@@ -108,8 +135,14 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def gm_point_to(self,indexStep):
+        """
+        Function dealing with the pointTo action. The robot points to something (ex: an empty chair) or to someone (ex: a guest)
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION POINT TO")
-        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._people),self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(6)
         result={
             "NextIndex": indexStep+1
@@ -117,15 +150,27 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def gm_present_person(self,indexStep):
+        """
+        Function dealing with the presentPerson action. The robot introduces the new guest to the others.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION PRESENT PERSON")
-        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._people),self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(10)
         result={
             "NextIndex": indexStep+1
         }
         return result
 
-    def gm_find_an_empty_chair(self,indexStep):
+    def gm_find(self,indexStep):
+        """
+        Function dealing with the find action. The robot finds something (ex: an empty chair) or someone (ex: a guest)
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION FIND")
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         time.sleep(3)
@@ -135,8 +180,14 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def gm_seat_guest(self,indexStep):
+        """
+        Function dealing with the seatGuest action. The robot invites the guest to seat down on the seat he was pointing
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
         rospy.loginfo("SCN ACTION SEAT GUEST")
-        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._people),self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
         result={
             "NextIndex": indexStep+1
@@ -144,6 +195,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
     def action_parser(self,action):
+        """
+        Load a function according to the action name of current step. 
+
+        :param action: action name of current step
+        :type action: string
+        """
         rospy.loginfo('-------------------------')
         rospy.loginfo('using parser')
         rospy.loginfo('***********')
@@ -154,7 +211,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         "goTo": self.gm_go_to,
         "pointTo": self.gm_point_to,
         "presentPerson": self.gm_present_person,
-        "find": self.gm_find_an_empty_chair,
+        "find": self.gm_find,
         "seatGuest":self.gm_seat_guest,
         }
         # Get the function from switcher dictionary
@@ -163,8 +220,17 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return func(self.current_index_scenario)
 
 
-    def store_guest_in_JSON(self):
-        with open(self.scenario_path_folder+"/receptionist/guests.json","w+") as f:
+    def store_guest_in_JSON(self,data):
+        """
+        Write down guest data sent by HRI to a JSON file. 
+
+        :param data: guest data sent by HRI
+        :type data: dict
+        """
+        self.people_name_by_id[data['who']]=data['name']
+        self.people_drink_by_id[data['who']]=data['drink']
+        self.people_age_by_id[data['who']]=data['age']
+        with open(os.path.join(self._scenario_path_folder,self._path_guests_infos),"w+") as f:
             data={}
             for key in self.people_name_by_id.keys():
                 pathOnTablet=""
@@ -185,10 +251,14 @@ class Receptionist2020CPEScenario(AbstractScenario):
             json.dump(data, f, indent=4)
             f.truncate()
 
-        with open(self.scenario_path_folder+"/receptionist/guests.json","r") as f:
-            self._people=json.load(f)
+        with open(os.path.join(self._scenario_path_folder,self._path_guests_infos),"r") as f:
+            self._guest_infos=json.load(f)
 
     def start_scenario(self):
+        """
+        Runs the scenario according to the scenario JSON file.
+        """
+
         rospy.loginfo("""
         ######################################
         Starting the {scenario_name} Scenario...
@@ -249,11 +319,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
 
                 if 'saveData' in result:
-                    self.people_name_by_id[result['saveData']['who']]=result['saveData']['name']
-                    self.people_drink_by_id[result['saveData']['who']]=result['saveData']['drink']
-                    self.people_age_by_id[result['saveData']['who']]=result['saveData']['age']
-                    self.store_guest_in_JSON()
-                    # break
+                    self.store_guest_in_JSON(result['saveData'])
             
                 
 
@@ -560,7 +626,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
     #     while True:
 
     #         # - Ask name
-    #         tentative_guest_name = self._lm_wrapper.ask_name(ask_step_data["speech"], self._people, self.NO_TIMEOUT)[1]
+    #         tentative_guest_name = self._lm_wrapper.ask_name(ask_step_data["speech"], self._guest_infos, self.NO_TIMEOUT)[1]
 
     #         # - Confirm name
     #         confirm_speech = confirm_step_data["speech"]

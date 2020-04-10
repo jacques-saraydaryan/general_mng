@@ -23,8 +23,10 @@ class LTHriManagerPalbator(LTAbstract):
 
     _enableNavAction = True
 
-    def __init__(self):
-        self.client_action_GmToHri=actionlib.SimpleActionClient("action_GmToHri",GmToHriAction)
+    def __init__(self,name_HRIAction):
+
+
+        self.client_action_GmToHri=actionlib.SimpleActionClient(name_HRIAction,GmToHriAction)
 
         #Inform configuration is ready
         self.configurationReady = True
@@ -114,7 +116,7 @@ class LTHriManagerPalbator(LTAbstract):
 
         :param step_index: the index of the step
         :type step_index: int
-        :param data: the data to use with the current step
+        :param data: the additional data to use with the current step
         :type data: dict
         :param timeout: maximum time to wait for a reaction from the local manager
         :type timeout: float

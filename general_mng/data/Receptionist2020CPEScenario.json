@@ -1,16 +1,23 @@
 {
   "duration": 300,
   "variables": {
-    "john": {
-      "drink": "fanta",
-      "name": "John"
-    }
+    "known_person": {
+      "John": {
+        "drink": "Coke",
+        "name": "John",
+        "age": 40
+      }
+    },
+    "guestsInfos": "receptionist/guestsInfos.json"
   },
   "imports":{
     "drinks": "receptionist/drinks.json",
     "locations": "receptionist/locations.json",
     "people": "receptionist/people.json",
     "videos": "receptionist/videos.json"
+  },
+  "parameters":{
+    "LTHri_action_server_name": "action_GmToHri"
   },
   "steps": [
     {

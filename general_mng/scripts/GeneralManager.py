@@ -36,6 +36,12 @@ class GeneralManager:
         # self._current_scenario.start_scenario()  # UNCOMMENT FOR DEBUG PURPOSES
 
     def load_scenario(self, scenario_name):
+        """
+        Load the choosen scenario. 
+
+        :param scenario_name: Choosen scenario name
+        :type scenario_name: string
+        """
         scenario_path = self.search_scenario_path_by_filename(scenario_name)
 
         if scenario_path is None:
@@ -77,6 +83,9 @@ class GeneralManager:
             rospy.logerr(e.__class__.__name__ + ": " + e.message)
 
     def execute_current_scenario(self):
+        """
+        Execute the loaded scenario if the scenario configuration is succesfully set. 
+        """
         if self._current_scenario is None:
             rospy.logwarn("No scenario is currently loaded."
                           "Maybe wait a bit more to send a START command or load a new one.")
@@ -88,6 +97,13 @@ class GeneralManager:
                 rospy.logwarn("Currently loaded scenario is not ready. Maybe wait a bit more to send a START command.")
 
     def gm_start_callback(self, msg):
+        """
+        Callback function for /gm_start subscriber. Gets the choosen scenario in msg.data.
+        If the choosen scenario isn't started yet, loads the choosen scenario and runs it.
+
+        :param msg: /gm_start topic data containing the name of a scenario
+        :type msg: std_msgs/String
+        """
         lock = threading.Lock()
         lock.acquire()
         if self._current_status == self.STARTED_STATUS:
@@ -108,6 +124,12 @@ class GeneralManager:
         rospy.loginfo('-----------------------------------END CURRENT SCENARIO-----------------------')
 
     def search_scenario_path_by_filename(self, scenario_name):
+        """
+        Searches a scenario JSON file with the same name as the choosen scenario name.
+
+        :param scenario_name: scenario name
+        :type scenario_name: string
+        """
         for (dirpath, dirnames, filenames) in walk(self.scenarios_data_folder):
             for filename in filenames:
                 if scenario_name == path.splitext(filename)[0]:
@@ -115,6 +137,12 @@ class GeneralManager:
         return None
 
     def search_scenario_path_by_content(self, scenario_name):
+        """
+        Searches a scenario JSON file which contains the name of the choosen scenario name.
+
+        :param scenario_name: scenario name
+        :type scenario_name: string
+        """
         for (dirpath, dirnames, filenames) in walk(self.scenarios_data_folder):
             for filename in filenames:
                 file_path = path.join(dirpath, filename)
