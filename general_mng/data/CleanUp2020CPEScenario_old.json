@@ -81,38 +81,62 @@
             "order": 5,
             "eta": 0,
             "speech": {
-                "said": "I am looking for objects in ChoosenRoom_1_name",
-                "title": "I am looking for objects in ChoosenRoom_1_name"
+                "said": "I am looking for the object_name",
+                "title": "I am looking for the object_name"
             },
             "arguments": {
-                "what": "ChoosenRoom_1",
-                "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_path",
-                    "name": "ChoosenRoom_1_name"
-                  },
-                "objectKey": "Object_1"
-
+                "what": "object_name",
+                "pathOnTablet": "object_path"
             },
             "action": "findObject",
             "id": "findObj1"
         },
         {
-            "name": "Found the object",
+            "name": "Catch the object",
             "order": 6,
             "eta": 0,
             "speech": {
-                "said": "I have found the Object_1_name",
-                "title": "I have found the Object_1_name"
+                "said": "I am catching the object_name",
+                "title": "I am catching the object_name"
             },
             "arguments": {
-                "what": "Object_1",
-                "object": {
-                    "pathOnTablet": "Object_1_path",
-                    "name": "Object_1_name"
-                }
+                "what": "object_name",
+                "pathOnTablet": "object_path"
             },
-            "action": "objectAction",
+            "action": "catchObject",
             "id": "catchObj1"
+        },
+        {
+            "name": "Go to store object",
+            "order": 7,
+            "eta": 0,
+            "speech": {
+                "said": "I am going to store the object_name",
+                "title": "I am going to store the object_name"
+            },
+            "arguments": {
+                "what": "object_name",
+                "pathObject": "object_path",
+                "where": "object_location",
+                "pathLocation": "location_path"
+            },
+            "action": "storeObject",
+            "id": "storeObj1"
+        },
+        {
+            "name": "Release the object",
+            "order": 8,
+            "eta": 0,
+            "speech": {
+                "said": "I release the object_name",
+                "title": "I release the object_name"
+            },
+            "arguments": {
+                "what": "object_name",
+                "pathObject": "object_path"
+            },
+            "action": "releaseObject",
+            "id": "releaseObj1"
         }
         
     ],

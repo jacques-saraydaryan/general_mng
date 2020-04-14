@@ -56,17 +56,17 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.restart_order=False
         self.steps = deepcopy(self._scenario["steps"])
 
-        rospy.loginfo("SCN : WAITING FOR ACTION SERVER ACTIVATION")
+        rospy.loginfo("{class_name} : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
 
-        rospy.loginfo("SCN : LOADING CONFIG FOR SCENARIO")
+        rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
 
         self.current_index_scenario=0
         while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown():
             
-            rospy.loginfo("SCN : CURRENT STEP INDEX : "+str(self.current_index_scenario))
+            rospy.loginfo("{class_name} : CURRENT STEP INDEX : ".format(class_name=self.__class__)+str(self.current_index_scenario))
             rospy.loginfo("NEW STEP")
 
             self.current_step=deepcopy(self.steps[self.current_index_scenario])
@@ -74,18 +74,18 @@ class CleanUp2020CPEScenario(AbstractScenario):
             if self.current_step['action']!="":
                 result=self.action_parser(self.current_step['action'])
                 
-                rospy.loginfo("SCN : RESULT FROM PARSER "+str(result))
+                rospy.loginfo("{class_name} : RESULT FROM PARSER ".format(class_name=self.__class__)+str(result))
             else:
                 result=self._lm_wrapper.timeboard_set_current_step(self.current_index_scenario,self.NO_TIMEOUT)[1]
-                rospy.loginfo("SCN : RESULT WITHOUT PARSER "+str(result))
+                rospy.loginfo("{class_name} : RESULT WITHOUT PARSER ".format(class_name=self.__class__)+str(result))
             
             if result is None:
-                rospy.logwarn("SCN : ACTION ABORTED")
+                rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__))
                 break
             
             elif result != None:
                 if 'result' in result and result['result']=="PREEMPTED": 
-                    rospy.logwarn("SCN : ACTION ABORTED")
+                    rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__))
                     break
                 
                 if result['NextIndex']!="":
@@ -109,19 +109,29 @@ class CleanUp2020CPEScenario(AbstractScenario):
             rospy.logwarn("INFOS FILE EMPTY")
             data_JSON = {}
 
-        data_JSON[data['what']]={}
-        data_JSON[data['what']]['name']=data['where']
-        for location in self._locations:
-            if location['name'] == data['where']:
-                data_JSON[data['what']]['pathOnTablet']=location['pathOnTablet']
-                break
+        data_to_store = data['action']    
+        if data_to_store == 'storeRoom':
+            data_JSON[data['what']]={}
+            data_JSON[data['what']]['name']=data['where']
+            for location in self._locations:
+                if location['name'] == data['where']:
+                    data_JSON[data['what']]['pathOnTablet']=location['pathOnTablet']
+                    break
+        elif data_to_store == 'storeObject':
+            data_JSON[data['what']]={}
+            data_JSON[data['what']]['name']=data['name']
+
+            for item in self._objects:
+                if item['name'] == data['name']:
+                    data_JSON[data['what']]['pathOnTablet']=item['pathOnTablet']
+                    break
 
         with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"w+") as f:
-            
-            json.dumps(data_JSON, f, indent=4)
+            json.dump(data_JSON, f, indent=4)
             f.truncate()
         
         self._scenario_infos = data_JSON  
+        rospy.logwarn("DATA JSON : "+str(self._scenario_infos))
 
     
     def initScenario(self):
@@ -153,12 +163,13 @@ class CleanUp2020CPEScenario(AbstractScenario):
         rospy.loginfo('using parser')
         rospy.loginfo('***********')
         switcher = {
-        "foundObject": self.gm_find,
+        "findObject": self.gm_find_object,
         "catchObject": self.gm_catch_object,
         "goTo": self.gm_go_to,
         "storeObject": self.gm_store_object,
         "releaseObject": self.gm_release_object,
         "openDoor": self.gm_open_door,
+        "objectAction": self.gm_object_action,
         # "askRoomToClean" : self.gm_ask_room,
         }
         # Get the function from switcher dictionary
@@ -174,21 +185,53 @@ class CleanUp2020CPEScenario(AbstractScenario):
     #     :param stepIndex: Step index
     #     :type stepIndex: int
     #     """
-    #     rospy.loginfo("SCN ACTION FOUND OBJECT")
+    #     rospy.loginfo("{class_name} ACTION FOUND OBJECT")
     #     time.sleep(2)
     #     return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
-    
-    
-    def gm_find(self,stepIndex):
+    def gm_object_action(self,stepIndex):
+        """
+        Function dealing with an Object action. The robot will accomplish an action related to an object.
+
+        :param stepIndex: Step index
+        :type stepIndex: int
+        """
+        rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
+        time.sleep(3)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
+
+    def gm_find_object(self,stepIndex):
         """
         Function dealing with the find action. The robot finds something or someone.
 
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION FOUND OBJECT")
-        time.sleep(2)
-        return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
+        rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__))
+        result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
+
+
+
+        ############################# ACTION CLIENT DETECTION OBJET ICI
+
+
+
+        #########################
+        time.sleep(3)
+
+        
+        data={}
+        data['action'] = "storeObject"
+        data['what'] = result['objectKey']
+        data['name'] = "Windex"
+        self.store_infos(data)
+
+
+        
+        return result
 
 
     def gm_catch_object(self,stepIndex):
@@ -198,9 +241,13 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION CATCH OBJECT")
-        time.sleep(2)
-        return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
+        rospy.loginfo("{class_name} ACTION CATCH OBJECT".format(class_name=self.__class__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
+        time.sleep(3)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
     
     def gm_go_to(self,stepIndex):
         """
@@ -209,7 +256,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION GO TO OBJECT")
+        rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
         time.sleep(2)
         result={
@@ -224,9 +271,13 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION STORE OBJECT")
-        time.sleep(2)
-        return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1] 
+        rospy.loginfo("{class_name} ACTION STORE OBJECT".format(class_name=self.__class__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
+        time.sleep(3)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
     
     def gm_release_object(self,stepIndex):
         """
@@ -235,9 +286,13 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION RELEASE OBJECT")
-        time.sleep(2)
-        return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
+        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(class_name=self.__class__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
+        time.sleep(3)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
 
     def gm_open_door(self,stepIndex):
         """
@@ -245,6 +300,6 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("SCN ACTION OPEN DOOR OBJECT")
+        rospy.loginfo("{class_name} ACTION OPEN DOOR OBJECT".format(class_name=self.__class__))
         time.sleep(2)
         return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]

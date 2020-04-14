@@ -1,0 +1,10 @@
+{
+    "Object_1": {
+        "name": "Windex", 
+        "pathOnTablet": "img/objects/windex.png"
+    }, 
+    "ChoosenRoom_1": {
+        "name": "Entrance", 
+        "pathOnTablet": "img/locations/entrance.png"
+    }
+}
