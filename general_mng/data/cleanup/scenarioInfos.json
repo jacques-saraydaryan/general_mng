@@ -4,7 +4,7 @@
         "pathOnTablet": "img/objects/windex.png"
     }, 
     "ChoosenRoom_1": {
-        "name": "Entrance", 
-        "pathOnTablet": "img/locations/entrance.png"
+        "name": "Bedroom", 
+        "pathOnTablet": "img/locations/bedroom.png"
     }
 }

@@ -24,13 +24,13 @@
             "order": 1,
             "eta": 0,
             "speech": {
-                "said": "Which room do I have to clean ?",
-                "title": "Which room do I have to clean ?"
+                "said": "In which room do I have to go ?",
+                "title": "In which room do I have to go ?"
             },
             "arguments": {
                 "what": "location"
             },
-            "action": "askRoomToClean",
+            "action": "askRoom",
             "id": "chooseLoc1"
         },
         {
@@ -63,8 +63,8 @@
             "order": 4,
             "eta": 0,
             "speech": {
-                "said": "I am travelling to ChoosenRoom_1_name",
-                "title": "I am travelling to ChoosenRoom_1_name"
+                "said": "I am travelling to the ChoosenRoom_1_name",
+                "title": "I am travelling to the ChoosenRoom_1_name"
             },
             "arguments": {
                 "what": "ChoosenRoom_1",
@@ -81,8 +81,8 @@
             "order": 5,
             "eta": 0,
             "speech": {
-                "said": "I am looking for objects in ChoosenRoom_1_name",
-                "title": "I am looking for objects in ChoosenRoom_1_name"
+                "said": "I am looking for objects in the ChoosenRoom_1_name",
+                "title": "I am looking for objects in the ChoosenRoom_1_name"
             },
             "arguments": {
                 "what": "ChoosenRoom_1",

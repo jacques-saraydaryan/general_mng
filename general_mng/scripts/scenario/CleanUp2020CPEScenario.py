@@ -35,7 +35,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
         self.reset_infos_JSON()
         
-        rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__))
+        rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
 
         self.Room_to_clean = None
 
@@ -56,17 +56,17 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.restart_order=False
         self.steps = deepcopy(self._scenario["steps"])
 
-        rospy.loginfo("{class_name} : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__.__name__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
 
-        rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
 
         self.current_index_scenario=0
         while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown():
             
-            rospy.loginfo("{class_name} : CURRENT STEP INDEX : ".format(class_name=self.__class__)+str(self.current_index_scenario))
+            rospy.loginfo("{class_name} : CURRENT STEP INDEX : ".format(class_name=self.__class__.__name__)+str(self.current_index_scenario))
             rospy.loginfo("NEW STEP")
 
             self.current_step=deepcopy(self.steps[self.current_index_scenario])
@@ -74,18 +74,18 @@ class CleanUp2020CPEScenario(AbstractScenario):
             if self.current_step['action']!="":
                 result=self.action_parser(self.current_step['action'])
                 
-                rospy.loginfo("{class_name} : RESULT FROM PARSER ".format(class_name=self.__class__)+str(result))
+                rospy.loginfo("{class_name} : RESULT FROM PARSER ".format(class_name=self.__class__.__name__)+str(result))
             else:
                 result=self._lm_wrapper.timeboard_set_current_step(self.current_index_scenario,self.NO_TIMEOUT)[1]
-                rospy.loginfo("{class_name} : RESULT WITHOUT PARSER ".format(class_name=self.__class__)+str(result))
+                rospy.loginfo("{class_name} : RESULT WITHOUT PARSER ".format(class_name=self.__class__.__name__)+str(result))
             
             if result is None:
-                rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__))
+                rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__.__name__))
                 break
             
             elif result != None:
                 if 'result' in result and result['result']=="PREEMPTED": 
-                    rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__))
+                    rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__.__name__))
                     break
                 
                 if result['NextIndex']!="":
@@ -106,12 +106,13 @@ class CleanUp2020CPEScenario(AbstractScenario):
             with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"r") as f:
                 data_JSON=json.load(f)
         except:
-            rospy.logwarn("INFOS FILE EMPTY")
+            rospy.logwarn("{class_name} : INFOS FILE EMPTY".format(class_name=self.__class__.__name__))
             data_JSON = {}
 
         data_to_store = data['action']    
         if data_to_store == 'storeRoom':
             data_JSON[data['what']]={}
+            data['where'] = (data['where'].lower()).title()
             data_JSON[data['what']]['name']=data['where']
             for location in self._locations:
                 if location['name'] == data['where']:
@@ -131,7 +132,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
             f.truncate()
         
         self._scenario_infos = data_JSON  
-        rospy.logwarn("DATA JSON : "+str(self._scenario_infos))
+        rospy.logwarn("{class_name} : DATA JSON : ".format(class_name=self.__class__.__name__)+str(self._scenario_infos))
 
     
     def initScenario(self):
@@ -195,7 +196,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
         time.sleep(3)
         result = {
@@ -210,7 +211,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
 
 
@@ -227,9 +228,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         data['action'] = "storeObject"
         data['what'] = result['objectKey']
         data['name'] = "Windex"
-        self.store_infos(data)
-
-
+        if data['name'] != '':
+            self.store_infos(data)
         
         return result
 
@@ -241,7 +241,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION CATCH OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION CATCH OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
         time.sleep(3)
         result = {
@@ -256,7 +256,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
         time.sleep(2)
         result={
@@ -271,7 +271,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION STORE OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION STORE OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
         time.sleep(3)
         result = {
@@ -286,7 +286,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
         time.sleep(3)
         result = {
@@ -300,6 +300,6 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION OPEN DOOR OBJECT".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} ACTION OPEN DOOR OBJECT".format(class_name=self.__class__.__name__))
         time.sleep(2)
         return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]

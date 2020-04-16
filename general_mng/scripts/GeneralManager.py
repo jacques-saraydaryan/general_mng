@@ -48,9 +48,8 @@ class GeneralManager:
             scenario_path = self.search_scenario_path_by_content(scenario_name)
 
         if scenario_path is None:
-            rospy.logerr("Could not find a scenario data file in folder {0} matching name {1}.".format(
-                self.scenarios_data_folder, scenario_name
-            ))
+            rospy.logerr("{class_name} : Could not find a scenario data file in folder {0} matching name {1}.".format(
+                self.scenarios_data_folder, scenario_name, class_name=self.__class__.__name__))
             return None
 
         try:
@@ -69,32 +68,30 @@ class GeneralManager:
                     try:
                         return scenario_class(scenario_data, self.scenarios_data_folder)
                     except Exception as e:
-                        rospy.logerr("Scenario data and class were loaded properly"
-                                     "but scenario object could not be created.")
-                        rospy.logerr(e.__class__.__name__ + ": " + e.message)
+                        rospy.logerr("{class_name} : Scenario data and class were loaded properly but scenario object could not be created.".format(class_name=self.__class__))
+                        rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
                 except AttributeError as e:
-                    rospy.logerr("Could not find a class in scenario python module with name " + scenario_name)
-                    rospy.logerr(e.__class__.__name__ + ": " + e.message)
+                    rospy.logerr("{class_name} : Could not find a class in scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
+                    rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
             except ImportError as e:
-                rospy.logerr("Could not find a scenario python module with name " + scenario_name)
-                rospy.logerr(e.__class__.__name__ + ": " + e.message)
+                rospy.logerr("{class_name} : Could not find a scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
+                rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
         except yaml.YAMLError as e:
-            rospy.logerr("File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.")
-            rospy.logerr(e.__class__.__name__ + ": " + e.message)
+            rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + "File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.")
+            rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
 
     def execute_current_scenario(self):
         """
         Execute the loaded scenario if the scenario configuration is succesfully set. 
         """
         if self._current_scenario is None:
-            rospy.logwarn("No scenario is currently loaded."
-                          "Maybe wait a bit more to send a START command or load a new one.")
+            rospy.logwarn("{class_name} : No scenario is currently loaded. Maybe wait a bit more to send a START command or load a new one.".format(class_name=self.__class__.__name__))
             return
         else:
             if self._current_scenario.configuration_ready:
                 self._current_scenario.start_scenario()
             else:
-                rospy.logwarn("Currently loaded scenario is not ready. Maybe wait a bit more to send a START command.")
+                rospy.logwarn("{class_name} : Currently loaded scenario is not ready. Maybe wait a bit more to send a START command.".format(class_name=self.__class__.__name__))
 
     def gm_start_callback(self, msg):
         """
@@ -107,12 +104,12 @@ class GeneralManager:
         lock = threading.Lock()
         lock.acquire()
         if self._current_status == self.STARTED_STATUS:
-            rospy.loginfo('SCENARIO IS ALREADY STARTED...')
+            rospy.loginfo('{class_name} : SCENARIO IS ALREADY STARTED...'.format(class_name=self.__class__.__name__))
             return
         self._current_status = self.STARTED_STATUS
         lock.release()
 
-        rospy.loginfo('START CMD: ' + msg.data)
+        rospy.loginfo('{class_name} : START CMD: '.format(class_name=self.__class__.__name__) + msg.data)
         if msg.data == 'START':
             self.execute_current_scenario()
         else:
@@ -121,7 +118,7 @@ class GeneralManager:
             self.execute_current_scenario()
         self._current_status = self.PENDING_STATUS
         self._current_scenario = None
-        rospy.loginfo('-----------------------------------END CURRENT SCENARIO-----------------------')
+        rospy.loginfo('{class_name} : -----------------------------------END CURRENT SCENARIO-----------------------'.format(class_name=self.__class__.__name__))
 
     def search_scenario_path_by_filename(self, scenario_name):
         """
@@ -152,8 +149,8 @@ class GeneralManager:
                         if 'name' in file_data and file_data['name'] == scenario_name:
                             return file_path
                     except yaml.YAMLError as e:
-                        rospy.logerr("File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.".format(file_path))
-                        rospy.logerr(e.__class__.__name__ + ": " + e.message)
+                        rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + "File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.".format(file_path))
+                        rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
         return None
 
 

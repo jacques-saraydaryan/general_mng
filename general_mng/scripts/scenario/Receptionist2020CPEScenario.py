@@ -36,7 +36,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._videos = self._scenario['imports']['videos']
         
 
-        rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__))
+        rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
         # Scenario data
         self.people_name_by_id = {}
         self.people_drink_by_id = {}
@@ -56,9 +56,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
             self.people_drink_by_id[key] = known_person[key]['drink']
             self.people_age_by_id[key] = known_person[key]['age']
 
-        rospy.loginfo("SCN : DATA STORED: person: "+str(self.people_name_by_id) +" drink : "+str(self.people_drink_by_id)+" age : "+str(self.people_age_by_id))
+        rospy.loginfo("{class_name} : SCN : DATA STORED: person: ".format(class_name=self.__class__.__name__)+str(self.people_name_by_id) +" drink : "+str(self.people_drink_by_id)+" age : "+str(self.people_age_by_id))
 
-        rospy.loginfo("{class_name}: CONSTANTS SET.".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} : CONSTANTS SET.".format(class_name=self.__class__.__name__))
 
         # - Variables
         # self.people_name_by_id[1] = "Placeholder name"
@@ -80,7 +80,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION WAIT")
+        rospy.loginfo("{class_name} : SCN ACTION WAIT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         time.sleep(3)
         result={
@@ -95,7 +95,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION ASK OPEN DOOR")
+        rospy.loginfo("{class_name} : SCN ACTION ASK OPEN DOOR".format(class_name=self.__class__.__name__))
         return self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)[1]
 
     def gm_ask_to_follow(self,indexStep):
@@ -105,7 +105,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION ASK TO FOLLOW")
+        rospy.loginfo("{class_name} : SCN ACTION ASK TO FOLLOW".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
         result={
@@ -120,7 +120,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION GO TO")
+        rospy.loginfo("{class_name} : SCN ACTION GO TO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         if self.allow_navigation:
             if "living room" in self.current_step['name']:
@@ -141,7 +141,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION POINT TO")
+        rospy.loginfo("{class_name} : SCN ACTION POINT TO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(6)
         result={
@@ -156,7 +156,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION PRESENT PERSON")
+        rospy.loginfo("{class_name} : SCN ACTION PRESENT PERSON".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(10)
         result={
@@ -171,7 +171,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION FIND")
+        rospy.loginfo("{class_name} : SCN ACTION FIND".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         time.sleep(3)
         result={
@@ -186,7 +186,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        rospy.loginfo("SCN ACTION SEAT GUEST")
+        rospy.loginfo("{class_name} : SCN ACTION SEAT GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
         result={
@@ -202,7 +202,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :type action: string
         """
         rospy.loginfo('-------------------------')
-        rospy.loginfo('using parser')
+        rospy.loginfo('{class_name} : using parser'.format(class_name=self.__class__.__name__))
         rospy.loginfo('***********')
         switcher = {
         "wait": self.gm_wait,
@@ -234,7 +234,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
             data={}
             for key in self.people_name_by_id.keys():
                 pathOnTablet=""
-                rospy.loginfo("SCN : DRINKS BY ID "+str(self.people_drink_by_id[key]))
+                rospy.loginfo("{class_name} : SCN : DRINKS BY ID ".format(class_name=self.__class__.__name__)+str(self.people_drink_by_id[key]))
                 for item in self._drinks:
                     drink_guest=deepcopy(self.people_drink_by_id[key]).lower()
                     drink_guest=drink_guest.title()
@@ -277,10 +277,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # Remember the dictionary that associates big steps to the array that was sent to the local manager
         # step_id_to_index = self._lm_wrapper.timeboard_send_steps_list(
         #     self.steps, self._scenario["name"], self.NO_TIMEOUT)[1]
-        rospy.loginfo("SCN : WAITING FOR ACTION SERVER ACTIVATION")
+        rospy.loginfo("{class_name} : SCN : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__.__name__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
 
-        rospy.loginfo("SCN : LOADING CONFIG FOR SCENARIO")
+        rospy.loginfo("{class_name} : SCN : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
 
@@ -290,28 +290,28 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.current_index_scenario=0
         while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown() and self.restart_order==False:
             
-            rospy.loginfo("SCN : CURRENT STEP INDEX : "+str(self.current_index_scenario))
-            rospy.loginfo("NEW STEP")
+            rospy.loginfo("{class_name} : SCN : CURRENT STEP INDEX : ".format(class_name=self.__class__.__name__)+str(self.current_index_scenario))
+            rospy.loginfo("{class_name} : NEW STEP".format(class_name=self.__class__.__name__))
 
             self.current_step=deepcopy(self.steps[self.current_index_scenario])
 
             if self.current_step['action']!="":
                 result=self.action_parser(self.current_step['action'])
                 
-                rospy.loginfo("SCN : RESULT FROM PARSER "+str(result))
+                rospy.loginfo("{class_name} : SCN : RESULT FROM PARSER ".format(class_name=self.__class__.__name__)+str(result))
             else:
                 result=self._lm_wrapper.timeboard_set_current_step(self.current_index_scenario,self.NO_TIMEOUT)[1]
-                rospy.loginfo("SCN : RESULT WITHOUT PARSER "+str(result))
+                rospy.loginfo("{class_name} : SCN : RESULT WITHOUT PARSER ".format(class_name=self.__class__.__name__)+str(result))
 
             
             
             if result is None:
-                rospy.logwarn("SCN : ACTION ABORTED")
+                rospy.logwarn("{class_name} : SCN : ACTION ABORTED".format(class_name=self.__class__.__name__))
                 break
             
             elif result != None:
                 if 'result' in result and result['result']=="PREEMPTED": 
-                    rospy.logwarn("SCN : ACTION ABORTED")
+                    rospy.logwarn("{class_name} : SCN : ACTION ABORTED".format(class_name=self.__class__.__name__))
                     break
                 
                 if result['NextIndex']!="":
