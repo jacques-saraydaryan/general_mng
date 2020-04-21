@@ -4,6 +4,8 @@ import collections
 
 from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
+# from meta_lib.LTPerception import LTPerception
+
 import sys
 import json
 import time
@@ -23,10 +25,12 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self._scenario_path_folder = scenario_path_folder
 
         self._scenario=config
-        self._scenario['name']='cleanup'
+        # self._scenario['name']='cleanup'
 
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
+
+        # self._lt_perception = LTPerception()
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
@@ -59,13 +63,18 @@ class CleanUp2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name} : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__.__name__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
 
+        self._lm_wrapper.restart_hri(self.NO_TIMEOUT)
+
         rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
 
         self.current_index_scenario=0
-        while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown():
-            
+        self.scenario_end = False
+
+        # while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown():
+        while self.scenario_end == False and not rospy.is_shutdown():
+
             rospy.loginfo("{class_name} : CURRENT STEP INDEX : ".format(class_name=self.__class__.__name__)+str(self.current_index_scenario))
             rospy.loginfo("NEW STEP")
 
@@ -88,11 +97,15 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     rospy.logwarn("{class_name} : ACTION ABORTED".format(class_name=self.__class__.__name__))
                     break
                 
-                if result['NextIndex']!="":
+                if result['NextIndex'] != "":
                     self.current_index_scenario=deepcopy(result['NextIndex'])
+                else:
+                    self.scenario_end = True
 
                 if 'saveData' in result:
                     self.store_infos(result['saveData'])
+
+        rospy.logwarn("{class_name} : END OF SCENARIO ".format(class_name=self.__class__.__name__) + self._scenario["name"])
 
 
     def reset_infos_JSON(self):
@@ -214,24 +227,37 @@ class CleanUp2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
 
-
-
         ############################# ACTION CLIENT DETECTION OBJET ICI
-
-
-
+        # self._lt_perception
         #########################
         time.sleep(3)
 
-        
-        data={}
-        data['action'] = "storeObject"
-        data['what'] = result['objectKey']
-        data['name'] = "Windex"
-        if data['name'] != '':
+        # detection = 'Windex'
+        if stepIndex == 7:
+            detection = ''
+        elif stepIndex == 14:
+            detection = 'Windex'
+        elif stepIndex == 21:
+            detection = ''
+
+
+
+        if detection != '':
+            data={}
+            data['action'] = "storeObject"
+            data['what'] = result['objectKey']
+            data['name'] = detection
             self.store_infos(data)
+            return result
+
+        else:
+            result = {
+                "NextIndex": stepIndex+5
+            }
+            return result
+
         
-        return result
+        
 
 
     def gm_catch_object(self,stepIndex):
@@ -258,7 +284,16 @@ class CleanUp2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
-        time.sleep(2)
+
+        if self.allow_navigation:
+            if "living room" in self.current_step['name']:
+                self.sendNavOrderAction("NP", "CRRCloseToGoal", "THOMAS_It0", 90.0)
+            else:
+                self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 90.0)
+        else:
+            time.sleep(2)
+
+
         result={
             "NextIndex": stepIndex+1
         }

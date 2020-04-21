@@ -1,10 +1,14 @@
 {
-    "Object_1": {
+    "Object_2": {
         "name": "Windex", 
         "pathOnTablet": "img/objects/windex.png"
     }, 
     "ChoosenRoom_1": {
         "name": "Bedroom", 
         "pathOnTablet": "img/locations/bedroom.png"
+    }, 
+    "Object_3": {
+        "name": "Mustard", 
+        "pathOnTablet": "img/objects/mustard.png"
     }
 }

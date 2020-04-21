@@ -25,7 +25,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._scenario_path_folder = scenario_path_folder
 
         self._scenario=config
-        self._scenario['name']='receptionist'
+        # self._scenario['name']='receptionist'
 
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
@@ -279,6 +279,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
         #     self.steps, self._scenario["name"], self.NO_TIMEOUT)[1]
         rospy.loginfo("{class_name} : SCN : WAITING FOR ACTION SERVER ACTIVATION".format(class_name=self.__class__.__name__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
+
+        self._lm_wrapper.restart_hri(self.NO_TIMEOUT)
+
 
         rospy.loginfo("{class_name} : SCN : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)

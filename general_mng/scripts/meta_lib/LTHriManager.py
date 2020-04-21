@@ -41,27 +41,27 @@ class LTHriManagerPalbator(LTAbstract):
         :type timeout: float
         """
         start_time = time.time()
-        rospy.loginfo("{class_name} : REQUEST RECEIVED FROM SCENARIO".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} : REQUEST RECEIVED FROM SCENARIO".format(class_name=self.__class__.__name__))
         goal=GmToHriGoal(payload)
-        rospy.loginfo("{class_name} : GOAL TO SEND ".format(class_name=self.__class__)+str(goal))
+        rospy.loginfo("{class_name} : GOAL TO SEND ".format(class_name=self.__class__.__name__)+str(goal))
         self.client_action_GmToHri.send_goal(goal)
-        rospy.loginfo("{class_name} : GOAL SENT TO ACTION".format(class_name=self.__class__))
+        rospy.loginfo("{class_name} : GOAL SENT TO ACTION".format(class_name=self.__class__.__name__))
         
 
         # Wait for result to be received
         try:
-            rospy.loginfo("{class_name} : WAITING FOR ACTION RESULT ".format(class_name=self.__class__))
+            rospy.loginfo("{class_name} : WAITING FOR ACTION RESULT ".format(class_name=self.__class__.__name__))
             self.client_action_GmToHri.wait_for_result()
             result_action=self.client_action_GmToHri.get_result()
-            rospy.loginfo("{class_name} : GOT GOAL FROM ACTION".format(class_name=self.__class__))
+            rospy.loginfo("{class_name} : GOT GOAL FROM ACTION".format(class_name=self.__class__.__name__))
             resultat=result_action.Gm_To_Hri_output
             json_resultat=json.loads(resultat)
-            rospy.loginfo("{class_name}  JSON RESULT: ".format(class_name=self.__class__)+str(json_resultat))
+            rospy.loginfo("{class_name}  JSON RESULT: ".format(class_name=self.__class__.__name__)+str(json_resultat))
 
 
         except Exception as e:
             rospy.logerr("{class_name}: Could not receive result: {error}. ABORT !".format(
-                class_name=self.__class__, error=e))
+                class_name=self.__class__.__name__, error=e))
             return GoalStatus.ABORTED, None
 
         # Return result for action
@@ -70,6 +70,18 @@ class LTHriManagerPalbator(LTAbstract):
         result=json_resultat
         lock.release()
         return GoalStatus.SUCCEEDED, result
+
+    def restart_hri(self,timeout):
+        """
+        Restart the HRI
+        """
+
+        payload = json.dumps({
+            'timestamp': time.time(),
+            "action": "RESTART"
+        })
+        status, result = self._execute_request(payload, timeout)
+        return status,result
 
     def timeboard_send_steps_list(self, steps, scenario_name, timeout):
         """
@@ -807,7 +819,7 @@ class LTHriManager(LTAbstract):
 
     def __naoqi_callback(self, payload):
         rospy.loginfo("{class_name}: Naoqi callback called. Payload: {payload}".format(
-            class_name=self.__class__, payload=payload))
+            class_name=self.__class__.__name__, payload=payload))
         payload_dict = json.loads(payload)
         lock = threading.Lock()
         lock.acquire()

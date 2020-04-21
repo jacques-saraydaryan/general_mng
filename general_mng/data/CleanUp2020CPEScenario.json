@@ -12,8 +12,27 @@
     },
     "steps": [
         {
-            "name": "Ask room to clean",
+            "name": "Scenario beginning",
             "order": 0,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "Beginning"
+        },
+        {
+            "name": "Open door",
+            "order": 1,
+            "eta": 0,
+            "speech": {
+                "said": "I will open the door",
+                "title": "I will open the door"
+            },
+            "action": "openDoor",
+            "id": "openDoor1"
+        },
+        {
+            "name": "Ask room to clean",
+            "order": 2,
             "eta": 10,
             "arguments": {},
             "action": "",
@@ -21,7 +40,7 @@
         },
         {
             "name": "Choose room to clean",
-            "order": 1,
+            "order": 3,
             "eta": 0,
             "speech": {
                 "said": "In which room do I have to go ?",
@@ -35,7 +54,7 @@
         },
         {
             "name": "Confirm room",
-            "order": 2,
+            "order": 4,
             "eta": 0,
             "speech": {
                 "said": "Did you choose the location_name ?",
@@ -48,19 +67,8 @@
             "id": "chooseLoc1_confirm"
         },
         {
-            "name": "Open door",
-            "order": 3,
-            "eta": 0,
-            "speech": {
-                "said": "I will open the door",
-                "title": "I will open the door"
-            },
-            "action": "openDoor",
-            "id": "openDoor1"
-        },
-        {
             "name": "Travel to room",
-            "order": 4,
+            "order": 5,
             "eta": 0,
             "speech": {
                 "said": "I am travelling to the ChoosenRoom_1_name",
@@ -77,8 +85,16 @@
             "id": "goTo1"
         },
         {
-            "name": "Find the object",
-            "order": 5,
+            "name": "Find first object",
+            "order": 6,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "FindObject1"
+        },
+        {
+            "name": "Find the first object",
+            "order": 7,
             "eta": 0,
             "speech": {
                 "said": "I am looking for objects in the ChoosenRoom_1_name",
@@ -97,8 +113,8 @@
             "id": "findObj1"
         },
         {
-            "name": "Found the object",
-            "order": 6,
+            "name": "Found the first object",
+            "order": 8,
             "eta": 0,
             "speech": {
                 "said": "I have found the Object_1_name",
@@ -112,7 +128,302 @@
                 }
             },
             "action": "objectAction",
+            "id": "foundObj1"
+        },
+        {
+            "name": "Catch the first object",
+            "order": 9,
+            "eta": 0,
+            "speech": {
+                "said": "I am catching the Object_1_name",
+                "title": "I am catching the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_path",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
             "id": "catchObj1"
+        },
+        {
+            "name": "Travel to first object storage",
+            "order": 10,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the Object_1_name storage location",
+                "title": "I am travelling to the Object_1_name storage location"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "location": {
+                    "pathOnTablet" : "Object_1_storage_path",
+                    "name": "Object_1_storage_name"
+                  } 
+            },
+            "action": "goTo",
+            "id": "goTo2"
+        },
+        {
+            "name": "Storing the first object",
+            "order": 11,
+            "eta": 0,
+            "speech": {
+                "said": "I am storing the Object_1_name",
+                "title": "I am storing the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_path",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "storeObj1"
+        },
+        {
+            "name": "Can not find first object",
+            "order": 12,
+            "eta": 0,
+            "speech": {
+                "said": "No first object was found",
+                "title": "No first object was found"
+            },
+            "action": "openDoor",
+            "id": "openDoor2"
+        },
+        {
+            "name": "Find second object",
+            "order": 13,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "FindObject2"
+        },
+        {
+            "name": "Find the second object",
+            "order": 14,
+            "eta": 0,
+            "speech": {
+                "said": "I am looking for objects in the ChoosenRoom_1_name",
+                "title": "I am looking for objects in the ChoosenRoom_1_name"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_1",
+                "location": {
+                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "name": "ChoosenRoom_1_name"
+                  },
+                "objectKey": "Object_2"
+
+            },
+            "action": "findObject",
+            "id": "findObj2"
+        },
+        {
+            "name": "Found the second object",
+            "order": 15,
+            "eta": 0,
+            "speech": {
+                "said": "I have found the Object_2_name",
+                "title": "I have found the Object_2_name"
+            },
+            "arguments": {
+                "what": "Object_2",
+                "object": {
+                    "pathOnTablet": "Object_2_path",
+                    "name": "Object_2_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "foundObj2"
+        },
+        {
+            "name": "Catch the second object",
+            "order": 16,
+            "eta": 0,
+            "speech": {
+                "said": "I am catching the Object_2_name",
+                "title": "I am catching the Object_2_name"
+            },
+            "arguments": {
+                "what": "Object_2",
+                "object": {
+                    "pathOnTablet": "Object_2_path",
+                    "name": "Object_2_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "catchObj2"
+        },
+        {
+            "name": "Travel to second object storage",
+            "order": 17,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the Object_2_name storage location",
+                "title": "I am travelling to the Object_2_name storage location"
+            },
+            "arguments": {
+                "what": "Object_2",
+                "location": {
+                    "pathOnTablet" : "Object_2_storage_path",
+                    "name": "Object_2_storage_name"
+                  } 
+            },
+            "action": "goTo",
+            "id": "goTo3"
+        },
+        {
+            "name": "Storing the second object",
+            "order": 18,
+            "eta": 0,
+            "speech": {
+                "said": "I am storing the Object_2_name",
+                "title": "I am storing the Object_2_name"
+            },
+            "arguments": {
+                "what": "Object_2",
+                "object": {
+                    "pathOnTablet": "Object_2_path",
+                    "name": "Object_2_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "storeObj2"
+        },
+        {
+            "name": "Can not find second object",
+            "order": 19,
+            "eta": 0,
+            "speech": {
+                "said": "No second object was found",
+                "title": "No second object was found"
+            },
+            "action": "openDoor",
+            "id": "openDoor3"
+        },
+        {
+            "name": "Find third object",
+            "order": 20,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "FindObject3"
+        },
+        {
+            "name": "Find the third object",
+            "order": 21,
+            "eta": 0,
+            "speech": {
+                "said": "I am looking for objects in the ChoosenRoom_1_name",
+                "title": "I am looking for objects in the ChoosenRoom_1_name"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_1",
+                "location": {
+                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "name": "ChoosenRoom_1_name"
+                  },
+                "objectKey": "Object_3"
+
+            },
+            "action": "findObject",
+            "id": "findObj3"
+        },
+        {
+            "name": "Found the third object",
+            "order": 22,
+            "eta": 0,
+            "speech": {
+                "said": "I have found the Object_3_name",
+                "title": "I have found the Object_3_name"
+            },
+            "arguments": {
+                "what": "Object_3",
+                "object": {
+                    "pathOnTablet": "Object_3_path",
+                    "name": "Object_3_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "foundObj3"
+        },
+        {
+            "name": "Catch the third object",
+            "order": 23,
+            "eta": 0,
+            "speech": {
+                "said": "I am catching the Object_3_name",
+                "title": "I am catching the Object_3_name"
+            },
+            "arguments": {
+                "what": "Object_3",
+                "object": {
+                    "pathOnTablet": "Object_3_path",
+                    "name": "Object_3_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "catchObj3"
+        },
+        {
+            "name": "Travel to third object storage",
+            "order": 24,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the Object_3_name storage location",
+                "title": "I am travelling to the Object_3_name storage location"
+            },
+            "arguments": {
+                "what": "Object_3",
+                "location": {
+                    "pathOnTablet" : "Object_3_storage_path",
+                    "name": "Object_3_storage_name"
+                  } 
+            },
+            "action": "goTo",
+            "id": "goTo4"
+        },
+        {
+            "name": "Storing the third object",
+            "order": 25,
+            "eta": 0,
+            "speech": {
+                "said": "I am storing the Object_3_name",
+                "title": "I am storing the Object_3_name"
+            },
+            "arguments": {
+                "what": "Object_3",
+                "object": {
+                    "pathOnTablet": "Object_3_path",
+                    "name": "Object_3_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "storeObj3"
+        },
+        {
+            "name": "Can not find third object",
+            "order": 26,
+            "eta": 0,
+            "speech": {
+                "said": "No third object was found",
+                "title": "No third object was found"
+            },
+            "action": "openDoor",
+            "id": "openDoor4"
+        },
+        {
+            "name": "Finish Scenario",
+            "order": 27,
+            "eta": 0,
+            "arguments": {},
+            "action": "",
+            "id": "FinishScenario"
         }
         
     ],
