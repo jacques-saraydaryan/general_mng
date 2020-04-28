@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 __author__ = 'Simon ERNST & Thomas CURE'
 import rospy
 import collections
 
 from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
-# from meta_lib.LTPerception import LTPerception
+from meta_lib.LTPerception import LTPerception
 
 import sys
 import json
@@ -30,7 +31,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
-        # self._lt_perception = LTPerception()
+        self._lt_perception = LTPerception()
+
+        response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
+
+        rospy.loginfo("{class_name} : RESULT DARKNET " + str(response))
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']

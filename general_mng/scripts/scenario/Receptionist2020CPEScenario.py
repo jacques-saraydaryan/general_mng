@@ -4,6 +4,8 @@ import collections
 
 from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
+from meta_lib.LTNavigation import LTNavigation
+
 import sys
 import json
 import time
@@ -29,6 +31,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
+
+
+        self.allow_navigation = False
+        if self.allow_navigation:
+            self._lt_navigation = LTNavigation()
 
         self._drinks = self._scenario['imports']['drinks']
         self._locations = self._scenario['imports']['locations']
@@ -69,7 +76,6 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # self.people_drink_by_id[2] = "Placeholder drink"
 
         # Debug options
-        self.allow_navigation = False
 
         self.configuration_ready = True
 
@@ -121,14 +127,20 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :type indexStep: int
         """
         rospy.loginfo("{class_name} : SCN ACTION GO TO".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._locations),self.NO_TIMEOUT)
+        
+        location_key = self.current_step['arguments']['where']
+        for item in self._locations:
+            if item['name'] == location_key: 
+                itp_name = item['interestPoint']
+                break
+
         if self.allow_navigation:
-            if "living room" in self.current_step['name']:
-                self.sendNavOrderAction("NP", "CRRCloseToGoal", "THOMAS_It0", 90.0)
-            else:
-                self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 90.0)
+            self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", itp_name, 90.0)
         else:
+            rospy.loginfo("{class_name} : SEND NAV GOAL : NP CRRCloseToGoal ITP : ".format(class_name=self.__class__.__name__)+itp_name+" timeout=90")
             time.sleep(3)
+        
         result={
             "NextIndex": indexStep+1
         }
@@ -237,7 +249,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
                 rospy.loginfo("{class_name} : SCN : DRINKS BY ID ".format(class_name=self.__class__.__name__)+str(self.people_drink_by_id[key]))
                 for item in self._drinks:
                     drink_guest=deepcopy(self.people_drink_by_id[key]).lower()
-                    drink_guest=drink_guest.title()
+                    if drink_guest != "7up":
+                        drink_guest=drink_guest.title()
                     if item['name']==drink_guest:
                         pathOnTablet=item['pathOnTablet']
                         break
@@ -291,7 +304,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # self._lm_wrapper.timeboard_set_timer_state(True, self.NO_TIMEOUT)
 
         self.current_index_scenario=0
-        while self.current_index_scenario<len(self.steps) and not rospy.is_shutdown() and self.restart_order==False:
+        self.scenario_end = False
+        while self.scenario_end == False and not rospy.is_shutdown():
             
             rospy.loginfo("{class_name} : SCN : CURRENT STEP INDEX : ".format(class_name=self.__class__.__name__)+str(self.current_index_scenario))
             rospy.loginfo("{class_name} : NEW STEP".format(class_name=self.__class__.__name__))
@@ -319,7 +333,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
                 
                 if result['NextIndex']!="":
                     self.current_index_scenario=deepcopy(result['NextIndex'])
-
+                else:
+                    self.scenario_end = True
 
                 if 'saveData' in result:
                     self.store_guest_in_JSON(result['saveData'])

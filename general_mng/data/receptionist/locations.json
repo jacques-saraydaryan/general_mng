@@ -7,12 +7,14 @@
     {
         "id": "livingRoom",
         "pathOnTablet": "img/locations/livingRoom.png",
-        "name": "Living room"
+        "name": "Living room",
+        "interestPoint": "Thomas_LivingRoomItp"
     },
     {
         "id": "entrance",
         "pathOnTablet": "img/locations/entrance.png",
-        "name": "Entrance"
+        "name": "Entrance",
+        "interestPoint": "Thomas_EntranceItp"
     },
     {
         "id": "bin1",

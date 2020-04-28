@@ -20,7 +20,6 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 
-
 class LTPerception(LTAbstract):
 
     OPEN_DOOR_MIN_DISTANCE = 0.8

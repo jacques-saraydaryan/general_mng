@@ -33,14 +33,15 @@
       "order": 1,
       "eta": 0,
       "speech": {
-        "said": "I am travelling to the door",
-        "title": "I am travelling to the door"
+        "said": "I am travelling to the location_name",
+        "title": "I am travelling to the location_name"
       },
       "arguments": {
         "time": 20,
+        "where": "Entrance",
         "location": {
-          "pathOnTablet" : "img/locations/travel.jpg",
-          "name": "livingRoom"
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
         } 
       },
       "action": "goTo",
@@ -199,14 +200,14 @@
       "order": 13,
       "eta": 0,
       "speech": {
-        "said": "I am traveling to the living room",
-        "title": "I'm traveling to the living room"
+        "said": "I am traveling to the location_name",
+        "title": "I'm traveling to the location_name"
       },
       "arguments": {
-        "interestPoint": "GPRS_PEOPLE_LIVINGROOM_It0",
+        "where": "Living room",
         "location": {
-          "pathOnTablet" : "img/locations/livingRoom.png",
-          "name": "livingRoom"
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
         } 
       },
       "action": "goTo",
@@ -390,14 +391,14 @@
       "order": 25,
       "eta": 0,
       "speech": {
-        "said": "I am traveling to the entrance",
-        "title": "I'm traveling to the entrance"
+        "said": "I am traveling to the location_name",
+        "title": "I'm traveling to the location_name"
       },
       "arguments": {
-        "interestPoint": "GPRS_PEOPLE_ENTRANCE_It0",
+        "where": "Entrance",
         "location": {
-          "pathOnTablet" : "img/locations/livingRoom.png",
-          "name": "livingRoom"
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
         } 
       },
       "action": "goTo",
@@ -563,14 +564,14 @@
       "order": 38,
       "eta": 0,
       "speech": {
-        "said": "Tchuuuu tchuuu !",
-        "title": "I'm traveling to the living room"
+        "said": "I am traveling to the location_name",
+        "title": "I'm traveling to the location_name"
       },
       "arguments": {
-        "interestPoint": "GPRS_PEOPLE_LIVINGROOM_It0",
+        "where": "Living room",
         "location": {
-          "pathOnTablet" : "img/locations/livingRoom.png",
-          "name": "livingRoom"
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
         } 
       },
       "action": "goTo",
