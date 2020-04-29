@@ -2,7 +2,8 @@
     {
         "id": "bar",
         "pathOnTablet": "img/locations/bar.png",
-        "name": "Bar"
+        "name": "Bar",
+        "interestPoint": ""
     },
     {
         "id": "livingRoom",
@@ -19,16 +20,19 @@
     {
         "id": "bin1",
         "pathOnTablet": "img/locations/bin.png",
-        "name": "Bin 1"
+        "name": "Bin 1",
+        "interestPoint": ""
     },
     {
         "id": "bin2",
         "pathOnTablet": "img/locations/bin2.png",
-        "name": "Bin 2"
+        "name": "Bin 2",
+        "interestPoint": ""
     },
     {
         "id": "collectionZone",
         "pathOnTablet": "img/locations/collectionZone.png",
-        "name": "Collection Zone"
+        "name": "Collection Zone",
+        "interestPoint": ""
     }
 ]

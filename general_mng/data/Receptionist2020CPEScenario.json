@@ -17,7 +17,12 @@
     "videos": "receptionist/videos.json"
   },
   "parameters":{
-    "LTHri_action_server_name": "action_GmToHri"
+    "LTHri_action_server_name": "action_GmToHri",
+    "nav_strategy_parameters":{
+      "action": "NP",
+      "mode": "CRRCloseToGoal",
+      "timeout": 90.0
+    }
   },
   "steps": [
     {

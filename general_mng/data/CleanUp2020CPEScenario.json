@@ -1,7 +1,12 @@
 {
     "duration": 300,
     "parameters":{
-        "LTHri_action_server_name": "action_GmToHri"
+        "LTHri_action_server_name": "action_GmToHri",
+        "nav_strategy_parameters":{
+            "action": "NP",
+            "mode": "CRRCloseToGoal",
+            "timeout": 90.0
+          }
       },
     "imports":{
         "locations": "cleanup/locations.json",
@@ -75,9 +80,9 @@
                 "title": "I am travelling to the ChoosenRoom_1_name"
             },
             "arguments": {
-                "what": "ChoosenRoom_1",
+                "where": "ChoosenRoom_1",
                 "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "pathOnTablet" : "ChoosenRoom_1_pathOnTablet",
                     "name": "ChoosenRoom_1_name"
                   } 
             },
@@ -103,7 +108,7 @@
             "arguments": {
                 "what": "ChoosenRoom_1",
                 "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "pathOnTablet" : "ChoosenRoom_1_pathOnTablet",
                     "name": "ChoosenRoom_1_name"
                   },
                 "objectKey": "Object_1"
@@ -123,7 +128,7 @@
             "arguments": {
                 "what": "Object_1",
                 "object": {
-                    "pathOnTablet": "Object_1_path",
+                    "pathOnTablet": "Object_1_pathOnTablet",
                     "name": "Object_1_name"
                 }
             },
@@ -141,7 +146,7 @@
             "arguments": {
                 "what": "Object_1",
                 "object": {
-                    "pathOnTablet": "Object_1_path",
+                    "pathOnTablet": "Object_1_pathOnTablet",
                     "name": "Object_1_name"
                 }
             },
@@ -153,13 +158,13 @@
             "order": 10,
             "eta": 0,
             "speech": {
-                "said": "I am travelling to the Object_1_name storage location",
-                "title": "I am travelling to the Object_1_name storage location"
+                "said": "I am travelling to the Object_1_storage_name",
+                "title": "I am travelling to the Object_1_storage_name"
             },
             "arguments": {
-                "what": "Object_1",
+                "where": "Object_1_storage",
                 "location": {
-                    "pathOnTablet" : "Object_1_storage_path",
+                    "pathOnTablet" : "Object_1_storage_pathOnTablet",
                     "name": "Object_1_storage_name"
                   } 
             },
@@ -177,7 +182,7 @@
             "arguments": {
                 "what": "Object_1",
                 "object": {
-                    "pathOnTablet": "Object_1_path",
+                    "pathOnTablet": "Object_1_pathOnTablet",
                     "name": "Object_1_name"
                 }
             },
@@ -214,7 +219,7 @@
             "arguments": {
                 "what": "ChoosenRoom_1",
                 "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "pathOnTablet" : "ChoosenRoom_1_pathOnTablet",
                     "name": "ChoosenRoom_1_name"
                   },
                 "objectKey": "Object_2"
@@ -234,7 +239,7 @@
             "arguments": {
                 "what": "Object_2",
                 "object": {
-                    "pathOnTablet": "Object_2_path",
+                    "pathOnTablet": "Object_2_pathOnTablet",
                     "name": "Object_2_name"
                 }
             },
@@ -252,7 +257,7 @@
             "arguments": {
                 "what": "Object_2",
                 "object": {
-                    "pathOnTablet": "Object_2_path",
+                    "pathOnTablet": "Object_2_pathOnTablet",
                     "name": "Object_2_name"
                 }
             },
@@ -264,13 +269,13 @@
             "order": 17,
             "eta": 0,
             "speech": {
-                "said": "I am travelling to the Object_2_name storage location",
-                "title": "I am travelling to the Object_2_name storage location"
+                "said": "I am travelling to the Object_2_storage_name",
+                "title": "I am travelling to the Object_2_storage_name"
             },
             "arguments": {
-                "what": "Object_2",
+                "where": "Object_2_storage",
                 "location": {
-                    "pathOnTablet" : "Object_2_storage_path",
+                    "pathOnTablet" : "Object_2_storage_pathOnTablet",
                     "name": "Object_2_storage_name"
                   } 
             },
@@ -288,7 +293,7 @@
             "arguments": {
                 "what": "Object_2",
                 "object": {
-                    "pathOnTablet": "Object_2_path",
+                    "pathOnTablet": "Object_2_pathOnTablet",
                     "name": "Object_2_name"
                 }
             },
@@ -325,7 +330,7 @@
             "arguments": {
                 "what": "ChoosenRoom_1",
                 "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_path",
+                    "pathOnTablet" : "ChoosenRoom_1_pathOnTablet",
                     "name": "ChoosenRoom_1_name"
                   },
                 "objectKey": "Object_3"
@@ -345,7 +350,7 @@
             "arguments": {
                 "what": "Object_3",
                 "object": {
-                    "pathOnTablet": "Object_3_path",
+                    "pathOnTablet": "Object_3_pathOnTablet",
                     "name": "Object_3_name"
                 }
             },
@@ -363,7 +368,7 @@
             "arguments": {
                 "what": "Object_3",
                 "object": {
-                    "pathOnTablet": "Object_3_path",
+                    "pathOnTablet": "Object_3_pathOnTablet",
                     "name": "Object_3_name"
                 }
             },
@@ -375,13 +380,13 @@
             "order": 24,
             "eta": 0,
             "speech": {
-                "said": "I am travelling to the Object_3_name storage location",
-                "title": "I am travelling to the Object_3_name storage location"
+                "said": "I am travelling to the Object_3_storage_name",
+                "title": "I am travelling to the Object_3_storage_name"
             },
             "arguments": {
-                "what": "Object_3",
+                "where": "Object_3_storage",
                 "location": {
-                    "pathOnTablet" : "Object_3_storage_path",
+                    "pathOnTablet" : "Object_3_storage_pathOnTablet",
                     "name": "Object_3_storage_name"
                   } 
             },
@@ -399,7 +404,7 @@
             "arguments": {
                 "what": "Object_3",
                 "object": {
-                    "pathOnTablet": "Object_3_path",
+                    "pathOnTablet": "Object_3_pathOnTablet",
                     "name": "Object_3_name"
                 }
             },

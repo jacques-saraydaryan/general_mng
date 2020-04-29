@@ -6,6 +6,7 @@ import collections
 from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTPerception import LTPerception
+from meta_lib.LTNavigation import LTNavigation
 
 import sys
 import json
@@ -29,16 +30,35 @@ class CleanUp2020CPEScenario(AbstractScenario):
         # self._scenario['name']='cleanup'
 
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
+        self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
+        
+        
+        
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
-        self._lt_perception = LTPerception()
 
-        response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
+        #####################  FOR DEBUG #####################
 
-        rospy.loginfo("{class_name} : RESULT DARKNET " + str(response))
+        self.allow_perception = False
+        self.allow_navigation = False
+
+        ####################################################
+
+        if self.allow_perception:
+            self._lt_perception = LTPerception()
+
+        if self.allow_navigation:
+            self._lt_navigation = LTNavigation()
+
+        # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
+
+
+        self.labels_list_darknet = []
+        for item in self._objects:
+            self.labels_list_darknet.append(item['id'])
         
 
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
@@ -47,9 +67,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
 
         self.Room_to_clean = None
-
-        # Debug options
-        self.allow_navigation = False
+        self.detected_object = None
 
         self.configuration_ready = True
 
@@ -138,11 +156,20 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     break
         elif data_to_store == 'storeObject':
             data_JSON[data['what']]={}
-            data_JSON[data['what']]['name']=data['name']
+            data_JSON[data['what']]['name']=data['name'].title()
+
+            data_JSON[data['what']+'_storage']={}
 
             for item in self._objects:
-                if item['name'] == data['name']:
+                if item['id'] == data['name']:
                     data_JSON[data['what']]['pathOnTablet']=item['pathOnTablet']
+                    data_JSON[data['what']+'_storage']['name'] = item['storage']
+                    break
+
+            
+            for item in self._locations:
+                if item['id'] == data_JSON[data['what']+'_storage']['name']:
+                    data_JSON[data['what']+'_storage']['pathOnTablet'] = item['pathOnTablet']
                     break
 
         with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"w+") as f:
@@ -215,11 +242,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :type stepIndex: int
         """
         rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
+        result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
         time.sleep(3)
-        result = {
-            "NextIndex": stepIndex+1
-        }
+        # result = {
+        #     "NextIndex": stepIndex+1
+        # }
         return result
 
     def gm_find_object(self,stepIndex):
@@ -233,19 +260,31 @@ class CleanUp2020CPEScenario(AbstractScenario):
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
-        # self._lt_perception
+
+        if self.allow_perception:
+            response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
         #########################
-        time.sleep(3)
-
+        
+            detection_list = response.payload.labelList
         # detection = 'Windex'
-        if stepIndex == 7:
-            detection = ''
-        elif stepIndex == 14:
-            detection = 'Windex'
-        elif stepIndex == 21:
-            detection = ''
+            if stepIndex == 7:
+                detection = detection_list[0]
+            elif stepIndex == 14:
+                detection = detection_list[1]
+            elif stepIndex == 21:
+                detection = detection_list[2]
 
+            if detection != '':
+                self.detected_object = detection
 
+        else:
+            time.sleep(2)
+            if stepIndex == 7:
+                detection = "windex"
+            elif stepIndex == 14:
+                detection = ""
+            elif stepIndex == 21:
+                detection = "mustard"
 
         if detection != '':
             data={}
@@ -288,20 +327,23 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :type stepIndex: int
         """
         rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)
+        result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
+
+        destination = result["destination"]
+        destination = destination.title()
+        for item in self._locations:
+            if item['name'] == destination:
+                itp_name = item['interestPoint']
+                break
+
 
         if self.allow_navigation:
-            if "living room" in self.current_step['name']:
-                self.sendNavOrderAction("NP", "CRRCloseToGoal", "THOMAS_It0", 90.0)
-            else:
-                self.sendNavOrderAction("NP", "CRRCloseToGoal", "GPRS_PEOPLE_ENTRANCE_It0", 90.0)
+            self.sendNavOrderAction(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
+
         else:
+            rospy.logwarn("NAV GOAL TO : " + destination + " ACTION "+self._nav_strategy['action'] +" MODE "+self._nav_strategy['mode'] + " itp " + itp_name + " timeout "+ str(self._nav_strategy['timeout']))    
             time.sleep(2)
 
-
-        result={
-            "NextIndex": stepIndex+1
-        }
         return result
 
     def gm_store_object(self,stepIndex):

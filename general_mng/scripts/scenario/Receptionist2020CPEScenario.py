@@ -33,7 +33,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
 
-        self.allow_navigation = False
+        self.allow_navigation = True
         if self.allow_navigation:
             self._lt_navigation = LTNavigation()
 
@@ -41,6 +41,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._locations = self._scenario['imports']['locations']
         self._people = self._scenario['imports']['people']
         self._videos = self._scenario['imports']['videos']
+
+        self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
         
 
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
@@ -127,23 +129,21 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :type indexStep: int
         """
         rospy.loginfo("{class_name} : SCN ACTION GO TO".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._locations),self.NO_TIMEOUT)
-        
-        location_key = self.current_step['arguments']['where']
+        result = self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._locations),self.NO_TIMEOUT)[1]
+     
+        destination = result['destination']
+        destination = destination.title()
         for item in self._locations:
-            if item['name'] == location_key: 
+            if item['name'] == destination:
                 itp_name = item['interestPoint']
                 break
 
         if self.allow_navigation:
-            self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", itp_name, 90.0)
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
         else:
-            rospy.loginfo("{class_name} : SEND NAV GOAL : NP CRRCloseToGoal ITP : ".format(class_name=self.__class__.__name__)+itp_name+" timeout=90")
-            time.sleep(3)
+            rospy.logwarn("{class_name} : SEND NAV GOAL : ".format(class_name=self.__class__.__name__) + self._nav_strategy['action'] + " " + self._nav_strategy['mode'] + " ITP : "+itp_name+" timeout= " + str(self._nav_strategy['timeout']))
+            time.sleep(2)
         
-        result={
-            "NextIndex": indexStep+1
-        }
         return result
 
     def gm_point_to(self,indexStep):

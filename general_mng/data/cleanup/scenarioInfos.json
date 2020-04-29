@@ -1,14 +1,22 @@
 {
-    "Object_2": {
+    "Object_3": {
+        "name": "Mustard", 
+        "pathOnTablet": "img/objects/mustard.png"
+    }, 
+    "Object_1": {
         "name": "Windex", 
         "pathOnTablet": "img/objects/windex.png"
     }, 
     "ChoosenRoom_1": {
-        "name": "Bedroom", 
-        "pathOnTablet": "img/locations/bedroom.png"
+        "name": "Living Room", 
+        "pathOnTablet": "img/locations/livingRoom.png"
     }, 
-    "Object_3": {
-        "name": "Mustard", 
-        "pathOnTablet": "img/objects/mustard.png"
+    "Object_3_storage": {
+        "name": "kitchen", 
+        "pathOnTablet": "img/locations/kitchen.png"
+    }, 
+    "Object_1_storage": {
+        "name": "kitchen", 
+        "pathOnTablet": "img/locations/kitchen.png"
     }
 }
