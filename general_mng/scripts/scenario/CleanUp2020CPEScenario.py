@@ -8,6 +8,8 @@ from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTPerception import LTPerception
 from meta_lib.LTNavigation import LTNavigation
 
+from meta_behaviour.LTHighBehaviour import LTHighBehaviour
+
 import sys
 import json
 import time
@@ -16,6 +18,10 @@ from copy import deepcopy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
 import os
+from tf import TransformListener
+from geometry_msgs.msg import Pose
+
+
 
 class CleanUp2020CPEScenario(AbstractScenario):
     DEFAULT_TIMEOUT = 5.0
@@ -40,7 +46,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         #####################  FOR DEBUG #####################
 
         self.allow_perception = False
-        self.allow_navigation = False
+        self.allow_navigation = True
+        self.allow_highbehaviour = True
 
         ####################################################
 
@@ -49,6 +56,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         if self.allow_navigation:
             self._lt_navigation = LTNavigation()
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], "Thomas_Outside", self._nav_strategy['timeout'])
+        
+        if self.allow_highbehaviour:
+            self._lt_high_behaviour = LTHighBehaviour()
+
 
         # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
 
@@ -68,8 +80,22 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         self.Room_to_clean = None
         self.detected_object = None
-
+        # self._tflistener = TransformListener()
         self.configuration_ready = True
+
+    # def get_robot_position(self):
+    #     now = rospy.Time.now()
+    #     self._tflistener.waitForTransform("/map", "/base_link", now, rospy.Duration(2.0))
+    #     (trans, rot) = self._tflistener.lookupTransform("/map", "/base_link", now)
+    #     robotPose = Pose()
+    #     robotPose.position.x = trans[0]
+    #     robotPose.position.y = trans[1]
+    #     robotPose.position.z = trans[2]
+    #     robotPose.orientation.x = rot[0]
+    #     robotPose.orientation.y = rot[1]
+    #     robotPose.orientation.z = rot[2]
+    #     robotPose.orientation.w = rot[3]
+    #     return robotPose
 
     def start_scenario(self):   
         """
@@ -261,30 +287,53 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
+        
+        cp = 0
         if self.allow_perception:
             response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
-        #########################
-        
             detection_list = response.payload.labelList
-        # detection = 'Windex'
-            if stepIndex == 7:
-                detection = detection_list[0]
-            elif stepIndex == 14:
-                detection = detection_list[1]
-            elif stepIndex == 21:
-                detection = detection_list[2]
+        else:
+            detection_list = []
 
-            if detection != '':
-                self.detected_object = detection
+        if self.allow_highbehaviour:
+            detection_list = self._lt_high_behaviour.turn_around_and_detect_objects(self.labels_list_darknet,4,self._nav_strategy['timeout'])
+            if not detection_list is None:
+                if len(detection_list) == 0:
+                    rospy.logerr("no object detected in that room") 
+                    detection = ''
+                else:
+                    rospy.logwarn("YOUHOUUUU, I DETECTED SOMETHING")
+                    rospy.logwarn(detection_list)
+                    detection = detection_list[0]
+            else:
+                rospy.logwarn("ERROR DURING TURN AROUND AND DETECT OBJECT EXECUTION")
 
         else:
-            time.sleep(2)
-            if stepIndex == 7:
-                detection = "windex"
-            elif stepIndex == 14:
-                detection = ""
-            elif stepIndex == 21:
-                detection = "mustard"
+            detection = ''
+
+            
+
+        # detection = 'Windex'
+            # if stepIndex == 7:
+            #     detection = detection_list[0]
+            # elif stepIndex == 14:
+            #     detection = detection_list[1]
+            # elif stepIndex == 21:
+            #     detection = detection_list[2]
+
+            # if detection != '':
+            #     self.detected_object = detection
+
+
+
+        # else:
+        #     time.sleep(2)
+        #     if stepIndex == 7:
+        #         detection = "windex"
+        #     elif stepIndex == 14:
+        #         detection = ""
+        #     elif stepIndex == 21:
+        #         detection = "mustard"
 
         if detection != '':
             data={}
@@ -299,10 +348,6 @@ class CleanUp2020CPEScenario(AbstractScenario):
                 "NextIndex": stepIndex+5
             }
             return result
-
-        
-        
-
 
     def gm_catch_object(self,stepIndex):
         """
@@ -338,7 +383,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
 
         if self.allow_navigation:
-            self.sendNavOrderAction(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
 
         else:
             rospy.logwarn("NAV GOAL TO : " + destination + " ACTION "+self._nav_strategy['action'] +" MODE "+self._nav_strategy['mode'] + " itp " + itp_name + " timeout "+ str(self._nav_strategy['timeout']))    
