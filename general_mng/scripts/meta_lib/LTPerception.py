@@ -20,6 +20,17 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 
+
+def singleton(cls):    
+    instance = [None]
+    def wrapper(*args, **kwargs):
+        if instance[0] is None:
+            instance[0] = cls(*args, **kwargs)
+        return instance[0]
+
+    return wrapper
+
+@singleton
 class LTPerception(LTAbstract):
 
     OPEN_DOOR_MIN_DISTANCE = 0.8
