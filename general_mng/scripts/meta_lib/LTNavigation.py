@@ -84,6 +84,38 @@ class LTNavigation(LTAbstract):
                 return response
         return response
 
+    def send_nav_rotation_order(self,action, rotation_angle, timeout, service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__send_nav_rotation_order,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for send_nav_order" % (service_mode)
+            return response
+        else:
+            feedback = fct(action, rotation_angle, timeout)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during send_nav_rotation_order to rotation_angle:[%s], action[%s]" % (
+                rotation_angle, action)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes send_nav_rotation_order to rotation_angle:[%s], action[%s]" % (
+                    rotation_angle, action)
+                response.payload = feedback
+                return response
+        return response
+
     def send_nav_order_to_pt(self, action, mode, x, y, timeout, service_mode=LTAbstract.ACTION):
         response = LTServiceResponse()
 
@@ -139,6 +171,26 @@ class LTNavigation(LTAbstract):
         except Exception as e:
             rospy.logwarn("###### NAV ACTION FAILURE , State: %s", str(e))
         return GoalStatus.ABORTED
+
+    def __send_nav_rotation_order(self, action, rotation_angle, timeout):
+        try:
+
+            goal = NavMngGoal()
+            goal.action = action
+            goal.rotation_angle = rotation_angle
+            rospy.loginfo("### NAV ROTATION ACTION PENDING : %s", str(goal).replace('\n', ', '))
+            self._actionNavMng_server.send_goal(goal)
+            self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
+            state = self._actionNavMng_server.get_state()
+            if state == GoalStatus.ABORTED:
+                rospy.logwarn("###### NAV ROTATION ACTION END , State: %s", self.action_status_to_string(state))
+            else:
+                rospy.loginfo("###### NAV ROTATION ACTION END , State: %s", self.action_status_to_string(state))
+            return state
+        except Exception as e:
+            rospy.logwarn("###### NAV ROTATION ACTION FAILURE , State: %s", str(e))
+        return GoalStatus.ABORTED
+
 
     def __send_nav_order_to_pt_action(self, action, mode, x, y, timeout):
         try:

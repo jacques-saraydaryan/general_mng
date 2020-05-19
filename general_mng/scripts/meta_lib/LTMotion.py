@@ -16,6 +16,103 @@ from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
 from dialogue_hri_srvs.srv import TurnToInterestPoint
 
+from pmb2_apps.msg import ArmControlGoal, ArmControlAction
+
+def singleton(cls):    
+    instance = [None]
+    def wrapper(*args, **kwargs):
+        if instance[0] is None:
+            instance[0] = cls(*args, **kwargs)
+        return instance[0]
+
+    return wrapper
+
+@singleton
+class LTMotionPalbator(LTAbstract):
+
+    _enableArmControlAction = True
+
+    def __init__(self):
+        self.configure_intern()
+
+        #Inform configuration is ready
+        self.configurationReady = True
+        rospy.loginfo("LTMotionPalbator initialized")
+
+    #######################################
+    # CONFIGURATION
+    ######################################
+
+
+    def configure_intern(self):
+
+        if self._enableArmControlAction:
+            self._action_client_arm_control = actionlib.SimpleActionClient("arm_control_action",ArmControlAction)
+            server_is_up = self._action_client_arm_control.wait_for_server(timeout=rospy.Duration(self.ACTION_WAIT_TIMEOUT))
+            if server_is_up:
+                rospy.loginfo("Arm control server connected")
+            else:
+                rospy.logwarn("Arm control server disconnected")
+
+
+    def reset(self):
+        self.configure_intern()
+
+    #######################################
+    # MOTION API
+    ######################################
+
+    def point_at_object(self, object_label, service_mode=LTAbstract.ACTION):
+        
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__point_at_object,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for point_at_object" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(object_label)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during point_at_object to object: %s" % (object_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes point_at_object to object: %s" % (object_label)
+                response.result = result
+                return response
+        return response
+
+    #######################################
+    # MOTION ACTION
+    ######################################
+
+    def __point_at_object(self,object_label):
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'Pointing Object'
+            goal.object_label = object_label
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("SENDING POINTING GOAL")
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("Service move_head_pose_srv could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+
+
 
 class LTMotion(LTAbstract):
 

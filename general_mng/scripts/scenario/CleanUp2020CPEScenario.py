@@ -45,7 +45,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         #####################  FOR DEBUG #####################
 
-        self.allow_perception = False
+        self.allow_perception = True
         self.allow_navigation = True
         self.allow_highbehaviour = True
 
@@ -56,8 +56,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         if self.allow_navigation:
             self._lt_navigation = LTNavigation()
+
+            ### MOVE THE ROBOT OUTSIDE THE APPARTMENT ###########
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], "Thomas_Outside", self._nav_strategy['timeout'])
-        
+            #####################################################
+            
         if self.allow_highbehaviour:
             self._lt_high_behaviour = LTHighBehaviour()
 
@@ -287,13 +290,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
-        
-        cp = 0
-        if self.allow_perception:
-            response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
-            detection_list = response.payload.labelList
-        else:
-            detection_list = []
+        # if self.allow_perception:
+        #     response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
+        #     detection_list = response.payload.labelList
+        # else:
+        detection_list = []
 
         if self.allow_highbehaviour:
             detection_list = self._lt_high_behaviour.turn_around_and_detect_objects(self.labels_list_darknet,4,self._nav_strategy['timeout'])
