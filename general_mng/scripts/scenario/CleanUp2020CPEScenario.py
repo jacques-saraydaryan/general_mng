@@ -45,7 +45,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         #####################  FOR DEBUG #####################
 
-        self.allow_perception = True
+        self.allow_perception = False
         self.allow_navigation = True
         self.allow_highbehaviour = True
 
@@ -178,6 +178,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         if data_to_store == 'storeRoom':
             data_JSON[data['what']]={}
             data['where'] = (data['where'].lower()).title()
+            self.choosenRoom = data['where']
             data_JSON[data['what']]['name']=data['where']
             for location in self._locations:
                 if location['name'] == data['where']:
@@ -290,24 +291,32 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
-        # if self.allow_perception:
-        #     response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
-        #     detection_list = response.payload.labelList
-        # else:
-        detection_list = []
+        if self.allow_perception:
+            response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
+            detection_list = response.payload.labelList
+        else:
+            detection_list = []
 
         if self.allow_highbehaviour:
-            detection_list = self._lt_high_behaviour.turn_around_and_detect_objects(self.labels_list_darknet,4,self._nav_strategy['timeout'])
-            if not detection_list is None:
-                if len(detection_list) == 0:
-                    rospy.logerr("no object detected in that room") 
-                    detection = ''
-                else:
-                    rospy.logwarn("YOUHOUUUU, I DETECTED SOMETHING")
-                    rospy.logwarn(detection_list)
-                    detection = detection_list[0]
+            # detection_list = self._lt_high_behaviour.turn_around_and_detect_objects(self.labels_list_darknet,4,self._nav_strategy['timeout'])
+            
+            detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, self._nav_strategy['timeout'])
+
+            if not detection_result is None:
+                rospy.loginfo("DETECTION RESULT %s",detection_result)
+
+            # if not detection_list is None:
+            #     if len(detection_list) == 0:
+            #         rospy.logerr("no object detected in that room") 
+            #         detection = ''
+            #     else:
+            #         rospy.logwarn("YOUHOUUUU, I DETECTED SOMETHING")
+            #         rospy.logwarn(detection_list)
+            #         detection = detection_list[0]
             else:
-                rospy.logwarn("ERROR DURING TURN AROUND AND DETECT OBJECT EXECUTION")
+                rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
+            
+            detection = ''
 
         else:
             detection = ''

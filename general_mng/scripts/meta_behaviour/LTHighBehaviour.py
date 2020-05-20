@@ -10,6 +10,8 @@ from meta_lib.LTMotion import LTMotionPalbator
 import rospy
 import json
 
+
+
 class LTHighBehaviour(LTAbstract):
 
     _enableHighBehaviour = True
@@ -41,31 +43,53 @@ class LTHighBehaviour(LTAbstract):
     # HIGH LEVEL BEHAVIOURS 
     ######################################
 
-    def turn_around_and_detect_objects(self, perception_objects_labels, nb_max_detection, nav_timeout):
-
-        detection_list = []
-        cp_detection = 1
+    def turn_around_and_detect_objects(self, room_to_inspect, nav_timeout):
         try:
-            while len(detection_list) == 0 and cp_detection < nb_max_detection:
-                
-                rotation_angle = float((2*math.pi)/float(nb_max_detection))
+            for i in range(0,7):
+                rotation_angle = math.pi/4.0
+                rospy.loginfo("ROTATION %s of %s radians",str(i),str(rotation_angle))
+                response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
 
-                rospy.logwarn("ROTATION %s de %s degres",str(cp_detection),str((rotation_angle*360)/(2*math.pi)))
+            response = self._lt_perception.get_object_in_room(room_to_inspect)
+            objects_list = response.payload
+            rospy.logwarn("OBJECTS IN ROOM %s",str(objects_list))
 
-                response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
 
-                response_perception = self._lt_perception.detect_objects_with_given_sight_from_img_topic(perception_objects_labels,NO_TIMEOUT)
+            if len(objects_list) != 0:
+                try:
+                    tflistener = TransformListener()
+                    now = rospy.Time(0)
+                    tflistener.waitForTransform("/map", "/base_footprint", now, rospy.Duration(2.0))
+                    (trans, rot) = tflistener.lookupTransform("/map", "/base_footprint", now)
+        
+
+                    minimum_distance = 0
+                    list_distance_objects = []
+                    choosen_item = None
+                    for item in objects_list:
+                        data_item = json.loads(item)
+
+                        x_data_item = data_item["pose"]["position"]["x"]
+                        y_data_item = data_item["pose"]["position"]["y"]
+
+                        item_distance = math.sqrt(pow(x_data_item-trans[0],2)+pow(y_data_item-trans[1],2))
+                        
+                        if minimum_distance == 0:
+                            minimum_distance = item_distance
+                            choosen_item = item
+                        else:
+                            if item_distance < minimum_distance:
+                                minimum_distance = item_distance
+                                choosen_item = item
+
+                    return choosen_item
+
+                except Exception as e:
+                    rospy.logerr(e)
+                    return objects_list
                 
-                detection_list = response_perception.payload.labelList
-                
-                cp_detection = cp_detection + 1
-            
-            if len(detection_list) == 0:
-                rospy.loginfo("NO OBJECTS DETECTED AFTER TURNING AROUND") 
             else:
-                rospy.loginfo("OBJECTS DETECTED "+str(detection_list))
-
-            return detection_list           
+                return None
 
         except Exception as e:
             rospy.logwarn("###### TURN AROUND AND DETECT OBJECT FAILURE , State: %s", str(e))

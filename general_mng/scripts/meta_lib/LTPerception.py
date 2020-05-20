@@ -20,6 +20,10 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 
+from tf_broadcaster.srv import GetObjectsInRoom
+from tf import TransformListener
+import math
+
 
 def singleton(cls):    
     instance = [None]
@@ -36,14 +40,18 @@ class LTPerception(LTAbstract):
     OPEN_DOOR_MIN_DISTANCE = 0.8
     CHECK_DISTANCE_FREQUENCY = 10
 
-    _enableObjectDetectionMngAction = True
-    _enableLearnPeopleMetaAction = True
-    _enableMultiplePeopleDetectionAction = True
-    _enableGetPeopleNameAction = True
-    _enableMinFrontValueService = True
-    _enableResetPersonMetaInfoMapService = True
-    _enableResetPersonMetaInfoMapService = True
-    _enableTakePictureService = True
+    _enableObjectDetectionMngAction = False
+    _enableLearnPeopleMetaAction = False
+    _enableMultiplePeopleDetectionAction = False
+    _enableGetPeopleNameAction = False
+    _enableMinFrontValueService = False
+    _enableResetPersonMetaInfoMapService = False
+    _enableResetPersonMetaInfoMapService = False
+    _enableTakePictureService = False
+
+    _enableCheckForObjectsInRoom = True
+
+
 
     def __init__(self):
         self.configure_intern()
@@ -56,7 +64,17 @@ class LTPerception(LTAbstract):
     ######################################
 
     def configure_intern(self):
-        rospy.loginfo("Connecting to tts_hri action server ... ")
+
+        rospy.loginfo("Loading configuration for LTPerception ... ")
+
+        if self._enableCheckForObjectsInRoom:
+            service_name = 'get_objects_list'
+            self.get_object_in_room_proxy = rospy.ServiceProxy(service_name,GetObjectsInRoom)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("get_objects_in_room server connected")
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("Unable to connect to the get_objects_in_room service.")
 
         if self._enableObjectDetectionMngAction:
             self._actionObjectDetectionMng_server = actionlib.SimpleActionClient('object_detection_action',
@@ -166,6 +184,37 @@ class LTPerception(LTAbstract):
     #             response.payload = result
     #             return response
     #     return response
+
+    def get_object_in_room(self,room,service_mode=LTAbstract.SERVICE):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__get_object_in_room,
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for get_object_in_room" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(room)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during get_object_in_room "
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success get_object_in_room "
+                response.payload = result
+                return response
+        return response
 
     def detect_objects_with_look_around(self, labels, timeout, service_mode=LTAbstract.ACTION):
         response = LTServiceResponse()
@@ -662,6 +711,22 @@ class LTPerception(LTAbstract):
     #######################################
     # PERCEPTION ACTION
     ######################################
+
+    def __get_object_in_room(self,room):
+        try:
+            result = self.get_object_in_room_proxy(room)
+            objects_list = result.objects_list
+
+            return GoalStatus.SUCCEEDED, objects_list
+
+        except rospy.ServiceException as e:
+            rospy.logerr("Service get_object_in_room could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("Service get_object_in_room could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+
+
 
     def __detect_objects_with_look_around(self, labels, timeout):
         """
