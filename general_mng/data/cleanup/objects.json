@@ -3,13 +3,13 @@
         "id": "bleach",
         "pathOnTablet": "img/objects/bleach.png",
         "name": "Bleach",
-        "storage": ""
+        "storage": "kitchen"
     },
     {
         "id": "chips",
         "pathOnTablet": "img/objects/chips.png",
         "name": "Chips",
-        "storage": ""
+        "storage": "livingRoom"
     },
     {
         "id": "coffee",
@@ -21,13 +21,13 @@
         "id": "cracker",
         "pathOnTablet": "img/objects/cracker.png",
         "name": "Cracker",
-        "storage": ""
+        "storage": "livingRoom"
     },
     {
         "id": "jello",
         "pathOnTablet": "img/objects/jello.png",
         "name": "Jello",
-        "storage": ""
+        "storage": "livingRoom"
     },
     {
         "id": "mustard",
@@ -39,37 +39,37 @@
         "id": "pitcher",
         "pathOnTablet": "img/objects/pitcher.png",
         "name": "Pitcher",
-        "storage": ""
+        "storage": "entrance"
     },
     {
         "id": "pottedmeat",
         "pathOnTablet": "img/objects/pottedmeat.png",
         "name": "Potted Meat",
-        "storage": ""
+        "storage": "entrance"
     },
     {
         "id": "pudding",
         "pathOnTablet": "img/objects/pudding.png",
         "name": "Pudding",
-        "storage": ""
+        "storage": "entrance"
     },
     {
         "id": "sugar",
         "pathOnTablet": "img/objects/sugar.png",
         "name": "Sugar",
-        "storage": ""
+        "storage": "livingRoom"
     },
     {
         "id": "tomatosoup",
         "pathOnTablet": "img/objects/tomatosoup.png",
         "name": "Tomato Soup",
-        "storage": ""
+        "storage": "kitchen"
     },
     {
         "id": "tuna",
         "pathOnTablet": "img/objects/tuna.png",
         "name": "Tuna",
-        "storage": ""
+        "storage": "livingRoom"
     },
     {
         "id": "windex",

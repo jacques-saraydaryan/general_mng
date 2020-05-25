@@ -46,8 +46,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         #####################  FOR DEBUG #####################
 
         self.allow_perception = False
-        self.allow_navigation = True
-        self.allow_highbehaviour = True
+        self.allow_navigation = False
+        self.allow_highbehaviour = False
 
         ####################################################
 
@@ -58,7 +58,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
             self._lt_navigation = LTNavigation()
 
             ### MOVE THE ROBOT OUTSIDE THE APPARTMENT ###########
-            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], "Thomas_Outside", self._nav_strategy['timeout'])
+            # self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], "Thomas_Outside", self._nav_strategy['timeout'])
             #####################################################
             
         if self.allow_highbehaviour:
@@ -292,34 +292,57 @@ class CleanUp2020CPEScenario(AbstractScenario):
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
         if self.allow_perception:
-            response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
-            detection_list = response.payload.labelList
+
+            response = self._lt_perception.get_object_in_room(self.choosenRoom)
+            objects_list = response.payload
+            rospy.logwarn("OBJECTS IN ROOM %s",str(objects_list))
+            # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
+            # detection_list = response.payload.labelList
         else:
-            detection_list = []
+            objects_list = []
 
         if self.allow_highbehaviour:
-            # detection_list = self._lt_high_behaviour.turn_around_and_detect_objects(self.labels_list_darknet,4,self._nav_strategy['timeout'])
+
+            if len(objects_list) == 0:
             
-            detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, self._nav_strategy['timeout'])
+                detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, self._nav_strategy['timeout'])
 
-            if not detection_result is None:
-                rospy.loginfo("DETECTION RESULT %s",detection_result)
+                if not detection_result is None:
+                    rospy.loginfo("DETECTION RESULT %s",detection_result)
+                    detection_json = json.loads(detection_result)
+                    object_label = detection_json['label']+'_TF'
 
-            # if not detection_list is None:
-            #     if len(detection_list) == 0:
-            #         rospy.logerr("no object detected in that room") 
-            #         detection = ''
-            #     else:
-            #         rospy.logwarn("YOUHOUUUU, I DETECTED SOMETHING")
-            #         rospy.logwarn(detection_list)
-            #         detection = detection_list[0]
+                    rospy.logwarn("POINTING ACTION %s",object_label)
+                    self._lt_high_behaviour.point_an_object(object_label)
+
+                    for item in self._objects:
+                        if item['id'] in object_label:
+                            detection = item['id']
+
+                else:
+                    rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
+                    detection = ''
+        
             else:
-                rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
-            
-            detection = ''
+                detection_result = self._lt_high_behaviour.get_closest_object(objects_list)
+                if not detection_result is None:
+                    rospy.loginfo("DETECTION RESULT %s",detection_result)
+                    detection_json = json.loads(detection_result)
+                    object_label = detection_json['label']+'_TF'
 
+                    rospy.logwarn("POINTING ACTION %s",object_label)
+                    self._lt_high_behaviour.point_an_object(object_label)
+
+                    for item in self._objects:
+                        if item['id'] in object_label:
+                            detection = item['id']
+
+                else:
+                    rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
+                    detection = ''
+            
         else:
-            detection = ''
+            detection = 'mustard'
 
             
 

@@ -1,18 +1,10 @@
 {
-    "Object_3": {
+    "Object_1": {
         "name": "Mustard", 
         "pathOnTablet": "img/objects/mustard.png"
     }, 
-    "Object_1": {
-        "name": "Windex", 
-        "pathOnTablet": "img/objects/windex.png"
-    }, 
     "ChoosenRoom_1": {
-        "name": "Living Room", 
-        "pathOnTablet": "img/locations/livingRoom.png"
-    }, 
-    "Object_3_storage": {
-        "name": "kitchen", 
+        "name": "Kitchen", 
         "pathOnTablet": "img/locations/kitchen.png"
     }, 
     "Object_1_storage": {

@@ -10,7 +10,8 @@ from meta_lib.LTMotion import LTMotionPalbator
 import rospy
 import json
 
-
+import math
+from tf import TransformListener
 
 class LTHighBehaviour(LTAbstract):
 
@@ -45,7 +46,7 @@ class LTHighBehaviour(LTAbstract):
 
     def turn_around_and_detect_objects(self, room_to_inspect, nav_timeout):
         try:
-            for i in range(0,7):
+            for i in range(0,8):
                 rotation_angle = math.pi/4.0
                 rospy.loginfo("ROTATION %s of %s radians",str(i),str(rotation_angle))
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
@@ -54,46 +55,51 @@ class LTHighBehaviour(LTAbstract):
             objects_list = response.payload
             rospy.logwarn("OBJECTS IN ROOM %s",str(objects_list))
 
-
             if len(objects_list) != 0:
-                try:
-                    tflistener = TransformListener()
-                    now = rospy.Time(0)
-                    tflistener.waitForTransform("/map", "/base_footprint", now, rospy.Duration(2.0))
-                    (trans, rot) = tflistener.lookupTransform("/map", "/base_footprint", now)
-        
-
-                    minimum_distance = 0
-                    list_distance_objects = []
-                    choosen_item = None
-                    for item in objects_list:
-                        data_item = json.loads(item)
-
-                        x_data_item = data_item["pose"]["position"]["x"]
-                        y_data_item = data_item["pose"]["position"]["y"]
-
-                        item_distance = math.sqrt(pow(x_data_item-trans[0],2)+pow(y_data_item-trans[1],2))
-                        
-                        if minimum_distance == 0:
-                            minimum_distance = item_distance
-                            choosen_item = item
-                        else:
-                            if item_distance < minimum_distance:
-                                minimum_distance = item_distance
-                                choosen_item = item
-
-                    return choosen_item
-
-                except Exception as e:
-                    rospy.logerr(e)
-                    return objects_list
-                
+                closest_object = self.get_closest_object(objects_list)
+                return closest_object
             else:
                 return None
 
         except Exception as e:
             rospy.logwarn("###### TURN AROUND AND DETECT OBJECT FAILURE , State: %s", str(e))
             return None
+
+    
+    def get_closest_object(self,objects_list):
+        try:
+            tflistener = TransformListener()
+            now = rospy.Time(0)
+            tflistener.waitForTransform("/map", "/base_footprint", now, rospy.Duration(2.0))
+            (trans, rot) = tflistener.lookupTransform("/map", "/base_footprint", now)
+
+
+            minimum_distance = 0
+            list_distance_objects = []
+            choosen_item = None
+            for item in objects_list:
+                data_item = json.loads(item)
+
+                x_data_item = data_item["pose"]["position"]["x"]
+                y_data_item = data_item["pose"]["position"]["y"]
+
+                item_distance = math.sqrt(pow(x_data_item-trans[0],2)+pow(y_data_item-trans[1],2))
+                
+                if minimum_distance == 0:
+                    minimum_distance = item_distance
+                    choosen_item = item
+                else:
+                    if item_distance < minimum_distance:
+                        minimum_distance = item_distance
+                        choosen_item = item
+
+            return choosen_item
+
+        except Exception as e:
+            rospy.logerr(e)
+            return objects_list
+
+
 
     def point_an_object(self,object_label):
         
