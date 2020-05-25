@@ -198,7 +198,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
             
             for item in self._locations:
-                if item['id'] == data_JSON[data['what']+'_storage']['name']:
+                if item['name'] == data_JSON[data['what']+'_storage']['name']:
                     data_JSON[data['what']+'_storage']['pathOnTablet'] = item['pathOnTablet']
                     break
 
@@ -342,7 +342,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     detection = ''
             
         else:
-            detection = 'mustard'
+            detection = 'cracker'
 
             
 
@@ -407,12 +407,15 @@ class CleanUp2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name} ACTION GO TO OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
 
+        itp_name = ''
+
         destination = result["destination"]
         destination = destination.title()
         for item in self._locations:
             if item['name'] == destination:
                 itp_name = item['interestPoint']
                 break
+
 
 
         if self.allow_navigation:

@@ -3,79 +3,79 @@
         "id": "bleach",
         "pathOnTablet": "img/objects/bleach.png",
         "name": "Bleach",
-        "storage": "kitchen"
+        "storage": "Kitchen"
     },
     {
         "id": "chips",
         "pathOnTablet": "img/objects/chips.png",
         "name": "Chips",
-        "storage": "doubleBedroom"
+        "storage": "Double Bedroom"
     },
     {
         "id": "coffee",
         "pathOnTablet": "img/objects/coffee.png",
         "name": "Coffee",
-        "storage": "singleBedroom"
+        "storage": "Single Bedroom"
     },
     {
         "id": "cracker",
         "pathOnTablet": "img/objects/cracker.png",
         "name": "Cracker",
-        "storage": "livingRoom"
+        "storage": "Living Room"
     },
     {
         "id": "jello",
         "pathOnTablet": "img/objects/jello.png",
         "name": "Jello",
-        "storage": "livingRoom"
+        "storage": "Living Room"
     },
     {
         "id": "mustard",
         "pathOnTablet": "img/objects/mustard.png",
         "name": "Mustard",
-        "storage": "singleBedroom"
+        "storage": "Single Bedroom"
     },
     {
         "id": "pitcher",
         "pathOnTablet": "img/objects/pitcher.png",
         "name": "Pitcher",
-        "storage": "entrance"
+        "storage": "Entrance"
     },
     {
         "id": "pottedmeat",
         "pathOnTablet": "img/objects/pottedmeat.png",
         "name": "Potted Meat",
-        "storage": "entrance"
+        "storage": "Entrance"
     },
     {
         "id": "pudding",
         "pathOnTablet": "img/objects/pudding.png",
         "name": "Pudding",
-        "storage": "doubleBedroom"
+        "storage": "Double Bedroom"
     },
     {
         "id": "sugar",
         "pathOnTablet": "img/objects/sugar.png",
         "name": "Sugar",
-        "storage": "livingRoom"
+        "storage": "Living Room"
     },
     {
         "id": "tomatosoup",
         "pathOnTablet": "img/objects/tomatosoup.png",
         "name": "Tomato Soup",
-        "storage": "kitchen"
+        "storage": "Kitchen"
     },
     {
         "id": "tuna",
         "pathOnTablet": "img/objects/tuna.png",
         "name": "Tuna",
-        "storage": "livingRoom"
+        "storage": "Living Room"
     },
     {
         "id": "windex",
         "pathOnTablet": "img/objects/windex.png",
         "name": "Windex",
-        "storage": "kitchen"
+        "storage": "Kitchen"
     },
     {
         "id": "unknown",
