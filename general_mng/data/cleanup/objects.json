@@ -9,13 +9,13 @@
         "id": "chips",
         "pathOnTablet": "img/objects/chips.png",
         "name": "Chips",
-        "storage": "livingRoom"
+        "storage": "doubleBedroom"
     },
     {
         "id": "coffee",
         "pathOnTablet": "img/objects/coffee.png",
         "name": "Coffee",
-        "storage": "bedroom"
+        "storage": "singleBedroom"
     },
     {
         "id": "cracker",
@@ -33,7 +33,7 @@
         "id": "mustard",
         "pathOnTablet": "img/objects/mustard.png",
         "name": "Mustard",
-        "storage": "kitchen"
+        "storage": "singleBedroom"
     },
     {
         "id": "pitcher",
@@ -51,7 +51,7 @@
         "id": "pudding",
         "pathOnTablet": "img/objects/pudding.png",
         "name": "Pudding",
-        "storage": "entrance"
+        "storage": "doubleBedroom"
     },
     {
         "id": "sugar",

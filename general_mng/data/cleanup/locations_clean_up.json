@@ -1,8 +1,13 @@
 [
     {
-        "id": "bedroom", 
+        "id": "singleBedroom", 
         "pathOnTablet": "img/locations/bedroom.png",
-        "name": "Bedroom"
+        "name": "Single Bedroom"
+    },
+    {
+        "id": "doubleBedroom", 
+        "pathOnTablet": "img/locations/bedroom.png",
+        "name": "Double Bedroom"
     },
     {
         "id": "livingRoom",
