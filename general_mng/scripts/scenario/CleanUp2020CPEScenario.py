@@ -45,9 +45,9 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         #####################  FOR DEBUG #####################
 
-        self.allow_perception = False
-        self.allow_navigation = False
-        self.allow_highbehaviour = False
+        self.allow_perception = True
+        self.allow_navigation = True
+        self.allow_highbehaviour = True
 
         ####################################################
 
