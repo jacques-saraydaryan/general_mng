@@ -452,7 +452,7 @@ class LTPerception(LTAbstract):
 
         # Check different service mode
         switcher = {
-            LTAbstract.ACTION: self.__detect_meta_people,
+            LTAbstract.ACTION: self.__detect_meta_people_from_img_topic,
             LTAbstract.BUS: None,
             LTAbstract.SERVICE: None
         }

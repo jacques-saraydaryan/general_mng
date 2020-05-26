@@ -7,6 +7,8 @@ from meta_lib.LTNavigation import LTNavigation
 
 from meta_behaviour.LTHighBehaviour import LTHighBehaviour
 
+from meta_lib.LTMotion import LTMotionPalbator
+
 class Test:
 
     def __init__(self):
@@ -18,6 +20,8 @@ class Test:
 
         self._behaviour = LTHighBehaviour()
 
+        self._lt_motion_pal = LTMotionPalbator()
+
         room = "Kitchen"
     
         response = self._perception.get_object_in_room(room)
@@ -27,6 +31,12 @@ class Test:
 
         object_to_point = "object_windex2_TF"
         self._behaviour.point_an_object(object_to_point)
+
+        rospy.sleep(5)
+        rospy.logwarn("TRAVELLING AGAIN")
+        self._lt_motion_pal.set_palbator_ready_to_travel()
+
+
 
 if __name__ == "__main__":
 

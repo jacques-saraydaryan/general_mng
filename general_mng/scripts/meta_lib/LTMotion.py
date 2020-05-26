@@ -62,6 +62,36 @@ class LTMotionPalbator(LTAbstract):
     # MOTION API
     ######################################
 
+    def set_palbator_ready_to_travel(self,service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__set_palbator_ready_to_travel,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for set_palbator_ready_to_travel" % (service_mode)
+            return response
+        else:
+            feedback, result = fct()
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during set_palbator_ready_to_travel"
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes set_palbator_ready_to_travel" 
+                response.result = result
+                return response
+        return response
+
     def point_at_object(self, object_label, service_mode=LTAbstract.ACTION):
         
         response = LTServiceResponse()
@@ -97,10 +127,23 @@ class LTMotionPalbator(LTAbstract):
     # MOTION ACTION
     ######################################
 
+    def __set_palbator_ready_to_travel(self):
+        try:
+            goal = ArmControlGoal()
+            goal.action = "Travelling"
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("SENDING TRAVELLING GOAL")
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+        except Exception as e:
+            rospy.logerr("Action set_palbator_ready_to_travel could not process request: {error}".format(error=e))
+            return GoalStatus.ABORTED, None
+
     def __point_at_object(self,object_label):
         try:
             goal = ArmControlGoal()
-            goal.action = 'Pointing Object'
+            goal.action = 'Pointing'
             goal.object_label = object_label
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("SENDING POINTING GOAL")
@@ -109,7 +152,7 @@ class LTMotionPalbator(LTAbstract):
             return GoalStatus.SUCCEEDED, result
 
         except Exception as e:
-            rospy.logerr("Service move_head_pose_srv could not process request: {error}".format(error=e))
+            rospy.logerr("Action point_at_object could not process request: {error}".format(error=e))
             return GoalStatus.ABORTED, None
 
 

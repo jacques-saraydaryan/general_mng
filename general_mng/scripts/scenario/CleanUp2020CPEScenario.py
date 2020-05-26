@@ -7,6 +7,7 @@ from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTPerception import LTPerception
 from meta_lib.LTNavigation import LTNavigation
+from meta_lib.LTMotion import LTMotionPalbator
 
 from meta_behaviour.LTHighBehaviour import LTHighBehaviour
 
@@ -48,6 +49,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.allow_perception = True
         self.allow_navigation = True
         self.allow_highbehaviour = True
+        self.allow_motion = True
 
         ####################################################
 
@@ -63,6 +65,9 @@ class CleanUp2020CPEScenario(AbstractScenario):
             
         if self.allow_highbehaviour:
             self._lt_high_behaviour = LTHighBehaviour()
+
+        if self.allow_motion:
+            self._lt_motion = LTMotionPalbator()
 
 
         # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
@@ -417,6 +422,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
                 break
 
 
+        if self.allow_motion:
+            self._lt_motion.set_palbator_ready_to_travel()
 
         if self.allow_navigation:
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])

@@ -13,7 +13,14 @@ class Test:
 
         response = self._lt_perception.learn_people_meta_from_img_topic(name="Thomas",timeout=10)
 
-        rospy.loginfo("RESPONSE : %s",str(response))
+        rospy.sleep(5)
+
+        response = self._lt_perception.learn_people_meta_from_img_topic(name="Caroline",timeout=10)
+        
+        rospy.sleep(5)
+
+        response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+        rospy.loginfo("RESPONSE : %s",str(response.payload))
 
 
 if __name__ == "__main__":
