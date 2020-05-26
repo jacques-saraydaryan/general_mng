@@ -24,8 +24,11 @@ class GeneralManager:
     def __init__(self, config):
         rospy.init_node('general_manager')
 
+        dirname_GM = os.path.dirname(__file__)
+
         # load face files form data directory
-        self.scenarios_data_folder = config["scenarios_data_folder"]
+        self.scenarios_data_folder = os.path.join(dirname_GM,config["scenarios_data_folder"])
+        # rospy.loginfo("DATA FOLDER : %s",str(self.scenarios_data_folder))
         self.default_scenario_name = '' if "default_scenario_name" not in config else config["default_scenario_name"]
 
         self._start_sub = rospy.Subscriber("/gm_start", String, self.gm_start_callback)

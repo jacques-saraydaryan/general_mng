@@ -1,5 +1,7 @@
 # default_scenario_name: 'Inspection'
 # scenarios_data_folder: '/home/nao/ros_robocup_ws/data/scenarios'
-scenarios_data_folder: '/home/student/Bureau/global_palbator/src/robocup-main/robocup_pepper-general_mng/general_mng/data'
+
+# THIS FOLLOWING PATH SHOULD FIT WITH EVERY WORKSPACE
+scenarios_data_folder: '../data'
 # default_scenario_name: 'CleanUp2020CPEScenario'
 default_scenario_name: ''

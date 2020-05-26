@@ -40,14 +40,14 @@ class LTPerception(LTAbstract):
     OPEN_DOOR_MIN_DISTANCE = 0.8
     CHECK_DISTANCE_FREQUENCY = 10
 
-    _enableObjectDetectionMngAction = False
-    _enableLearnPeopleMetaAction = False
-    _enableMultiplePeopleDetectionAction = False
-    _enableGetPeopleNameAction = False
-    _enableMinFrontValueService = False
-    _enableResetPersonMetaInfoMapService = False
-    _enableResetPersonMetaInfoMapService = False
-    _enableTakePictureService = False
+    _enableObjectDetectionMngAction = True
+    _enableLearnPeopleMetaAction = True
+    _enableMultiplePeopleDetectionAction = True
+    _enableGetPeopleNameAction = True
+    _enableMinFrontValueService = True
+    _enableResetPersonMetaInfoMapService = True
+    _enableResetPersonMetaInfoMapService = True
+    _enableTakePictureService = True
 
     _enableCheckForObjectsInRoom = True
 
@@ -838,6 +838,8 @@ class LTPerception(LTAbstract):
     def __learn_people_meta_from_img_topic(self, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
         goalLearnPeople = LearnPeopleFromImgGoal(name=name)
+        rospy.logwarn("GOAL : %s",str(goalLearnPeople))
+
         state, result = self.__learn_people_meta(goalLearnPeople, timeout)
         return state, result
 
