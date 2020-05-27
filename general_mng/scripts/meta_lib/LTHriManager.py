@@ -16,7 +16,10 @@ import threading
 import json
 import uuid
 
-def singleton(cls):    
+def singleton(cls):  
+    """
+    Enables the system to create at most one instance of the class. Two instances of the same class can't be running at the same time.
+    """  
     instance = [None]
     def wrapper(*args, **kwargs):
         if instance[0] is None:
@@ -34,8 +37,9 @@ class LTHriManagerPalbator(LTAbstract):
     _enableNavAction = True
 
     def __init__(self,name_HRIAction):
-
-
+        """
+        Initializes the LTHriManager API for Palbator. It will deal with every function related to Palbator's HRI.
+        """
         self.client_action_GmToHri=actionlib.SimpleActionClient(name_HRIAction,GmToHriAction)
 
         #Inform configuration is ready

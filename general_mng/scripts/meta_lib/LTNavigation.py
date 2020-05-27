@@ -11,7 +11,10 @@ import rospy
 from navigation_manager.msg import NavMngGoal, NavMngAction
 
 
-def singleton(cls):    
+def singleton(cls): 
+    """
+    Enables the system to create at most one instance of the class. Two instances of the same class can't be running at the same time.
+    """   
     instance = [None]
     def wrapper(*args, **kwargs):
         if instance[0] is None:
@@ -26,6 +29,9 @@ class LTNavigation(LTAbstract):
     _enableNavAction = True
 
     def __init__(self):
+        """
+        Initializes the LTNavigation API. It will deal with every function related to navigation.
+        """
         self.configure_intern()
 
         #Inform configuration is ready
@@ -36,23 +42,42 @@ class LTNavigation(LTAbstract):
     ######################################
 
     def configure_intern(self):
-        rospy.loginfo("Connecting to navigation_manager action server ... ")
+        """
+        Loads the configuration needed to use correctly every navigation function.
+        """
+        rospy.loginfo("{class_name}: Connecting to navigation_manager action server ... ".format(class_name=self.__class__.__name__))
 
         self._actionNavMng_server = actionlib.SimpleActionClient('navigation_manager', NavMngAction)
         finished1 = self._actionNavMng_server.wait_for_server(timeout=rospy.Duration(self.ACTION_WAIT_TIMEOUT))
 
         if finished1:
-            rospy.loginfo("navigation_manager Connected")
+            rospy.loginfo("{class_name}: navigation_manager Connected".format(class_name=self.__class__.__name__))
         else:
-            rospy.logwarn("Unable to connect to navigation_manager action server")
+            rospy.logwarn("{class_name}: Unable to connect to navigation_manager action server".format(class_name=self.__class__.__name__))
 
     def reset(self):
+        """
+        Reloads the configuration needed to use correctly every navigation function for Palbator.
+        """
         self.configure_intern()
 
     #######################################
     # NAVIGATION API
     ######################################
     def send_nav_order(self, action, mode, it_point, timeout, service_mode=LTAbstract.ACTION):
+        """
+        Will send a navigation order with a specific action and a specific mode to reach an interest point in the map.
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param action: navigation action
+        :type action: string
+        :param mode: navigation strategy
+        :type mode: string
+        :param it_point: interest point to reach
+        :type it_point: geometry_msgs/Point
+        :param timeout: maximum time to reach the interest point
+        :type timeout: float
+        """
         response = LTServiceResponse()
 
         # Check different service mode
@@ -85,6 +110,17 @@ class LTNavigation(LTAbstract):
         return response
 
     def send_nav_rotation_order(self,action, rotation_angle, timeout, service_mode=LTAbstract.ACTION):
+        """
+        Will send a navigation order with a specific action to rotate.
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param action: navigation action
+        :type action: string
+        :param rotation_angle: rotation angle
+        :type rotation_angle: float
+        :param timeout: maximum time to execute the rotation
+        :type timeout: float
+        """
         response = LTServiceResponse()
 
         # Check different service mode
@@ -117,6 +153,21 @@ class LTNavigation(LTAbstract):
         return response
 
     def send_nav_order_to_pt(self, action, mode, x, y, timeout, service_mode=LTAbstract.ACTION):
+        """
+        Will send a navigation order with a specific action and a specific mode to reach a point in the map with specified coordinates.
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param action: navigation action
+        :type action: string
+        :param mode: navigation strategy
+        :type mode: string
+        :param x: Coordinate X of the point to reach
+        :type x: float
+        :param y: Coordinate Y of the point to reach
+        :type y: float
+        :param timeout: maximum time to reach the interest point
+        :type timeout: float
+        """
         response = LTServiceResponse()
 
         # Check different service mode
@@ -153,46 +204,85 @@ class LTNavigation(LTAbstract):
     ######################################
 
     def __send_nav_order_action(self, action, mode, itP, timeout):
+        """
+        Action client which will send a navigation order with a specific action and a specific mode to reach an interest point in the map.
+        Returns a GoalStatus and an action result
+
+        :param action: navigation action
+        :type action: string
+        :param mode: navigation strategy
+        :type mode: string
+        :param itP: interest point to reach
+        :type itP: geometry_msgs/Point
+        :param timeout: maximum time to reach the interest point
+        :type timeout: float
+        """
         try:
 
             goal = NavMngGoal()
             goal.action = action
             goal.itP = itP
             goal.navstrategy = mode
-            rospy.loginfo("### NAV ACTION PENDING : %s", str(goal).replace('\n', ', '))
+            rospy.loginfo("{class_name}: ### NAV ACTION PENDING : %s".format(class_name=self.__class__.__name__), str(goal).replace('\n', ', '))
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state = self._actionNavMng_server.get_state()
             if state == GoalStatus.ABORTED:
-                rospy.logwarn("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.logwarn("{class_name}: ###### NAV ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.loginfo("{class_name}: ###### NAV ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             return state
         except Exception as e:
-            rospy.logwarn("###### NAV ACTION FAILURE , State: %s", str(e))
+            rospy.logwarn("{class_name}: ###### NAV ACTION FAILURE , State: %s".format(class_name=self.__class__.__name__), str(e))
         return GoalStatus.ABORTED
 
     def __send_nav_rotation_order(self, action, rotation_angle, timeout):
+        """
+        Action client which will send a navigation order with a specific action to rotate.
+        Returns a GoalStatus and an action result.
+
+        :param action: navigation action
+        :type action: string
+        :param rotation_angle: rotation angle
+        :type rotation_angle: float
+        :param timeout: maximum time to execute the rotation
+        :type timeout: float
+        """
         try:
 
             goal = NavMngGoal()
             goal.action = action
             goal.rotation_angle = rotation_angle
-            rospy.loginfo("### NAV ROTATION ACTION PENDING : %s", str(goal).replace('\n', ', '))
+            rospy.loginfo("{class_name}: ### NAV ROTATION ACTION PENDING : %s".format(class_name=self.__class__.__name__), str(goal).replace('\n', ', '))
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state = self._actionNavMng_server.get_state()
             if state == GoalStatus.ABORTED:
-                rospy.logwarn("###### NAV ROTATION ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.logwarn("{class_name}: ###### NAV ROTATION ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ROTATION ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.loginfo("{class_name}: ###### NAV ROTATION ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             return state
         except Exception as e:
-            rospy.logwarn("###### NAV ROTATION ACTION FAILURE , State: %s", str(e))
+            rospy.logwarn("{class_name}: ###### NAV ROTATION ACTION FAILURE , State: %s".format(class_name=self.__class__.__name__), str(e))
         return GoalStatus.ABORTED
 
 
     def __send_nav_order_to_pt_action(self, action, mode, x, y, timeout):
+        """
+        Action Client which will send a navigation order with a specific action and a specific mode to reach a point in the map with specified coordinates.
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param action: navigation action
+        :type action: string
+        :param mode: navigation strategy
+        :type mode: string
+        :param x: Coordinate X of the point to reach
+        :type x: float
+        :param y: Coordinate Y of the point to reach
+        :type y: float
+        :param timeout: maximum time to reach the interest point
+        :type timeout: float
+        """
         try:
             goal = NavMngGoal()
             goal.action = action
@@ -200,15 +290,15 @@ class LTNavigation(LTAbstract):
             goal.itP_point.x = x
             goal.itP_point.y = y
             goal.navstrategy = mode
-            rospy.loginfo("### NAV ACTION PENDING : %s", str(goal).replace('\n', ', '))
+            rospy.loginfo("{class_name}: ### NAV ACTION PENDING : %s".format(class_name=self.__class__.__name__), str(goal).replace('\n', ', '))
             self._actionNavMng_server.send_goal(goal)
             self._actionNavMng_server.wait_for_result(rospy.Duration.from_sec(timeout))
             state = self._actionNavMng_server.get_state()
             if state == GoalStatus.ABORTED:
-                rospy.logwarn("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.logwarn("{class_name}: ###### NAV ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             else:
-                rospy.loginfo("###### NAV ACTION END , State: %s", self.action_status_to_string(state))
+                rospy.loginfo("{class_name}: ###### NAV ACTION END , State: %s".format(class_name=self.__class__.__name__), self.action_status_to_string(state))
             return state
         except Exception as e:
-            rospy.logwarn("###### NAV ACTION FAILURE , State: %s", str(e))
+            rospy.logwarn("{class_name}: ###### NAV ACTION FAILURE , State: %s".format(class_name=self.__class__.__name__), str(e))
         return GoalStatus.ABORTED

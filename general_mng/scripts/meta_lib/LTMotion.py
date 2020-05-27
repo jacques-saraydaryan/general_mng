@@ -18,7 +18,10 @@ from dialogue_hri_srvs.srv import TurnToInterestPoint
 
 from pmb2_apps.msg import ArmControlGoal, ArmControlAction
 
-def singleton(cls):    
+def singleton(cls):   
+    """
+    Enables the system to create at most one instance of the class. Two instances of the same class can't be running at the same time.
+    """
     instance = [None]
     def wrapper(*args, **kwargs):
         if instance[0] is None:
@@ -33,11 +36,14 @@ class LTMotionPalbator(LTAbstract):
     _enableArmControlAction = True
 
     def __init__(self):
+        """
+        Initializes the LTMotion API for Palbator. It will deal with every function related to Palbator movements.
+        """
         self.configure_intern()
 
         #Inform configuration is ready
         self.configurationReady = True
-        rospy.loginfo("LTMotionPalbator initialized")
+        rospy.loginfo("{class_name}: LTMotionPalbator initialized".format(class_name=self.__class__.__name__))
 
     #######################################
     # CONFIGURATION
@@ -45,17 +51,22 @@ class LTMotionPalbator(LTAbstract):
 
 
     def configure_intern(self):
-
+        """
+        Loads the configuration needed to use correctly every motion function for Palbator.
+        """
         if self._enableArmControlAction:
-            self._action_client_arm_control = actionlib.SimpleActionClient("arm_control_action",ArmControlAction)
+            self._action_client_arm_control = actionlib.SimpleActionClient("Moveit_Palbator_global_action",ArmControlAction)
             server_is_up = self._action_client_arm_control.wait_for_server(timeout=rospy.Duration(self.ACTION_WAIT_TIMEOUT))
             if server_is_up:
-                rospy.loginfo("Arm control server connected")
+                rospy.loginfo("{class_name}: Palbator Moveit control server connected".format(class_name=self.__class__.__name__))
             else:
-                rospy.logwarn("Arm control server disconnected")
+                rospy.logwarn("{class_name}: Palbator Moveit control server disconnected".format(class_name=self.__class__.__name__))
 
 
     def reset(self):
+        """
+        Reloads the configuration needed to use correctly every motion function for Palbator.
+        """
         self.configure_intern()
 
     #######################################
@@ -63,6 +74,10 @@ class LTMotionPalbator(LTAbstract):
     ######################################
 
     def set_palbator_ready_to_travel(self,service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to move the robot into a pose to travel without risks (to avoid arm collisions with walls for instance).
+        Returns a response containing the result, the status and the feedback of the executed action.
+        """
         response = LTServiceResponse()
 
         # Check different service mode
@@ -93,7 +108,12 @@ class LTMotionPalbator(LTAbstract):
         return response
 
     def point_at_object(self, object_label, service_mode=LTAbstract.ACTION):
-        
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
         response = LTServiceResponse()
 
         # Check different service mode
@@ -128,31 +148,41 @@ class LTMotionPalbator(LTAbstract):
     ######################################
 
     def __set_palbator_ready_to_travel(self):
+        """
+        Action client which will send a request to the Moveit Global controller to move the robot into a pose to travel without risks (to avoid arm collisions with walls for instance).
+        Returns a GoalStatus and an action result.
+        """
         try:
             goal = ArmControlGoal()
             goal.action = "Travelling"
             self._action_client_arm_control.send_goal(goal)
-            rospy.loginfo("SENDING TRAVELLING GOAL")
+            rospy.loginfo("{class_name}: SENDING TRAVELLING GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()
             result = self._action_client_arm_control.get_result()
             return GoalStatus.SUCCEEDED, result
         except Exception as e:
-            rospy.logerr("Action set_palbator_ready_to_travel could not process request: {error}".format(error=e))
+            rospy.logerr("{class_name}: Action set_palbator_ready_to_travel could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
     def __point_at_object(self,object_label):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
         try:
             goal = ArmControlGoal()
             goal.action = 'Pointing'
             goal.object_label = object_label
             self._action_client_arm_control.send_goal(goal)
-            rospy.loginfo("SENDING POINTING GOAL")
+            rospy.loginfo("{class_name}: SENDING POINTING GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()
             result = self._action_client_arm_control.get_result()
             return GoalStatus.SUCCEEDED, result
 
         except Exception as e:
-            rospy.logerr("Action point_at_object could not process request: {error}".format(error=e))
+            rospy.logerr("{class_name}: Action point_at_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
 
