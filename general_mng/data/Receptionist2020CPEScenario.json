@@ -22,6 +22,10 @@
       "action": "NP",
       "mode": "CRRCloseToGoal",
       "timeout": 90.0
+    },
+    "debug_variables":{
+        "allow_navigation": true,
+        "allow_perception": true
     }
   },
   "steps": [

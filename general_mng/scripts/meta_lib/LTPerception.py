@@ -12,7 +12,7 @@ from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFrom
 from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
 
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
-
+from cv_bridge import CvBridge, CvBridgeError
 from actionlib_msgs.msg import GoalStatus
 import cv2
 from rospy.exceptions import ROSException, ROSInterruptException
@@ -144,6 +144,8 @@ class LTPerception(LTAbstract):
                 rospy.loginfo("Connected to the take_picture_service service.")
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("Unable to connect to the take_picture_service service.")
+
+        self._bridge = CvBridge()
 
     def reset(self):
         self.configure_intern()

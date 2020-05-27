@@ -19,8 +19,6 @@ from copy import deepcopy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
 import os
-from tf import TransformListener
-from geometry_msgs.msg import Pose
 
 
 
@@ -29,27 +27,31 @@ class CleanUp2020CPEScenario(AbstractScenario):
     NO_TIMEOUT = -1.0
 
     def __init__(self,config,scenario_path_folder):
-
-        self.initScenario()
+        """
+        Initializes the scenario CleanUp and receives the needed parameters to run the scenario.
+        :param config: contains all the data of the scenario : steps list, parameters etc ...
+        :type config: dict
+        :param scenario_path_folder: path where is stored the JSON scenario file
+        :type scenario_path_folder: string
+        """
         self._scenario_path_folder = scenario_path_folder
 
         self._scenario=config
-        # self._scenario['name']='cleanup'
-
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
         
-        
+        debug_variables = self._scenario['parameters']['debug_variables']
         
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
 
         #####################  FOR DEBUG #####################
 
-        self.allow_perception = True
-        self.allow_navigation = True
-        self.allow_highbehaviour = True
-        self.allow_motion = True
+        #VARIABLES FOR DEBUG, DEFAULT -> TRUE. TO MODIFY, SEE JSON DATA SCENARIO FILE
+        self.allow_perception = debug_variables['allow_perception']
+        self.allow_navigation = debug_variables['allow_navigation']
+        self.allow_highbehaviour = debug_variables['allow_highbehaviour']
+        self.allow_motion = debug_variables['allow_motion']
 
         ####################################################
 
@@ -69,9 +71,6 @@ class CleanUp2020CPEScenario(AbstractScenario):
         if self.allow_motion:
             self._lt_motion = LTMotionPalbator()
 
-
-        # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(['cracker','pudding','chips'],self.NO_TIMEOUT)
-
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
 
@@ -88,22 +87,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         self.Room_to_clean = None
         self.detected_object = None
-        # self._tflistener = TransformListener()
         self.configuration_ready = True
 
-    # def get_robot_position(self):
-    #     now = rospy.Time.now()
-    #     self._tflistener.waitForTransform("/map", "/base_link", now, rospy.Duration(2.0))
-    #     (trans, rot) = self._tflistener.lookupTransform("/map", "/base_link", now)
-    #     robotPose = Pose()
-    #     robotPose.position.x = trans[0]
-    #     robotPose.position.y = trans[1]
-    #     robotPose.position.z = trans[2]
-    #     robotPose.orientation.x = rot[0]
-    #     robotPose.orientation.y = rot[1]
-    #     robotPose.orientation.z = rot[2]
-    #     robotPose.orientation.w = rot[3]
-    #     return robotPose
 
     def start_scenario(self):   
         """
@@ -166,12 +151,20 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
 
     def reset_infos_JSON(self):
+        """
+        Reset the JSON file which stores all the infos of current scenario.
+        """
         with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"w+") as f:
             data_JSON = {}
             json.dumps(data_JSON, f, indent=4)
             f.truncate()
 
     def store_infos(self,data):
+        """
+        Store the data in the JSON file which stores all the infos of current scenario.
+        :param data: data to store in JSON
+        :type data: dict
+        """
         try:
             with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"r") as f:
                 data_JSON=json.load(f)
@@ -214,24 +207,6 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self._scenario_infos = data_JSON  
         rospy.logwarn("{class_name} : DATA JSON : ".format(class_name=self.__class__.__name__)+str(self._scenario_infos))
 
-    
-    def initScenario(self):
-        self._enableNavAction = True
-        self._enableTtsAction = False
-        self._enableDialogueAction = False
-        self._enableAddInMemoryAction = False
-        self._enableObjectDetectionMngAction = True
-        self._enableLookAtObjectMngAction = True
-        self._enableMultiplePeopleDetectionAction = False
-        self._enableRequestToLocalManagerAction = True
-        self._enableLearnPeopleMetaAction = True
-        self._enableGetPeopleNameAction = True
-
-        self._enableMoveHeadPoseService = True
-        self._enableMoveTurnService = True
-        self._enablePointAtService = True
-        self._enableResetPersonMetaInfoMapService = True
-        self._enableReleaseArmsService = True
 
     def action_parser(self,stepAction):
         """

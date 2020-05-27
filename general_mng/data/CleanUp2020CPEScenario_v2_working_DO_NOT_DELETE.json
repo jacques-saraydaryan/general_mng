@@ -6,8 +6,14 @@
             "action": "NP",
             "mode": "CRRCloseToGoal",
             "timeout": 90.0
-          }
-      },
+        },
+        "debug_variables":{
+            "allow_perception": true,
+            "allow_navigation": true,
+            "allow_highbehaviour": true,
+            "allow_motion": true
+        }
+    },
     "imports":{
         "locations": "cleanup/locations.json",
         "objects": "cleanup/objects.json"

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 __author__ = 'Benoit Renault & Thomas CURE'
 import rospy
 import collections
@@ -5,6 +6,8 @@ import collections
 from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTNavigation import LTNavigation
+from meta_lib.LTPerception import LTPerception
+
 
 import sys
 import json
@@ -21,22 +24,22 @@ class Receptionist2020CPEScenario(AbstractScenario):
     NO_TIMEOUT = -1.0
 
     def __init__(self, config, scenario_path_folder):
-
+        """
+        Initializes the scenario Receptionist and receives the needed parameters to run the scenario.
+        :param config: contains all the data of the scenario : steps list, parameters etc ...
+        :type config: dict
+        :param scenario_path_folder: path where is stored the JSON scenario file
+        :type scenario_path_folder: string
+        """
         self.initScenario()
 
         self._scenario_path_folder = scenario_path_folder
-
         self._scenario=config
-        # self._scenario['name']='receptionist'
 
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._lm_wrapper = LTHriManagerPalbator(_name_action_server_HRI)
 
-
-        self.allow_navigation = True
-        if self.allow_navigation:
-            self._lt_navigation = LTNavigation()
-
+        
         self._drinks = self._scenario['imports']['drinks']
         self._locations = self._scenario['imports']['locations']
         self._people = self._scenario['imports']['people']
@@ -44,6 +47,19 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
         
+        self.debug_variables = self._scenario['parameters']['debug_variables']
+        
+        ######### FOR DEBUG #############
+        # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
+        self.allow_navigation = self.debug_variables['allow_navigation']
+        self.allow_perception = self.debug_variables['allow_perception']
+        #################################
+
+        if self.allow_navigation:
+            self._lt_navigation = LTNavigation().
+        
+        if self.allow_perception:
+            self._lt_perception = LTPerception()
 
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
         # Scenario data
