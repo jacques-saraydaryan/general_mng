@@ -18,19 +18,25 @@ class LTHighBehaviour(LTAbstract):
     _enableHighBehaviour = True
 
     def __init__(self):
+        """
+        Initializes the LTHighBehaviour API for Palbator. It will manage high-level behaviours which combine several low-level APIs 
+        (LTPerception + LTMotion to detect object + turn around for instance)
+        """
         self.configure_intern()
 
         #Inform configuration is ready
         self.configurationReady = True
-        rospy.loginfo("High Level Behaviours API initialized")
+        rospy.loginfo("{class_name}: High Level Behaviours API initialized".format(class_name=self.__class__.__name__))
 
     #######################################
     # CONFIGURATION
     ######################################
 
     def configure_intern(self):
-
-        rospy.loginfo("Initiating High Level Behaviours API ... ")
+        """
+        Loads the configuration needed to use correctly every high-level function.
+        """
+        rospy.loginfo("{class_name}: Initiating High Level Behaviours API ... ".format(class_name=self.__class__.__name__))
 
         self._lt_perception = LTPerception()
         self._lt_navigation = LTNavigation()
@@ -38,23 +44,37 @@ class LTHighBehaviour(LTAbstract):
         
 
     def reset(self):
+        """
+        Reloads the configuration needed to use correctly every high-level function.
+        """
         self.configure_intern()
 
     #######################################
     # HIGH LEVEL BEHAVIOURS 
     ######################################
 
-    def turn_around_and_detect_objects(self, room_to_inspect, nav_timeout):
+    def turn_around_and_detect_objects(self, room_to_inspect, number_of_rotation, nav_timeout):
+        """
+        Will send a navigation order to turn around with a specified number of rotations and after that, the system will send a perception order to get objects list in the room.
+        Returns the closest object in the specified room.
+
+        :param room_to_inspect: name of the room to inspect
+        :type room_to_inspect: string
+        :param number_of_rotation: number of rotations to describe a circle
+        :type number_of_rotation: int
+        :param nav_timeout: maximum time to realize the rotation
+        :type nav_timeout: float
+        """
         try:
-            for i in range(0,8):
-                rotation_angle = math.pi/4.0
-                rospy.loginfo("ROTATION %s of %s radians",str(i),str(rotation_angle))
+            for i in range(0,number_of_rotation):
+                rotation_angle = (2*math.pi)/float(number_of_rotation)
+                rospy.loginfo("{class_name}: ROTATION %s of %s radians".format(class_name=self.__class__.__name__),str(i),str(rotation_angle))
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
                 rospy.sleep(2)
 
             response = self._lt_perception.get_object_in_room(room_to_inspect)
             objects_list = response.payload
-            rospy.logwarn("OBJECTS IN ROOM %s",str(objects_list))
+            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
 
             if len(objects_list) != 0:
                 closest_object = self.get_closest_object(objects_list)
@@ -63,11 +83,18 @@ class LTHighBehaviour(LTAbstract):
                 return None
 
         except Exception as e:
-            rospy.logwarn("###### TURN AROUND AND DETECT OBJECT FAILURE , State: %s", str(e))
+            rospy.logwarn("{class_name}: ###### TURN AROUND AND DETECT OBJECT FAILURE , State: %s".format(class_name=self.__class__.__name__), str(e))
             return None
 
     
     def get_closest_object(self,objects_list):
+        """
+        Will get the closest object to the robot from an object list.
+        Return the data of the closest object.
+
+        :param objects_list: list of objects detected in a room
+        :type objects_list: list
+        """
         try:
             tflistener = TransformListener()
             now = rospy.Time(0)
@@ -97,19 +124,26 @@ class LTHighBehaviour(LTAbstract):
             return choosen_item
 
         except Exception as e:
-            rospy.logerr(e)
+            rospy.logerr("{class_name}: can not complete the function get closest object : %s".format(class_name=self.__class__.__name__),e)
             return objects_list
 
 
 
     def point_an_object(self,object_label):
+        """
+        Will send a motion order to point a specified object and if it's necessary, will send a navaigation to rotate 
+        in order to have the best orientation to point the object.
+
+        :param object_label: label of the target object
+        :type object_label: string
+        """
         
         response = self._lt_motion_palbator.point_at_object(object_label)
-        rospy.logwarn("RESPONSE : %s",str(response))
+        rospy.logwarn("{class_name}: RESPONSE : %s".format(class_name=self.__class__.__name__),str(response))
 
 
         result = response.result
-        rospy.logwarn(result)
+        rospy.logwarn("{class_name}: RESULT %s".format(class_name=self.__class__.__name__),str(result))
         if result.action_output != '':
             result_in_json = json.loads(result.action_output)
             if "rotationNeed" in result_in_json.keys():
@@ -117,7 +151,7 @@ class LTHighBehaviour(LTAbstract):
                 self._lt_navigation.send_nav_rotation_order("NT", angle_rotation, 90.0)
                 response = self._lt_motion_palbator.point_at_object(object_label)
 
-                rospy.loginfo(response.result)
+                rospy.loginfo("{class_name}: RESULT %s".format(class_name=self.__class__.__name__),str(response.result))
 
 
 

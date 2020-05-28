@@ -118,7 +118,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         while self.scenario_end == False and not rospy.is_shutdown():
 
             rospy.loginfo("{class_name} : CURRENT STEP INDEX : ".format(class_name=self.__class__.__name__)+str(self.current_index_scenario))
-            rospy.loginfo("NEW STEP")
+            rospy.loginfo("{class_name}: NEW STEP".format(class_name=self.__class__.__name__))
 
             self.current_step=deepcopy(self.steps[self.current_index_scenario])
 
@@ -215,8 +215,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepAction: action name of current step
         :type stepAction: string
         """
-        rospy.loginfo('-------------------------')
-        rospy.loginfo('using parser')
+        rospy.loginfo('***********')
+        rospy.loginfo('{class_name}: using parser'.format(class_name=self.__class__.__name__))
         rospy.loginfo('***********')
         switcher = {
         "findObject": self.gm_find_object,
@@ -275,24 +275,23 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
             response = self._lt_perception.get_object_in_room(self.choosenRoom)
             objects_list = response.payload
-            rospy.logwarn("OBJECTS IN ROOM %s",str(objects_list))
-            # response = self._lt_perception.detect_objects_with_given_sight_from_img_topic(self.labels_list_darknet,self.NO_TIMEOUT)
-            # detection_list = response.payload.labelList
+            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
+
         else:
             objects_list = []
 
         if self.allow_highbehaviour:
 
             if len(objects_list) == 0:
-            
-                detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, self._nav_strategy['timeout'])
+                number_of_rotation = 8
+                detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, number_of_rotation, self._nav_strategy['timeout'])
 
                 if not detection_result is None:
-                    rospy.loginfo("DETECTION RESULT %s",detection_result)
+                    rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
                     detection_json = json.loads(detection_result)
                     object_label = detection_json['label']+'_TF'
 
-                    rospy.logwarn("POINTING ACTION %s",object_label)
+                    rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
                     self._lt_high_behaviour.point_an_object(object_label)
 
                     for item in self._objects:
@@ -300,17 +299,17 @@ class CleanUp2020CPEScenario(AbstractScenario):
                             detection = item['id']
 
                 else:
-                    rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
+                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
                     detection = ''
         
             else:
                 detection_result = self._lt_high_behaviour.get_closest_object(objects_list)
                 if not detection_result is None:
-                    rospy.loginfo("DETECTION RESULT %s",detection_result)
+                    rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
                     detection_json = json.loads(detection_result)
                     object_label = detection_json['label']+'_TF'
 
-                    rospy.logwarn("POINTING ACTION %s",object_label)
+                    rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
                     self._lt_high_behaviour.point_an_object(object_label)
 
                     for item in self._objects:
@@ -318,7 +317,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
                             detection = item['id']
 
                 else:
-                    rospy.logwarn("NO OBJECTS DETECTED IN %s",self.choosenRoom)
+                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
                     detection = ''
             
         else:
@@ -404,7 +403,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
 
         else:
-            rospy.logwarn("NAV GOAL TO : " + destination + " ACTION "+self._nav_strategy['action'] +" MODE "+self._nav_strategy['mode'] + " itp " + itp_name + " timeout "+ str(self._nav_strategy['timeout']))    
+            rospy.logwarn("{class_name}: NAV GOAL TO : ".format(class_name=self.__class__.__name__) + destination + " ACTION "+self._nav_strategy['action'] +" MODE "+self._nav_strategy['mode'] + " itp " + itp_name + " timeout "+ str(self._nav_strategy['timeout']))    
             time.sleep(2)
 
         return result

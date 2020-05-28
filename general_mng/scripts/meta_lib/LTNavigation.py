@@ -57,7 +57,7 @@ class LTNavigation(LTAbstract):
 
     def reset(self):
         """
-        Reloads the configuration needed to use correctly every navigation function for Palbator.
+        Reloads the configuration needed to use correctly every navigation function.
         """
         self.configure_intern()
 
