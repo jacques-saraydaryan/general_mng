@@ -10,6 +10,7 @@ import rospy
 from ros_people_mng_actions.msg import ProcessPeopleFromImgAction, ProcessPeopleFromImgGoal
 from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFromImgGoal
 from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
+from ros_people_mng_srvs.srv import TakePictureService
 
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from cv_bridge import CvBridge, CvBridgeError
@@ -53,6 +54,7 @@ class LTPerception(LTAbstract):
     _enableTakePictureService = True
 
     _enableCheckForObjectsInRoom = True
+    _enableTakePicturePalbator = True
 
 
 
@@ -74,6 +76,15 @@ class LTPerception(LTAbstract):
         Loads the configuration needed to use correctly every perception function.
         """
         rospy.loginfo("{class_name}: Loading configuration for LTPerception ... ".format(class_name=self.__class__.__name__))
+
+        if self._enableTakePicturePalbator:
+            service_name = "take_picture_service"
+            self.take_picture_palbator_proxy = rospy.ServiceProxy(service_name,TakePictureService)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: take_picture_service server connected".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the take_picture_service service.".format(class_name=self.__class__.__name__))
 
         if self._enableCheckForObjectsInRoom:
             service_name = 'get_objects_list'
@@ -402,6 +413,46 @@ class LTPerception(LTAbstract):
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
                 response.msg = " Operation success take_picture_and_save_it to path:[%s]" % (
+                    path)
+                response.payload = result
+                return response
+        return response
+
+    def take_picture_and_save_it_Palbator(self, path, service_mode=LTAbstract.ACTION):
+        """
+        Will send a perception order with a path to an image in order to take a picture and save it at the path location.
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param path: path to save the picture
+        :type path: string
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__take_picture_and_save_it_Palbator,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for take_picture_and_save_it_Palbator" % (service_mode)
+            return response
+        else:
+            feedback, result = fct( path)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during take_picture_and_save_it_Palbator to path:[%s]" % (
+                    path)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success take_picture_and_save_it_Palbator to path:[%s]" % (
                     path)
                 response.payload = result
                 return response
@@ -990,6 +1041,22 @@ class LTPerception(LTAbstract):
         except Exception as e:
             rospy.logerr("{class_name}: Service take_picture_service could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
+
+    def __take_picture_and_save_it_Palbator(self, path):
+        """
+        Take a picture and then save it in a dedicated file in png format.
+        path must be the picture absolute path.
+        """
+        try:
+            result = self.take_picture_palbator_proxy(path)
+            return GoalStatus.SUCCEEDED, result
+        except rospy.ServiceException as e:
+            rospy.logerr("{class_name}: Service take_picture_service_palbator could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("{class_name}: Service take_picture_service_palbator could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        
 
     def __learn_people_meta_from_img_topic(self, name, timeout):
         """ Appel de l'apprentissage des attributs d'une personne """
