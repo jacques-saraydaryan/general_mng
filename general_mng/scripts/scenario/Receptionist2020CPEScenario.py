@@ -48,6 +48,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
         
         self.debug_variables = self._scenario['parameters']['debug_variables']
+
+        self.path_folder_to_save_imgs = self._scenario['parameters']['path_folder_to_save_imgs']
+
+        self.current_dir_path = os.path.dirname(os.path.realpath(__file__))
         
         ######### FOR DEBUG #############
         # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
@@ -56,7 +60,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         #################################
 
         if self.allow_navigation:
-            self._lt_navigation = LTNavigation().
+            self._lt_navigation = LTNavigation()
         
         if self.allow_perception:
             self._lt_perception = LTPerception()
@@ -76,10 +80,16 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._path_guests_infos = self._scenario['variables']['guestsInfos']
 
         known_person = self._scenario['variables']['known_person']
+        rospy.loginfo("{class_name} : LEARNING KNOWN PEOPLE FACES".format(class_name=self.__class__.__name__))
         for key in known_person.keys():
             self.people_name_by_id[key] = known_person[key]['name']
             self.people_drink_by_id[key] = known_person[key]['drink']
             self.people_age_by_id[key] = known_person[key]['age']
+
+            rospy.loginfo("{class_name} : LEARNING %s FACE".format(class_name=self.__class__.__name__),str(known_person[key]['name']))
+            img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
+            img_path = os.path.join(img_path,"img/people/"+key+".png")
+            response = self._lt_perception.learn_people_meta_from_img_path(img_path,known_person[key]['name'],10)
 
         rospy.loginfo("{class_name} : SCN : DATA STORED: person: ".format(class_name=self.__class__.__name__)+str(self.people_name_by_id) +" drink : "+str(self.people_drink_by_id)+" age : "+str(self.people_age_by_id))
 
@@ -96,6 +106,77 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # Debug options
 
         self.configuration_ready = True
+
+
+    def gm_found_guest(self,indexStep):
+         """
+        Function dealing with the foundGuest action. The robot loads a view with the picture of the new guest he just took.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
+        rospy.loginfo("{class_name} : SCN ACTION FOUND NEW GUEST".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        rospy.sleep(3)
+        result={
+                "NextIndex": indexStep+2
+        }
+        return result
+
+    def gm_found_anyone(self,indexStep):
+        """
+        Function dealing with the foundAnyone action. The robot just loads the view saying it didn't find anyone and ends the scenario.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
+        rospy.loginfo("{class_name} : SCN ACTION NOT FOUND NEW GUEST".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        rospy.sleep(3)
+        result={
+                "NextIndex": 26
+        }
+        return result
+
+
+    def gm_look_for_guest(self,indexStep):
+        """
+        Function dealing with the lookForGuest action. The robot will look for a new guest to ask him infos.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
+        rospy.loginfo("{class_name} : SCN ACTION LOOK FOR GUEST".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        
+        response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+        
+        detection_result = response.payload
+
+        if not detection_result is None:
+            if detection_result == {}:
+                rospy.logerr("NO GUEST DETECTED")
+                result={
+                    "NextIndex": indexStep+2
+                }
+
+            else:
+
+                detection = response.payload.peopleMetaList.peopleList[0]
+                if detection.label_id == "Unknown":
+                    
+                    img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
+                    img_path = os.path.join(img_path,"img/people/Guest_1.png")
+                    self._lt_perception.take_picture_and_save_it_Palbator(img_path)
+                result={
+                    "NextIndex": indexStep+1
+                }
+        else:
+            rospy.logerr("NO GUEST DETECTED NONE RESULT")
+            result={
+                "NextIndex": indexStep+2
+            }
+        return result
 
     def gm_wait(self,indexStep):
         """
@@ -149,6 +230,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
      
         destination = result['destination']
         destination = destination.title()
+        itp_name = ''
         for item in self._locations:
             if item['name'] == destination:
                 itp_name = item['interestPoint']
@@ -240,7 +322,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
         "pointTo": self.gm_point_to,
         "presentPerson": self.gm_present_person,
         "find": self.gm_find,
-        "seatGuest":self.gm_seat_guest,
+        "seatGuest": self.gm_seat_guest,
+        "lookForGuest": self.gm_look_for_guest,
+        "foundGuest": self.gm_found_guest,
+        "foundAnyone": self.gm_found_anyone,
         }
         # Get the function from switcher dictionary
         func = switcher.get(action, lambda: "Invalid action")
@@ -258,6 +343,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.people_name_by_id[data['who']]=data['name']
         self.people_drink_by_id[data['who']]=data['drink']
         self.people_age_by_id[data['who']]=data['age']
+
+        rospy.loginfo("{class_name} : LEARNING %s FACE".format(class_name=self.__class__.__name__),str(data['name']))
+        img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
+        img_path = os.path.join(img_path,"img/people/"+data['who']+".png")
+        response = self._lt_perception.learn_people_meta_from_img_path(img_path,data['name'],10)
+
         with open(os.path.join(self._scenario_path_folder,self._path_guests_infos),"w+") as f:
             data={}
             for key in self.people_name_by_id.keys():
@@ -277,8 +368,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
                     "drink": self.people_drink_by_id[key],
                     "pathOnTablet": pathOnTablet
                 }
+                
             json.dump(data, f, indent=4)
             f.truncate()
+
+
 
         with open(os.path.join(self._scenario_path_folder,self._path_guests_infos),"r") as f:
             self._guest_infos=json.load(f)
