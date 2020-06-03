@@ -417,8 +417,465 @@
       "id": "seatg1_tell-first-guest-to-seat"
     },
     {
-      "name": "Finish Scenario",
+      "name": "Go to door",
       "order": 26,
+      "eta": 50,
+      "arguments": {},
+      "action": "",
+      "id": "GotoDoor1"
+    },
+    {
+      "name": "Go to door",
+      "order": 27,
+      "eta": 0,
+      "speech": {
+        "said": "I am traveling to the location_name",
+        "title": "I'm traveling to the location_name"
+      },
+      "arguments": {
+        "where": "Entrance",
+        "location": {
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
+        } 
+      },
+      "action": "goTo",
+      "id": "gotodoor1_go-to-door"
+    },
+    {
+      "name": "Find second guest",
+      "order": 28,
+      "eta": 10,
+      "arguments": {},
+      "action": "",
+      "id": "FindG2"
+    },
+    {
+      "name": "Wait",
+      "order": 29,
+      "eta": 0,
+      "speech": {
+        "said": "I am waiting for the referee",
+        "title": "I'm waiting for the referee"
+      },
+      "arguments": {
+        "time": 3
+      },
+      "action": "wait",
+      "id": "findg2_wait"
+    },
+    {
+      "name": "Ask referee to open the door",
+      "order": 30,
+      "eta": 0,
+      "speech": {
+        "said": "Hey referee, could you please open the door, and then say Next, or click on the button?",
+        "description": "Say \"Next\" or click on the button",
+        "title": "Please open the door"
+      },
+      "arguments": {},
+      "action": "askOpenDoor",
+      "id": "findg2_ask-referee-to-open-the-door"
+    },
+    {
+      "name": "LookG2",
+      "order": 31,
+      "eta": 0,
+      "speech": {
+        "said": "I am looking for a new guest",
+        "title": "I am looking for a new guest"
+      },
+      "arguments": {
+      },
+      "action": "lookForGuest",
+      "id": "findg2_look"
+    },
+    {
+      "name": "Found guest",
+      "order": 32,
+      "eta": 0,
+      "speech": {
+        "said": "I have found a new guest",
+        "title": "I have found a new guest"
+      },
+      "arguments": {
+        "who": "Guest_2",
+        "pathOnTablet":"img/people/Guest_2.png"
+      },
+      "action": "foundGuest",
+      "id": "foundG2"
+    },
+    {
+      "name": "NotFoundG2",
+      "order": 33,
+      "eta": 0,
+      "speech": {
+        "said": "I didn't find anyone",
+        "title": "I didn't find anyone"
+      },
+      "arguments": {
+      },
+      "action": "foundAnyone",
+      "id": "findg2_notfound"
+    },
+    {
+      "name": "Ask infos about second guest",
+      "order": 34,
+      "eta": 20,
+      "arguments": {},
+      "action": "",
+      "id": "AskInfoG2"
+    },
+    {
+      "name": "Ask name",
+      "order": 35,
+      "eta": 0,
+      "speech": {
+        "said": "What is your name?",
+        "title": "What's your name?"
+      },
+      "arguments": {
+        "who": "Guest_2"
+      },
+      "action": "askName",
+      "id": "askinfog2_ask-name"
+    },
+    {
+      "name": "Confirm name",
+      "order": 36,
+      "eta": 0,
+      "speech": {
+        "said": "Did you say your name was {name}?",
+        "title": "Did you say your name was {name}?"
+      },
+      "arguments": {
+        "what": "{name}",
+        "who": "Guest_2"
+      },
+      "action": "confirm",
+      "id": "askinfog2_confirm-name"
+    },
+    {
+      "name": "Ask drink",
+      "order": 37,
+      "eta": 0,
+      "speech": {
+        "said": "Ok {name}, what is your favorite drink?",
+        "title": "What's your favorite drink?"
+      },
+      "arguments": {
+        "who": "Guest_2"
+      },
+      "action": "askDrink",
+      "id": "askinfog2_ask-drink"
+    },
+    {
+      "name": "Confirm drink",
+      "order": 38,
+      "eta": 0,
+      "speech": {
+        "said": "Did you say your favorite drink was {drink}?",
+        "title": "Did you say your favorite drink was {drink}?"
+      },
+      "arguments": {
+        "what": "{drinkId}",
+        "who": "Guest_2"
+      },
+      "action": "confirm",
+      "id": "askinfog2_confirm-drink"
+    },
+    {
+      "name": "Ask age",
+      "order": 39,
+      "eta": 0,
+      "speech": {
+        "said": "By the way, how old are you?",
+        "title": "How old are you?"
+      },
+      "arguments": {
+        "who": "Guest_2"
+      },
+      "action": "askAge",
+      "id": "askinfog2_ask-age"
+    },
+    {
+      "name": "Go to living room",
+      "order": 40,
+      "eta": 50,
+      "arguments": {},
+      "action": "",
+      "id": "GotoLR2"
+    },
+    {
+      "name": "Ask to follow",
+      "order": 41,
+      "eta": 0,
+      "speech": {
+        "said": "Great Guest_2_name, now follow me to the living room",
+        "title": "Follow me to the living room"
+      },
+      "arguments": {
+        "who": "Guest_2",
+        "location": {
+          "pathOnTablet" : "img/locations/livingRoom.png",
+          "name": "livingRoom"
+        } 
+      },
+      "action": "askToFollow",
+      "id": "gotolr2_ask-to-follow"
+    },
+    {
+      "name": "Go to living room",
+      "order": 42,
+      "eta": 0,
+      "speech": {
+        "said": "I am traveling to the location_name",
+        "title": "I'm traveling to the location_name"
+      },
+      "arguments": {
+        "where": "Living room",
+        "location": {
+          "pathOnTablet" : "location_pathOnTablet",
+          "name": "location_id"
+        } 
+      },
+      "action": "goTo",
+      "id": "gotolr2_go-to-living-room"
+    },
+    {
+      "name": "Introduce second guest to others",
+      "order": 43,
+      "eta": 10,
+      "arguments": {},
+      "action": "",
+      "id": "IntroduceG2ToOthers"
+    },
+    {
+      "name": "Point to second guest",
+      "order": 44,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing the second guest",
+        "title": "I am pointing the second guest"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "Guest_2_name",
+          "guestPhotoPath": "Guest_2_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introduceg2toothers_point-to-second-guest"
+    },
+    {
+      "name": "Say name and drink",
+      "order": 45,
+      "eta": 0,
+      "speech": {
+        "said": "Hey Guest_1_name and John_name, here is Guest_2_name, whose favorite drink is Guest_2_drink"
+      },
+      "arguments": {
+        "to": [
+          {
+            "name": "Guest_1_name",
+            "drink": {
+              "name": "Guest_1_drink",
+              "pathOnTablet": "Guest_1_drink_path"
+            },
+            "guestPhotoPath": "Guest_1_face_path"
+          },
+          {
+            "name": "John_name",
+            "drink": {
+              "name": "John_drink",
+              "pathOnTablet": "John_drink_path"
+            },
+            "guestPhotoPath": "John_face_path"
+          }
+        ],
+        "who": {
+          "name": "Guest_2_name",
+          "drinkObj": {
+            "name": "Guest_2_drink",
+            "pathOnTablet": "Guest_2_drink_path"
+          },
+          "guestPhotoPath": "Guest_2_face_path"
+        }
+      },
+      "action": "presentPerson",
+      "id": "introduceg2toothers_say-name-and-drink"
+    },
+    {
+      "name": "Introduce John to second guest",
+      "order": 46,
+      "eta": 10,
+      "arguments": {},
+      "action": "",
+      "id": "IntroduceJohnToG2"
+    },
+    {
+      "name": "Point to John",
+      "order": 47,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing John",
+        "title": "I am pointing John"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "John_name",
+          "guestPhotoPath": "John_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introducejohntog2_point-to-john"
+    },
+    {
+      "name": "Say name and drink",
+      "order": 48,
+      "eta": 0,
+      "speech": {
+        "said": "Hey Guest_2_name, here is John_name, whose favorite drink is John_drink"
+      },
+      "arguments": {
+        "to": [
+          {
+            "name": "Guest_2_name",
+            "drink": {
+              "name": "Guest_2_drink",
+              "pathOnTablet": "Guest_2_drink_path"
+            },
+            "guestPhotoPath": "Guest_2_face_path"
+          }
+        ],
+        "who": {
+          "name": "John_name",
+          "drinkObj": {
+            "name": "John_drink",
+            "pathOnTablet": "John_drink_path"
+          },
+          "guestPhotoPath": "John_face_path"
+        }
+      },
+      "action": "presentPerson",
+      "id": "introducejohntog2_say-name-and-drink"
+    },
+    {
+      "name": "Introduce first guest to second guest",
+      "order": 49,
+      "eta": 10,
+      "arguments": {},
+      "action": "",
+      "id": "IntroduceG1ToG2"
+    },
+    {
+      "name": "Point to first guest",
+      "order": 50,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing first guest",
+        "title": "I am pointing first guest"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "Guest_1_name",
+          "guestPhotoPath": "Guest_1_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introduceg1tog2_point-to-first-guest"
+    },
+    {
+      "name": "Say name and drink",
+      "order": 51,
+      "eta": 0,
+      "speech": {
+        "said": "Hey Guest_2_name, here is Guest_1_name, whose favorite drink is Guest_1_drink"
+      },
+      "arguments": {
+        "to":[
+          {
+            "name": "Guest_2_name",
+            "drink": {
+              "name": "Guest_2_drink",
+              "pathOnTablet": "Guest_2_drink_path"
+            },
+            "guestPhotoPath": "Guest_2_face_path"
+          }
+        ],
+        "who":{
+          "name": "Guest_1_name",
+          "drinkObj": {
+            "name": "Guest_1_drink",
+            "pathOnTablet": "Guest_1_drink_path"
+          },
+          "guestPhotoPath": "Guest_1_face_path"
+        }
+      },
+      "action": "presentPerson",
+      "id": "introduceg1tog2_say-name-and-drink"
+    },
+    {
+      "name": "Seat second guest",
+      "order": 52,
+      "eta": 20,
+      "arguments": {},
+      "action": "",
+      "id": "SeatG2"
+    },
+    {
+      "name": "Find empty seat",
+      "order": 53,
+      "eta": 0,
+      "speech": {
+        "said": "I am finding an empty seat",
+        "title": "I am finding an empty seat"
+      },
+      "arguments": {
+        "what": "chair",
+        "pathOnTablet": "img/misc/finding.jpg"
+      },
+      "action": "find",
+      "id": "seatg2_find-empty-seat"
+    },
+    {
+      "name": "Point to empty seat",
+      "order": 54,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing an empty seat",
+        "title": "I am pointing an empty seat"
+      },
+      "arguments": {
+        "what": "chair",
+        "pathOnTablet": "img/misc/chair.png"
+      },
+      "action": "pointTo",
+      "id": "seatg2_point-to-empty-seat"
+    },
+    {
+      "name": "Tell first guest to seat",
+      "order": 55,
+      "eta": 0,
+      "speech": {
+        "said": "Please have a seat Guest_2_name.",
+        "title": "Please have a seat Guest_2_name."
+      },
+      "arguments": {
+        "who": {
+          "name": "Guest_2_name",
+          "guestPhotoPath": "Guest_2_face_path"
+        }
+      },
+      "action": "seatGuest",
+      "id": "seatg2_tell-first-guest-to-seat"
+    },
+    {
+      "name": "Finish Scenario",
+      "order": 56,
       "eta": 0,
       "arguments": {},
       "action": "",
