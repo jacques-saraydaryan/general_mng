@@ -7,6 +7,7 @@ from AbstractScenario import AbstractScenario
 from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTNavigation import LTNavigation
 from meta_lib.LTPerception import LTPerception
+from meta_lib.LTSimulation import LTSimulation
 
 
 import sys
@@ -57,6 +58,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
         self.allow_navigation = self.debug_variables['allow_navigation']
         self.allow_perception = self.debug_variables['allow_perception']
+        self.allow_simulation = self.debug_variables['allow_simulation']
         #################################
 
         if self.allow_navigation:
@@ -64,6 +66,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         
         if self.allow_perception:
             self._lt_perception = LTPerception()
+
+        if self.allow_simulation:
+            self._lt_simulation = LTSimulation()
+            rospy.loginfo("{class_name}: SETTING UP GUESTS FOR SIMULATED SCENARIO".format(class_name=self.__class__.__name__))
+            self._lt_simulation.reset_guests_for_receptionist()
+            self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
         # Scenario data
@@ -88,7 +96,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
             rospy.loginfo("{class_name} : LEARNING %s FACE".format(class_name=self.__class__.__name__),str(known_person[key]['name']))
             img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
-            img_path = os.path.join(img_path,"img/people/"+key+".png")
+            if self.allow_simulation:
+                img_path = os.path.join(img_path,"img/people/"+key+"_simu.png")
+            else:
+                img_path = os.path.join(img_path,"img/people/"+key+".png")
+                
             response = self._lt_perception.learn_people_meta_from_img_path(img_path,known_person[key]['name'],10)
 
         rospy.loginfo("{class_name} : SCN : DATA STORED: person: ".format(class_name=self.__class__.__name__)+str(self.people_name_by_id) +" drink : "+str(self.people_drink_by_id)+" age : "+str(self.people_age_by_id))
@@ -109,7 +121,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
 
     def gm_found_guest(self,indexStep):
-         """
+        """
         Function dealing with the foundGuest action. The robot loads a view with the picture of the new guest he just took.
 
         :param indexStep: Step index
@@ -134,7 +146,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
         rospy.sleep(3)
         result={
-                "NextIndex": 26
+                "NextIndex": self.end_step_index
         }
         return result
 
@@ -213,6 +225,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name} : SCN ACTION ASK TO FOLLOW".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
+        if self.allow_simulation:
+            if self.steps[indexStep]['arguments']['who'] == "Guest_1":
+                self._lt_simulation.guest_spawner_for_receptionist("G1_before_present")
+            elif self.steps[indexStep]['arguments']['who'] == "Guest_2":
+                self._lt_simulation.guest_spawner_for_receptionist("G2_before_present")
+                
         result={
             "NextIndex": indexStep+1
         }
@@ -299,6 +317,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
         rospy.loginfo("{class_name} : SCN ACTION SEAT GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
+        if "Guest_1" in self.steps[indexStep]['arguments']['who']['name'] and self.allow_simulation:
+            self._lt_simulation.guest_spawner_for_receptionist("G1_after_present")
+            self._lt_simulation.guest_spawner_for_receptionist("G2_entrance")
         result={
             "NextIndex": indexStep+1
         }
@@ -389,6 +410,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """.format(scenario_name=self._scenario["name"]))
         self.restart_order=False
         self.steps = deepcopy(self._scenario["steps"])
+
+        self.end_step_index = self.steps[-1]["order"]
+
+        rospy.logerr("END STEP INDEX : %s",str(self.end_step_index))
 
         ###################################################################################################
         # Reset people database
