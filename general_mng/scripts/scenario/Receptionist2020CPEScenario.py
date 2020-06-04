@@ -180,16 +180,20 @@ class Receptionist2020CPEScenario(AbstractScenario):
                 }
 
             else:
-
                 detection = response.payload.peopleMetaList.peopleList[0]
                 if detection.label_id == "Unknown":
                     
                     img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
                     img_path = os.path.join(img_path,"img/people/Guest_1.png")
                     self._lt_perception.take_picture_and_save_it_Palbator(img_path)
-                result={
-                    "NextIndex": indexStep+1
-                }
+                    result={
+                        "NextIndex": indexStep+1
+                    }
+                else:
+                    rospy.logwarn("I DETECTED %s",str(detection.label_id))
+                    result={
+                        "NextIndex": indexStep+2
+                    }
         else:
             rospy.logerr("NO GUEST DETECTED NONE RESULT")
             result={
