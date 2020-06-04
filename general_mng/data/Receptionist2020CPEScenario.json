@@ -94,6 +94,7 @@
         "title": "I am looking for a new guest"
       },
       "arguments": {
+        "who": "Guest_1"
       },
       "action": "lookForGuest",
       "id": "findg1_look"
@@ -486,6 +487,7 @@
         "title": "I am looking for a new guest"
       },
       "arguments": {
+        "who": "Guest_2"
       },
       "action": "lookForGuest",
       "id": "findg2_look"

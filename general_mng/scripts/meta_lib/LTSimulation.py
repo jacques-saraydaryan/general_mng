@@ -10,6 +10,7 @@ import actionlib
 from pmb2_apps.msg import SdfInGazeboAction, SdfInGazeboGoal
 from geometry_msgs.msg import Pose
 import tf
+import os
 
 
 def singleton(cls):   
@@ -56,6 +57,8 @@ class LTSimulation(LTAbstract):
             rospy.logwarn("{class_name}: Gazebo SDF spawner disconnected".format(class_name=self.__class__.__name__))
 
 
+        self.current_dir = os.path.dirname(os.path.realpath(__file__))
+        self.models_dir = os.path.join(self.current_dir,"../../../../../Palbator_simulation/pmb2_simulation/pmb2_gazebo/models")
     def reset(self):
         """
         Reloads the configuration needed to use correctly every simulation function.
@@ -164,7 +167,8 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_1"
-                goal.path_to_sdf = "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_03/model.sdf"
+                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_03/model.sdf")
+                # "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_03/model.sdf"
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = -0.2
                 goal.model_pose.position.y = -5.5
@@ -192,7 +196,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_1"
-                goal.path_to_sdf = "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_03/model.sdf"
+                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_03/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = 1.5
                 goal.model_pose.position.y = 5.5
@@ -220,7 +224,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_1"
-                goal.path_to_sdf = "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_03/model.sdf"
+                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_03/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = -0.5
                 goal.model_pose.position.y = 6.1
@@ -234,7 +238,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_2"
-                goal.path_to_sdf = "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_02/model.sdf"
+                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_02/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = -0.2
                 goal.model_pose.position.y = -5.5
@@ -262,7 +266,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_2"
-                goal.path_to_sdf = "/home/student/Bureau/global_palbator/src/Palbator_simulation/pmb2_simulation/pmb2_gazebo/models/citizen_extras_female_02/model.sdf"
+                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_02/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = 1.5
                 goal.model_pose.position.y = 5.5

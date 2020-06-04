@@ -171,6 +171,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION LOOK FOR GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+
+        guest_to_find = self.steps[indexStep]['arguments']['who']
         
         if self.allow_perception:
             response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
@@ -191,7 +193,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
                     if detection.label_id == "Unknown":
                         
                         img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
-                        img_path = os.path.join(img_path,"img/people/Guest_1.png")
+                        img_path = os.path.join(img_path,"img/people/"+guest_to_find+".png")
                         self._lt_perception.take_picture_and_save_it_Palbator(img_path)
                         result={
                             "NextIndex": indexStep+1
