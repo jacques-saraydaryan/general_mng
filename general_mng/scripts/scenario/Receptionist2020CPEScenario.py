@@ -185,7 +185,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
                     }
 
                 else:
+                    rospy.logwarn("LALALALALA %s",str(response.payload.peopleMetaList.peopleList))
                     detection = response.payload.peopleMetaList.peopleList[0]
+
                     if detection.label_id == "Unknown":
                         
                         img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
