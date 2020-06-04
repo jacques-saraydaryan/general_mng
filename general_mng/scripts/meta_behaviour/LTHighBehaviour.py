@@ -154,4 +154,64 @@ class LTHighBehaviour(LTAbstract):
                 rospy.loginfo("{class_name}: RESULT %s".format(class_name=self.__class__.__name__),str(response.result))
 
 
+    def turn_around_and_detect_someone(self,people_name):
+
+        rospy.logwarn("{class_name} : I WILL TRY TO DETECT %s".format(class_name=self.__class__.__name__),people_name)
+        self.people_detected = False
+        response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+        result = response.payload
+        rospy.logwarn("RESULT : %s",str(result))
+
+        if result != None and result != {}:
+            detection = result.peopleMetaList.peopleList
+            rospy.logwarn("DETECTION : %s",str(detection))
+            for people in detection:
+                if people.label_id == people_name:
+                    self.people_detected = True
+                    pose = people.pose
+                    rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
+                    break
+        
+        cp = 0
+        while self.people_detected == False or cp<8:
+            cp = cp + 1
+            rotation_angle = math.pi/4.0
+            response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
+            response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+            result = response.payload
+            rospy.logwarn("RESULT : %s",str(result))
+            if result != None and result != {}:
+                detection = result.peopleMetaList.peopleList
+                rospy.logwarn("DETECTION : %s",str(detection))
+                    for people in detection:
+                        if people.label_id == people_name:
+                            self.people_detected = True
+                            pose = people.pose
+                            rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
+                            break
+        
+        if self.people_detected == False:
+            rospy.logerr("I can not detect %s",people_name)
+            return "NO DETECTION"
+        else:
+            now = rospy.Time(0)
+            object_point = PointStamped()
+            object_point.header.frame_id = "palbator_arm_kinect_link"
+            object_point.header.stamp = now
+            object_point.point.x = pose.position.x
+            object_point.point.y = pose.position.y
+            object_point.point.z = pose.position.z
+            rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
+            listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+            target = listener.transformPoint("/base_footprint",object_point)
+
+            rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+
+            alpha = np.arctan(target.point.y/target.point.x)
+
+            rospy.logerr("ALPHA : %s",str(alpha))
+            rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
+            response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
+            return "PEOPLE DETECTED"
+
 

@@ -8,6 +8,7 @@ from meta_lib.LTHriManager import LTHriManagerPalbator
 from meta_lib.LTNavigation import LTNavigation
 from meta_lib.LTPerception import LTPerception
 from meta_lib.LTSimulation import LTSimulation
+from meta_behaviour.LTHighBehaviour import LTHighBehaviour
 
 
 import sys
@@ -59,6 +60,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.allow_navigation = self.debug_variables['allow_navigation']
         self.allow_perception = self.debug_variables['allow_perception']
         self.allow_simulation = self.debug_variables['allow_simulation']
+
+        if self.allow_navigation and self.allow_perception:
+            self.allow_high_behaviour = True
         #################################
 
         if self.allow_navigation:
@@ -73,6 +77,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
             self._lt_simulation.reset_guests_for_receptionist()
             self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
+        if self.allow_high_behaviour:
+            self._lt_high_behaviour = LTHighBehaviour()
+        
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
         # Scenario data
         self.people_name_by_id = {}
@@ -284,6 +291,18 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
+        data = deepcopy(self.steps[indexStep]['arguments']['to'][0]['name'])
+        key = data.split("_name")[0]
+        people_name = self._guest_infos[key]['name']
+
+        response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
+        # if "John" in self.steps[indexStep]['arguments']['to'][0]['name']:
+        #     people_name = "John"
+        # elif "Guest_1" in self.steps[indexStep]['arguments']['to'][0]['name']:
+        #     people_name = self._guest_infos['Guest_1']['name']
+        # elif "Guest_2" in self.steps[indexStep]['arguments']['to'][0]['name']:
+        #     people_name = self._guest_infos['Guest_2']['name']
+
         rospy.loginfo("{class_name} : SCN ACTION PRESENT PERSON".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(10)

@@ -560,7 +560,7 @@
       "order": 37,
       "eta": 0,
       "speech": {
-        "said": "Ok {name}, what is your favorite drink?",
+        "said": "Allright {name}, what is your favorite drink?",
         "title": "What's your favorite drink?"
       },
       "arguments": {
