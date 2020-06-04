@@ -6,9 +6,9 @@
         "guestPhotoPath": "img/people/John.png"
     }, 
     "Guest_1": {
-        "drink": "Schwepps", 
-        "name": "Clara", 
-        "pathOnTablet": "img/drinks/schwepps.png", 
+        "drink": "Fanta", 
+        "name": "Bill", 
+        "pathOnTablet": "img/drinks/fanta.png", 
         "guestPhotoPath": "img/people/Guest_1.png"
     }
 }

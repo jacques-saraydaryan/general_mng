@@ -183,12 +183,12 @@ class LTHighBehaviour(LTAbstract):
             if result != None and result != {}:
                 detection = result.peopleMetaList.peopleList
                 rospy.logwarn("DETECTION : %s",str(detection))
-                    for people in detection:
-                        if people.label_id == people_name:
-                            self.people_detected = True
-                            pose = people.pose
-                            rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
-                            break
+                for people in detection:
+                    if people.label_id == people_name:
+                        self.people_detected = True
+                        pose = people.pose
+                        rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
+                        break
         
         if self.people_detected == False:
             rospy.logerr("I can not detect %s",people_name)
