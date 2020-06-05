@@ -9,7 +9,9 @@ from meta_lib.LTNavigation import LTNavigation
 from meta_lib.LTMotion import LTMotionPalbator
 import rospy
 import json
+import numpy as np
 
+from geometry_msgs.msg import PointStamped
 import math
 from tf import TransformListener
 
@@ -160,40 +162,41 @@ class LTHighBehaviour(LTAbstract):
         self.people_detected = False
         response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
         result = response.payload
-        rospy.logwarn("RESULT : %s",str(result))
+        rospy.logwarn("{class_name} : RESULT : %s".format(class_name=self.__class__.__name__),str(result))
 
         if result != None and result != {}:
             detection = result.peopleMetaList.peopleList
-            rospy.logwarn("DETECTION : %s",str(detection))
+            rospy.logwarn("{class_name} : DETECTED PEOPLE LIST  : %s".format(class_name=self.__class__.__name__),str(detection))
             for people in detection:
                 if people.label_id == people_name:
                     self.people_detected = True
                     pose = people.pose
-                    rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
+                    rospy.loginfo("{class_name} : I HAVE SUCCESSFULLY DETECTED %s".format(class_name=self.__class__.__name__),people_name)
                     break
         
         cp = 0
-        while self.people_detected == False or cp<8:
+        while self.people_detected == False and cp<4:
             cp = cp + 1
-            rotation_angle = math.pi/4.0
+            rotation_angle = math.pi/2.0
             response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
             response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
             result = response.payload
-            rospy.logwarn("RESULT : %s",str(result))
+            rospy.logwarn("{class_name} : RESULT : %s".format(class_name=self.__class__.__name__),str(result))
             if result != None and result != {}:
                 detection = result.peopleMetaList.peopleList
-                rospy.logwarn("DETECTION : %s",str(detection))
+                rospy.logwarn("{class_name} : DETECTED PEOPLE LIST : %s".format(class_name=self.__class__.__name__),str(detection))
                 for people in detection:
                     if people.label_id == people_name:
                         self.people_detected = True
                         pose = people.pose
-                        rospy.logerr("fbhzebunrvineriob,eirb,ioerb,roe,bioer,bpoer;plgpkerojgeorgkoerkgoerkgoerger")
+                        rospy.loginfo("{class_name} : I HAVE SUCCESSFULLY DETECTED %s".format(class_name=self.__class__.__name__),people_name)
                         break
         
         if self.people_detected == False:
-            rospy.logerr("I can not detect %s",people_name)
+            rospy.logerr("{class_name} : I COULD NOT DETECT %s".format(class_name=self.__class__.__name__),people_name)
             return "NO DETECTION"
         else:
+            listener=TransformListener()
             now = rospy.Time(0)
             object_point = PointStamped()
             object_point.header.frame_id = "palbator_arm_kinect_link"
@@ -209,8 +212,8 @@ class LTHighBehaviour(LTAbstract):
 
             alpha = np.arctan(target.point.y/target.point.x)
 
-            rospy.logerr("ALPHA : %s",str(alpha))
-            rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
+            rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
+            # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
             response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
             return "PEOPLE DETECTED"
 

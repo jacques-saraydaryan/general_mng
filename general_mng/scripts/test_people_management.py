@@ -17,20 +17,32 @@ class Test:
 
         rospy.init_node("test_people")
 
-        # self._lt_perception = LTPerception()
+        self._lt_perception = LTPerception()
         # self._lt_simulation = LTSimulation()
 
         # self._lt_simulation.reset_guests_for_receptionist()
         # self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
 
-        self._lt_navigation = LTNavigation()
+        # self._lt_navigation = LTNavigation()
         # itp_name = "place_entrance_recep"
         # self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal",itp_name , 90.0)
 
-        listener = TransformListener()
+        # listener = TransformListener()
         
         # response = self._lt_perception.learn_people_meta_from_img_topic("Bill",10)
+
+        # rospy.sleep(3)
+
+        # response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John.png","John",10)
+
+        # rospy.sleep(3)
+
+        # response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John_simu.png","Robert",10)
+
+        response = self._lt_perception.reset_people_meta_info_map()
+
+
 
         # rotation_angle = math.pi
         # response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
@@ -80,28 +92,28 @@ class Test:
         # pose = response.payload.peopleMetaList.peopleList[0].pose
 
         
-        now = rospy.Time(0)
-        object_point = PointStamped()
-        object_point.header.frame_id = "palbator_arm_kinect_link"
-        object_point.header.stamp = now
-        # object_point.point.x = pose.position.x
-        # object_point.point.y = pose.position.y
-        # object_point.point.z = pose.position.z
-        object_point.point.x = 2.7059
-        object_point.point.y = -0.8693
-        object_point.point.z = 0.0
+        # now = rospy.Time(0)
+        # object_point = PointStamped()
+        # object_point.header.frame_id = "palbator_arm_kinect_link"
+        # object_point.header.stamp = now
+        # # object_point.point.x = pose.position.x
+        # # object_point.point.y = pose.position.y
+        # # object_point.point.z = pose.position.z
+        # object_point.point.x = 2.7059
+        # object_point.point.y = -0.8693
+        # object_point.point.z = 0.0
 
-        rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
-        listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
-        target = listener.transformPoint("/base_footprint",object_point)
+        # rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
+        # listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+        # target = listener.transformPoint("/base_footprint",object_point)
 
-        rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+        # rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
-        alpha = np.arctan(target.point.y/target.point.x)
+        # alpha = np.arctan(target.point.y/target.point.x)
 
-        rospy.logerr("ALPHA : %s",str(alpha))
-        rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
-        response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
+        # rospy.logerr("ALPHA : %s",str(alpha))
+        # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
+        # response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
 
         # self._bridge = CvBridge()
         # self.sub = rospy.Subscriber("/people_meta_info",PeopleMetaInfoList,self.handle_detection)

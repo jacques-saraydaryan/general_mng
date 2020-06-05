@@ -73,6 +73,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
         
         if self.allow_perception:
             self._lt_perception = LTPerception()
+            response = self._lt_perception.reset_people_meta_info_map()
+
 
         if self.allow_simulation:
             self._lt_simulation = LTSimulation()
@@ -174,43 +176,47 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         guest_to_find = self.steps[indexStep]['arguments']['who']
         
+        detection_result = None
+        count = 0
         if self.allow_perception:
-            response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
-        
-            detection_result = response.payload
+            while (detection_result is None or detection_result == {}) and count < 5:
+                response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+            
+                detection_result = response.payload
 
-            if not detection_result is None:
-                if detection_result == {}:
-                    rospy.logerr("NO GUEST DETECTED")
+                if not detection_result is None:
+                    if detection_result == {}:
+                        rospy.logerr("{class_name} : EMPTY RESULT. RETRY".format(class_name=self.__class__.__name__))
+
+                    else:
+                        rospy.logwarn("{class_name} : PEOPLE LIST DETECTION %s".format(class_name=self.__class__.__name__),str(response.payload.peopleMetaList.peopleList))
+                        detection = response.payload.peopleMetaList.peopleList[0]
+
+                        if detection.label_id == "Unknown":
+                            
+                            img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
+                            img_path = os.path.join(img_path,"img/people/"+guest_to_find+".png")
+                            self._lt_perception.take_picture_and_save_it_Palbator(img_path)
+                            result={
+                                "NextIndex": indexStep+1
+                            }
+                            break
+                        else:
+                            rospy.logwarn("{class_name} : I DETECTED %s BUT I ALREADY KNOW THIS PERSON".format(class_name=self.__class__.__name__),str(detection.label_id))
+                            result={
+                                "NextIndex": indexStep+2
+                            }
+                            break
+                count+=1
+
+            if detection_result is None or detection_result == {}:
+                    rospy.logerr("{class_name} : NO GUEST DETECTED NONE RESULT".format(class_name=self.__class__.__name__))
                     result={
                         "NextIndex": indexStep+2
                     }
-
-                else:
-                    rospy.logwarn("LALALALALA %s",str(response.payload.peopleMetaList.peopleList))
-                    detection = response.payload.peopleMetaList.peopleList[0]
-
-                    if detection.label_id == "Unknown":
-                        
-                        img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
-                        img_path = os.path.join(img_path,"img/people/"+guest_to_find+".png")
-                        self._lt_perception.take_picture_and_save_it_Palbator(img_path)
-                        result={
-                            "NextIndex": indexStep+1
-                        }
-                    else:
-                        rospy.logwarn("I DETECTED %s",str(detection.label_id))
-                        result={
-                            "NextIndex": indexStep+2
-                        }
-            else:
-                rospy.logerr("NO GUEST DETECTED NONE RESULT")
-                result={
-                    "NextIndex": indexStep+2
-                }
         else:
             result={
-                    "NextIndex": indexStep+1
+                "NextIndex": indexStep+1
             }
         return result
 
@@ -272,11 +278,6 @@ class Receptionist2020CPEScenario(AbstractScenario):
      
         destination = result['destination']
         destination = destination.title()
-
-        rospy.logerr("##################")
-        rospy.logerr(destination)
-        rospy.logerr("##################")
-
         itp_name = ''
         for item in self._locations:
             if item['name'] == destination:

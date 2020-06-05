@@ -140,8 +140,8 @@
       "order": 8,
       "eta": 0,
       "speech": {
-        "said": "What is your name?",
-        "title": "What's your name?"
+        "said": "Hello, what is your name?",
+        "title": "Hello, what's your name?"
       },
       "arguments": {
         "who": "Guest_1"
@@ -533,8 +533,8 @@
       "order": 35,
       "eta": 0,
       "speech": {
-        "said": "What is your name?",
-        "title": "What's your name?"
+        "said": "Hello, what is your name?",
+        "title": "Hello, what's your name?"
       },
       "arguments": {
         "who": "Guest_2"
