@@ -261,6 +261,23 @@
       "id": "IntroduceG1ToJohn"
     },
     {
+      "name": "Point to first guest",
+      "order": 17,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing to the first guest",
+        "title": "I am pointing to the first guest"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "Guest_1_name",
+          "guestPhotoPath": "Guest_1_face_path"}
+      },
+      "action": "pointTo",
+      "id": "introduceg1tojohn_point-to-first-guest"
+    },
+    {
       "name": "Say name and drink",
       "order": 18,
       "eta": 0,
@@ -297,6 +314,23 @@
       "arguments": {},
       "action": "",
       "id": "IntroduceJohnToG1"
+    },
+    {
+      "name": "Point to John",
+      "order": 20,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing to John",
+        "title": "I am pointing to John"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "John_name",
+          "guestPhotoPath": "John_face_path"}
+      },
+      "action": "pointTo",
+      "id": "introducejohntog1_point-to-john"
     },
     {
       "name": "Say name and drink",
@@ -619,6 +653,24 @@
       "id": "IntroduceG2ToOthers"
     },
     {
+      "name": "Point to second guest",
+      "order": 44,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing the second guest",
+        "title": "I am pointing the second guest"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "Guest_2_name",
+          "guestPhotoPath": "Guest_2_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introduceg2toothers_point-to-second-guest"
+    },
+    {
       "name": "Say name and drink",
       "order": 45,
       "eta": 0,
@@ -665,6 +717,24 @@
       "id": "IntroduceJohnToG2"
     },
     {
+      "name": "Point to John",
+      "order": 47,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing John",
+        "title": "I am pointing John"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "John_name",
+          "guestPhotoPath": "John_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introducejohntog2_point-to-john"
+    },
+    {
       "name": "Say name and drink",
       "order": 48,
       "eta": 0,
@@ -701,6 +771,24 @@
       "arguments": {},
       "action": "",
       "id": "IntroduceG1ToG2"
+    },
+    {
+      "name": "Point to first guest",
+      "order": 50,
+      "eta": 0,
+      "speech": {
+        "said": "I am pointing first guest",
+        "title": "I am pointing first guest"
+      },
+      "arguments": {
+        "what": "human",
+        "who": {
+          "name": "Guest_1_name",
+          "guestPhotoPath": "Guest_1_face_path"
+        }
+      },
+      "action": "pointTo",
+      "id": "introduceg1tog2_point-to-first-guest"
     },
     {
       "name": "Say name and drink",
