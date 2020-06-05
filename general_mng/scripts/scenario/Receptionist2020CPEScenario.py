@@ -280,9 +280,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
         time.sleep(3)
         if self.allow_simulation:
-            if self.steps[indexStep]['arguments']['who'] == "Guest_1":
+            if self.steps[indexStep]['arguments']['key'] == "Guest_1":
                 self._lt_simulation.guest_spawner_for_receptionist("G1_before_present")
-            elif self.steps[indexStep]['arguments']['who'] == "Guest_2":
+            elif self.steps[indexStep]['arguments']['key'] == "Guest_2":
                 self._lt_simulation.guest_spawner_for_receptionist("G2_before_present")
                 
         result={
