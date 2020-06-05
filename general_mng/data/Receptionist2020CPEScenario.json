@@ -262,7 +262,7 @@
     },
     {
       "name": "Say name and drink",
-      "order": 18,
+      "order": 17,
       "eta": 0,
       "speech": {
         "said": "Hey John_name, here is Guest_1_name, their favorite drink is Guest_1_drink"
@@ -292,7 +292,7 @@
     },
     {
       "name": "Introduce John to first guest",
-      "order": 19,
+      "order": 18,
       "eta": 10,
       "arguments": {},
       "action": "",
@@ -300,7 +300,7 @@
     },
     {
       "name": "Say name and drink",
-      "order": 21,
+      "order": 19,
       "eta": 0,
       "speech": {
         "said": "Hey Guest_1_name, here is John_name, their favorite drink is John_drink"
@@ -330,7 +330,7 @@
     },
     {
       "name": "Seat first guest",
-      "order": 22,
+      "order": 20,
       "eta": 20,
       "arguments": {},
       "action": "",
@@ -338,7 +338,7 @@
     },
     {
       "name": "Find empty seat",
-      "order": 23,
+      "order": 21,
       "eta": 0,
       "speech": {
         "said": "I am finding an empty chair",
@@ -353,7 +353,7 @@
     },
     {
       "name": "Point to empty seat",
-      "order": 24,
+      "order": 22,
       "eta": 0,
       "speech": {
         "said": "I am pointing an empty chair",
@@ -368,7 +368,7 @@
     },
     {
       "name": "Tell first guest to seat",
-      "order": 25,
+      "order": 23,
       "eta": 0,
       "speech": {
         "said": "Please have a seat Guest_1_name.",
@@ -385,7 +385,7 @@
     },
     {
       "name": "Go to door",
-      "order": 26,
+      "order": 24,
       "eta": 50,
       "arguments": {},
       "action": "",
@@ -393,7 +393,7 @@
     },
     {
       "name": "Go to door",
-      "order": 27,
+      "order": 25,
       "eta": 0,
       "speech": {
         "said": "I am traveling to the location_name",
@@ -411,7 +411,7 @@
     },
     {
       "name": "Find second guest",
-      "order": 28,
+      "order": 26,
       "eta": 10,
       "arguments": {},
       "action": "",
@@ -419,7 +419,7 @@
     },
     {
       "name": "Wait",
-      "order": 29,
+      "order": 27,
       "eta": 0,
       "speech": {
         "said": "I am waiting for the referee",
@@ -433,7 +433,7 @@
     },
     {
       "name": "Ask referee to open the door",
-      "order": 30,
+      "order": 28,
       "eta": 0,
       "speech": {
         "said": "Hey referee, could you please open the door, and then say Next, or click on the button?",
@@ -446,7 +446,7 @@
     },
     {
       "name": "LookG2",
-      "order": 31,
+      "order": 29,
       "eta": 0,
       "speech": {
         "said": "I am looking for a new guest",
@@ -460,7 +460,7 @@
     },
     {
       "name": "Found guest",
-      "order": 32,
+      "order": 30,
       "eta": 0,
       "speech": {
         "said": "I have found a new guest",
@@ -475,7 +475,7 @@
     },
     {
       "name": "NotFoundG2",
-      "order": 33,
+      "order": 31,
       "eta": 0,
       "speech": {
         "said": "I didn't find anyone",
@@ -488,7 +488,7 @@
     },
     {
       "name": "Ask infos about second guest",
-      "order": 34,
+      "order": 32,
       "eta": 20,
       "arguments": {},
       "action": "",
@@ -496,7 +496,7 @@
     },
     {
       "name": "Ask name",
-      "order": 35,
+      "order": 33,
       "eta": 0,
       "speech": {
         "said": "Hello, what is your name?",
@@ -510,7 +510,7 @@
     },
     {
       "name": "Confirm name",
-      "order": 36,
+      "order": 34,
       "eta": 0,
       "speech": {
         "said": "Did you say your name was {name}?",
@@ -525,7 +525,7 @@
     },
     {
       "name": "Ask drink",
-      "order": 37,
+      "order": 35,
       "eta": 0,
       "speech": {
         "said": "Allright {name}, what is your favorite drink?",
@@ -539,7 +539,7 @@
     },
     {
       "name": "Confirm drink",
-      "order": 38,
+      "order": 36,
       "eta": 0,
       "speech": {
         "said": "Did you say your favorite drink was {drink}?",
@@ -554,7 +554,7 @@
     },
     {
       "name": "Ask age",
-      "order": 39,
+      "order": 37,
       "eta": 0,
       "speech": {
         "said": "By the way, how old are you?",
@@ -568,7 +568,7 @@
     },
     {
       "name": "Go to living room",
-      "order": 40,
+      "order": 38,
       "eta": 50,
       "arguments": {},
       "action": "",
@@ -576,7 +576,7 @@
     },
     {
       "name": "Ask to follow",
-      "order": 41,
+      "order": 39,
       "eta": 0,
       "speech": {
         "said": "Great Guest_2_name, now follow me to the living room",
@@ -594,7 +594,7 @@
     },
     {
       "name": "Go to living room",
-      "order": 42,
+      "order": 40,
       "eta": 0,
       "speech": {
         "said": "I am traveling to the location_name",
@@ -612,7 +612,7 @@
     },
     {
       "name": "Introduce second guest to others",
-      "order": 43,
+      "order": 41,
       "eta": 10,
       "arguments": {},
       "action": "",
@@ -620,7 +620,7 @@
     },
     {
       "name": "Say name and drink",
-      "order": 45,
+      "order": 42,
       "eta": 0,
       "speech": {
         "said": "Hey Guest_1_name and John_name, here is Guest_2_name, whose favorite drink is Guest_2_drink"
@@ -658,7 +658,7 @@
     },
     {
       "name": "Introduce John to second guest",
-      "order": 46,
+      "order": 43,
       "eta": 10,
       "arguments": {},
       "action": "",
@@ -666,7 +666,7 @@
     },
     {
       "name": "Say name and drink",
-      "order": 48,
+      "order": 44,
       "eta": 0,
       "speech": {
         "said": "Hey Guest_2_name, here is John_name, whose favorite drink is John_drink"
@@ -696,7 +696,7 @@
     },
     {
       "name": "Introduce first guest to second guest",
-      "order": 49,
+      "order": 45,
       "eta": 10,
       "arguments": {},
       "action": "",
@@ -704,7 +704,7 @@
     },
     {
       "name": "Say name and drink",
-      "order": 51,
+      "order": 46,
       "eta": 0,
       "speech": {
         "said": "Hey Guest_2_name, here is Guest_1_name, whose favorite drink is Guest_1_drink"
@@ -734,7 +734,7 @@
     },
     {
       "name": "Seat second guest",
-      "order": 52,
+      "order": 47,
       "eta": 20,
       "arguments": {},
       "action": "",
@@ -742,7 +742,7 @@
     },
     {
       "name": "Find empty seat",
-      "order": 53,
+      "order": 48,
       "eta": 0,
       "speech": {
         "said": "I am finding an empty seat",
@@ -757,7 +757,7 @@
     },
     {
       "name": "Point to empty seat",
-      "order": 54,
+      "order": 49,
       "eta": 0,
       "speech": {
         "said": "I am pointing an empty seat",
@@ -772,7 +772,7 @@
     },
     {
       "name": "Tell first guest to seat",
-      "order": 55,
+      "order": 50,
       "eta": 0,
       "speech": {
         "said": "Please have a seat Guest_2_name.",
@@ -789,7 +789,7 @@
     },
     {
       "name": "Finish Scenario",
-      "order": 56,
+      "order": 51,
       "eta": 0,
       "arguments": {},
       "action": "",
