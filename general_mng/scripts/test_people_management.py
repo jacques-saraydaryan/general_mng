@@ -10,6 +10,7 @@ from meta_lib.LTSimulation import LTSimulation
 import os 
 import math
 import numpy as np
+from ros_people_mng_msgs.msg import PeopleMetaInfoDetails, PeopleMetaInfo, PeopleMetaInfoList
 
 class Test:
 
@@ -17,14 +18,29 @@ class Test:
 
         rospy.init_node("test_people")
 
-        self._lt_perception = LTPerception()
+        # self._lt_perception = LTPerception()
         # self._lt_simulation = LTSimulation()
 
         # self._lt_simulation.reset_guests_for_receptionist()
         # self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
+        self.authorize_sub = False
 
-        # self._lt_navigation = LTNavigation()
+        self._lt_navigation = LTNavigation()
+
+        self.sub_people_meta_info = rospy.Subscriber("/people_meta_info", PeopleMetaInfoList, self.handle_callback)
+
+        self.authorize_sub = True
+        rotation_angle = 2*math.pi
+        response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
+
+    def handle_callback(self,req):
+        if self.authorize_sub == True:
+            liste = req.peopleList
+            rospy.loginfo(liste)
+
+
+
         # itp_name = "place_entrance_recep"
         # self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal",itp_name , 90.0)
 
@@ -147,6 +163,6 @@ class Test:
 
 if __name__ == "__main__":
     a = Test()
-    # while not rospy.is_shutdown():
-    #     rospy.spin()
+    while not rospy.is_shutdown():
+        rospy.spin()
 
