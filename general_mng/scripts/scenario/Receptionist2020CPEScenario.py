@@ -164,6 +164,30 @@ class Receptionist2020CPEScenario(AbstractScenario):
         return result
 
 
+    def gm_look_for_known_guest(self,indexStep):
+        """
+        Function dealing with the lookForKnownGuest action. The robot will look for a known guest.
+
+        :param indexStep: Step index
+        :type indexStep: int
+        """
+        rospy.loginfo("{class_name} : SCN ACTION LOOK FOR KNOWN GUEST".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
+        
+        
+        guest_to_find = self.steps[indexStep]['arguments']['key']
+
+        people_name = self._guest_infos[guest_to_find]['name']
+        if self.allow_high_behaviour:
+            response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
+
+        rospy.sleep(3)
+        result={
+                "NextIndex": indexStep+1
+        }
+        return result
+
+
     def gm_look_for_guest(self,indexStep):
         """
         Function dealing with the lookForGuest action. The robot will look for a new guest to ask him infos.
@@ -314,11 +338,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :param indexStep: Step index
         :type indexStep: int
         """
-        data = deepcopy(self.steps[indexStep]['arguments']['to'][0]['name'])
-        key = data.split("_name")[0]
-        people_name = self._guest_infos[key]['name']
-        if self.allow_high_behaviour:
-            response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
+        # data = deepcopy(self.steps[indexStep]['arguments']['to'][0]['name'])
+        # key = data.split("_name")[0]
+        # people_name = self._guest_infos[key]['name']
+        # if self.allow_high_behaviour:
+        #     response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
         # if "John" in self.steps[indexStep]['arguments']['to'][0]['name']:
         #     people_name = "John"
         # elif "Guest_1" in self.steps[indexStep]['arguments']['to'][0]['name']:
@@ -389,6 +413,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         "lookForGuest": self.gm_look_for_guest,
         "foundGuest": self.gm_found_guest,
         "foundAnyone": self.gm_found_anyone,
+        "lookForKnownGuest": self.gm_look_for_known_guest
         }
         # Get the function from switcher dictionary
         func = switcher.get(action, lambda: "Invalid action")
@@ -430,7 +455,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
                     "name": self.people_name_by_id[key],
                     "guestPhotoPath": "img/people/"+key+".png",
                     "drink": self.people_drink_by_id[key],
-                    "pathOnTablet": pathOnTablet
+                    "pathOnTablet": pathOnTablet,
+                    "age": self.people_age_by_id[key]
                 }
                 
             json.dump(data, f, indent=4)

@@ -31,8 +31,8 @@ class Test:
         self.sub_people_meta_info = rospy.Subscriber("/people_meta_info", PeopleMetaInfoList, self.handle_callback)
 
         self.authorize_sub = True
-        rotation_angle = 2*math.pi
-        response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
+        # rotation_angle = 2*math.pi
+        # response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
 
     def handle_callback(self,req):
         if self.authorize_sub == True:
@@ -163,6 +163,8 @@ class Test:
 
 if __name__ == "__main__":
     a = Test()
+    rotation_angle = 2*math.pi
+    response_nav = a._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
     while not rospy.is_shutdown():
         rospy.spin()
 
