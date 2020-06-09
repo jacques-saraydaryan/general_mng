@@ -24,7 +24,7 @@
     "steps": [
         {
             "name": "Scenario beginning",
-            "order": 0,
+            "order": 1,
             "eta": 10,
             "arguments": {},
             "action": "",
@@ -32,7 +32,7 @@
         },
         {
             "name": "Open door",
-            "order": 1,
+            "order": 2,
             "eta": 0,
             "speech": {
                 "said": "I will open the door",
@@ -43,7 +43,7 @@
         },
         {
             "name": "Ask room to clean",
-            "order": 2,
+            "order": 3,
             "eta": 10,
             "arguments": {},
             "action": "",
@@ -51,7 +51,7 @@
         },
         {
             "name": "Choose room to clean",
-            "order": 3,
+            "order": 4,
             "eta": 0,
             "speech": {
                 "said": "In which room do I have to go ?",
@@ -65,7 +65,7 @@
         },
         {
             "name": "Confirm room",
-            "order": 4,
+            "order": 5,
             "eta": 0,
             "speech": {
                 "said": "Did you choose the location_name ?",
@@ -79,7 +79,7 @@
         },
         {
             "name": "Travel to room",
-            "order": 5,
+            "order": 6,
             "eta": 0,
             "speech": {
                 "said": "I am travelling to the ChoosenRoom_1_name",
@@ -97,7 +97,7 @@
         },
         {
             "name": "Find first object",
-            "order": 6,
+            "order": 7,
             "eta": 10,
             "arguments": {},
             "action": "",
@@ -105,7 +105,7 @@
         },
         {
             "name": "Find the first object",
-            "order": 7,
+            "order": 8,
             "eta": 0,
             "speech": {
                 "said": "I am looking for objects in the ChoosenRoom_1_name",
@@ -125,7 +125,7 @@
         },
         {
             "name": "Found the first object",
-            "order": 8,
+            "order": 9,
             "eta": 0,
             "speech": {
                 "said": "I have found the Object_1_name",
@@ -143,7 +143,7 @@
         },
         {
             "name": "Catch the first object",
-            "order": 9,
+            "order": 10,
             "eta": 0,
             "speech": {
                 "said": "I am catching the Object_1_name",
@@ -161,7 +161,7 @@
         },
         {
             "name": "Travel to first object storage",
-            "order": 10,
+            "order": 11,
             "eta": 0,
             "speech": {
                 "said": "I am travelling to the Object_1_storage_name",
@@ -179,7 +179,7 @@
         },
         {
             "name": "Storing the first object",
-            "order": 11,
+            "order": 12,
             "eta": 0,
             "speech": {
                 "said": "I am storing the Object_1_name",
@@ -197,7 +197,7 @@
         },
         {
             "name": "Can not find first object",
-            "order": 12,
+            "order": 13,
             "eta": 0,
             "speech": {
                 "said": "No first object was found",
@@ -208,7 +208,7 @@
         },
         {
             "name": "Finish Scenario",
-            "order": 13,
+            "order": 14,
             "eta": 0,
             "arguments": {},
             "action": "",

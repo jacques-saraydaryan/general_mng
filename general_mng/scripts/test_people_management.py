@@ -3,6 +3,7 @@
 import rospy
 from meta_lib.LTPerception import LTPerception
 from meta_lib.LTNavigation import LTNavigation
+from meta_lib.LTSimulation import LTSimulation
 from tf import TransformListener
 from geometry_msgs.msg import PointStamped
 
@@ -18,26 +19,30 @@ class Test:
 
         rospy.init_node("test_people")
 
-        # self._lt_perception = LTPerception()
+        self._lt_perception = LTPerception()
+        # self._lt_simulation = LTSimulation()
+        # rospy.loginfo("{class_name}: SETTING UP GUESTS FOR SIMULATED SCENARIO".format(class_name=self.__class__.__name__))
+        # self._lt_simulation.reset_guests_for_receptionist()
+        # self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
         # self._lt_simulation = LTSimulation()
 
         # self._lt_simulation.reset_guests_for_receptionist()
         # self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
-        self.authorize_sub = False
+        # self.authorize_sub = False
 
-        self._lt_navigation = LTNavigation()
+        # self._lt_navigation = LTNavigation()
 
-        self.sub_people_meta_info = rospy.Subscriber("/people_meta_info", PeopleMetaInfoList, self.handle_callback)
+        # self.sub_people_meta_info = rospy.Subscriber("/people_meta_info", PeopleMetaInfoList, self.handle_callback)
 
-        self.authorize_sub = True
+        # self.authorize_sub = True
         # rotation_angle = 2*math.pi
         # response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
 
-    def handle_callback(self,req):
-        if self.authorize_sub == True:
-            liste = req.peopleList
-            rospy.loginfo(liste)
+    # def handle_callback(self,req):
+    #     if self.authorize_sub == True:
+    #         liste = req.peopleList
+    #         rospy.loginfo(liste)
 
 
 
@@ -46,17 +51,17 @@ class Test:
 
         # listener = TransformListener()
         
-        # response = self._lt_perception.learn_people_meta_from_img_topic("Bill",10)
+        response = self._lt_perception.learn_people_meta_from_img_topic(u"Bill",10)
 
-        # rospy.sleep(3)
+        rospy.sleep(3)
 
-        # response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John.png","John",10)
+        response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John.png","John",10)
 
-        # rospy.sleep(3)
+        rospy.sleep(3)
 
-        # response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John_simu.png","Robert",10)
+        response = self._lt_perception.learn_people_meta_from_img_path("/home/student/Bureau/global_palbator/src/fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public/img/people/John_simu.png","Robert",10)
 
-        response = self._lt_perception.reset_people_meta_info_map()
+        # response = self._lt_perception.reset_people_meta_info_map()
 
 
 
@@ -163,8 +168,8 @@ class Test:
 
 if __name__ == "__main__":
     a = Test()
-    rotation_angle = 2*math.pi
-    response_nav = a._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
-    while not rospy.is_shutdown():
-        rospy.spin()
+    # rotation_angle = 2*math.pi
+    # response_nav = a._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
+    # while not rospy.is_shutdown():
+    #     rospy.spin()
 

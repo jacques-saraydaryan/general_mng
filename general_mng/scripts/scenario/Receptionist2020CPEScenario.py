@@ -16,10 +16,23 @@ import json
 import time
 import math
 from copy import deepcopy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from actionlib_msgs.msg import GoalStatus
 import os
 
+def singleton(cls): 
+    """
+    Enables the system to create at most one instance of the class. Two instances of the same class can't be running at the same time.
+    """   
+    instance = [None]
+    def wrapper(*args, **kwargs):
+        if instance[0] is None:
+            instance[0] = cls(*args, **kwargs)
+        return instance[0]
+
+    return wrapper
+
+@singleton
 class Receptionist2020CPEScenario(AbstractScenario):
 
     DEFAULT_TIMEOUT = 5.0
@@ -54,6 +67,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.path_folder_to_save_imgs = self._scenario['parameters']['path_folder_to_save_imgs']
 
         self.current_dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        ##### TEST FOR RESTART #####
+
+        # self.sub_restart = rospy.Subscriber("/test_HRI_restart",Bool,self.handle_restart_hri)
+
         
         ######### FOR DEBUG #############
         # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
@@ -132,6 +150,24 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         self.configuration_ready = True
 
+    # def handle_restart_hri(self,req):
+    #     if self.allow_navigation:
+    #         try:
+    #             rospy.logwarn("CANCELLING NAV GOALS")
+    #             self._lt_navigation.cancel_current_goals()
+    #         except Exception as e:
+    #             rospy.logerr("Error : %s",e)
+
+
+
+    def gm_main_menu(self,indexStep):
+        rospy.loginfo("{class_name} : SCN ACTION FOUND MAIN MENU".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        rospy.sleep(3)
+        result={
+                "NextIndex": indexStep+1
+        }
+        return result
 
     def gm_found_guest(self,indexStep):
         """
@@ -299,6 +335,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION GO TO".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._locations),self.NO_TIMEOUT)[1]
+
+        # if result['NextToDo'] == "RESTART":
+        #     return result
+        # else:
      
         destination = result['destination']
         destination = destination.title()
@@ -413,7 +453,8 @@ class Receptionist2020CPEScenario(AbstractScenario):
         "lookForGuest": self.gm_look_for_guest,
         "foundGuest": self.gm_found_guest,
         "foundAnyone": self.gm_found_anyone,
-        "lookForKnownGuest": self.gm_look_for_known_guest
+        "lookForKnownGuest": self.gm_look_for_known_guest,
+        "mainMenuPalbator": self.gm_main_menu
         }
         # Get the function from switcher dictionary
         func = switcher.get(action, lambda: "Invalid action")
@@ -534,6 +575,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
                 if 'result' in result and result['result']=="PREEMPTED": 
                     rospy.logwarn("{class_name} : SCN : ACTION ABORTED".format(class_name=self.__class__.__name__))
                     break
+
+                # if 'NextToDo' in result and result['NextToDo'] == "RESTART":
+                #     rospy.logwarn("{class_name} : HRI RESTART END OF SCENARIO".format(class_name=self.__class__.__name__))
+                #     break
                 
                 if result['NextIndex']!="":
                     self.current_index_scenario=deepcopy(result['NextIndex'])

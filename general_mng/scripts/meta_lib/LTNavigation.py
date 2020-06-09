@@ -61,6 +61,9 @@ class LTNavigation(LTAbstract):
         """
         self.configure_intern()
 
+    def cancel_current_goals(self):
+        self._actionNavMng_server.cancel_all_goals()
+
     #######################################
     # NAVIGATION API
     ######################################

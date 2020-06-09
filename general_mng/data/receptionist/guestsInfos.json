@@ -1,4 +1,11 @@
 {
+    "Guest_2": {
+        "age": 85, 
+        "drink": "Fanta", 
+        "name": "Matt", 
+        "pathOnTablet": "img/drinks/fanta.png", 
+        "guestPhotoPath": "img/people/Guest_2.png"
+    }, 
     "John": {
         "age": 40, 
         "drink": "Coke", 
@@ -7,10 +14,10 @@
         "guestPhotoPath": "img/people/John.png"
     }, 
     "Guest_1": {
-        "age": "1", 
-        "drink": "SPRITE", 
-        "name": "CLARA", 
-        "pathOnTablet": "img/drinks/sprite.png", 
+        "age": 9, 
+        "drink": "Oasis", 
+        "name": "Sally", 
+        "pathOnTablet": "img/drinks/oasis.png", 
         "guestPhotoPath": "img/people/Guest_1.png"
     }
 }

@@ -238,7 +238,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_2"
-                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_02/model.sdf")
+                goal.path_to_sdf = os.path.join(self.models_dir,"person_standing/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = -0.2
                 goal.model_pose.position.y = -5.5
@@ -266,7 +266,7 @@ class LTSimulation(LTAbstract):
                 goal = SdfInGazeboGoal()
                 goal.action = "spawn"
                 goal.model_name = "Guest_2"
-                goal.path_to_sdf = os.path.join(self.models_dir,"citizen_extras_female_02/model.sdf")
+                goal.path_to_sdf = os.path.join(self.models_dir,"person_standing/model.sdf")
                 goal.model_pose = Pose()
                 goal.model_pose.position.x = 1.5
                 goal.model_pose.position.y = 5.5

@@ -67,7 +67,7 @@ class LTHriManagerPalbator(LTAbstract):
             rospy.loginfo("{class_name} : WAITING FOR ACTION RESULT ".format(class_name=self.__class__.__name__))
             self.client_action_GmToHri.wait_for_result()
             result_action=self.client_action_GmToHri.get_result()
-            rospy.loginfo("{class_name} : GOT GOAL FROM ACTION".format(class_name=self.__class__.__name__))
+            rospy.loginfo("{class_name} : GOT RESULT FROM ACTION".format(class_name=self.__class__.__name__))
             resultat=result_action.Gm_To_Hri_output
             json_resultat=json.loads(resultat)
             rospy.loginfo("{class_name}  JSON RESULT: ".format(class_name=self.__class__.__name__)+str(json_resultat))
