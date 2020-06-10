@@ -178,7 +178,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION FOUND NEW GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
-        rospy.sleep(3)
+        rospy.sleep(1)
         result={
                 "NextIndex": indexStep+2
         }
@@ -193,7 +193,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION NOT FOUND NEW GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
-        rospy.sleep(3)
+        rospy.sleep(1)
         result={
                 "NextIndex": self.end_step_index
         }
@@ -217,7 +217,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         if self.allow_high_behaviour:
             response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
 
-        rospy.sleep(3)
+        rospy.sleep(1)
         result={
                 "NextIndex": indexStep+1
         }
@@ -289,7 +289,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION WAIT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
-        time.sleep(3)
+        time.sleep(1)
         result={
             "NextIndex": indexStep+1
         }
@@ -314,7 +314,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION ASK TO FOLLOW".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
-        time.sleep(3)
+        time.sleep(1)
         if self.allow_simulation:
             if self.steps[indexStep]['arguments']['key'] == "Guest_1":
                 self._lt_simulation.guest_spawner_for_receptionist("G1_before_present")
@@ -365,7 +365,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION POINT TO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
-        time.sleep(6)
+        time.sleep(1)
         result={
             "NextIndex": indexStep+1
         }
@@ -392,7 +392,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         rospy.loginfo("{class_name} : SCN ACTION PRESENT PERSON".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
-        time.sleep(10)
+        time.sleep(1)
         result={
             "NextIndex": indexStep+1
         }
@@ -407,7 +407,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION FIND".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
-        time.sleep(3)
+        time.sleep(1)
         result={
             "NextIndex": indexStep+1
         }
@@ -422,7 +422,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         """
         rospy.loginfo("{class_name} : SCN ACTION SEAT GUEST".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self._guest_infos),self.NO_TIMEOUT)
-        time.sleep(3)
+        time.sleep(1)
         if "Guest_1" in self.steps[indexStep]['arguments']['who']['name'] and self.allow_simulation:
             self._lt_simulation.guest_spawner_for_receptionist("G1_after_present")
             self._lt_simulation.guest_spawner_for_receptionist("G2_entrance")

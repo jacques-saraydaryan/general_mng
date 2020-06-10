@@ -24,8 +24,8 @@ class Test():
         # rospy.loginfo("G2_entrance")
         # self._lt_simulation.guest_spawner_for_receptionist("G2_entrance")
         # rospy.sleep(3)
-        # rospy.loginfo("G2_before_present")
-        # self._lt_simulation.guest_spawner_for_receptionist("G2_before_present")
+        rospy.loginfo("G2_before_present")
+        self._lt_simulation.guest_spawner_for_receptionist("G2_before_present")
         # rospy.sleep(3)
 
         # self._lt_simulation.reset_guests_for_receptionist()

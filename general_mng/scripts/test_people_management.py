@@ -18,6 +18,7 @@ class Test:
     def __init__(self):
 
         rospy.init_node("test_people")
+        self.listener = TransformListener()
 
         # self._lt_perception = LTPerception()
         # self._lt_simulation = LTSimulation()
@@ -43,7 +44,20 @@ class Test:
         liste = req.peopleList
         rospy.logwarn("HEADER : %s",str(req.img.header))
         for item in liste:
-            rospy.logwarn("PEOPLE : %s POSE x: %s y: %s",item.label_id,item.pose.position.x,item.pose.position.y)
+            pose = item.pose
+            rospy.logwarn("PEOPLE : %s POSE x: %s y: %s",item.label_id,pose.position.x,pose.position.y)
+            
+            now = rospy.Time(0)
+            object_point = PointStamped()
+            object_point.header.frame_id = "palbator_arm_kinect_link"
+            object_point.header.stamp = now
+            object_point.point.x = pose.position.x
+            object_point.point.y = pose.position.y
+            object_point.point.z = pose.position.z
+            rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
+            self.listener.waitForTransform("/map", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+            target = self.listener.transformPoint("/map",object_point)
+            rospy.loginfo("{class_name} : Object coords in map : %s".format(class_name=self.__class__.__name__),str(object_point))
 
         rospy.logerr("----")
         # rospy.loginfo(req.img)
