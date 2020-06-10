@@ -155,6 +155,27 @@ class LTHighBehaviour(LTAbstract):
 
                 rospy.loginfo("{class_name}: RESULT %s".format(class_name=self.__class__.__name__),str(response.result))
 
+    
+    def look_for_specific_person(self,people_name,room):
+        rospy.logwarn("{class_name} : I AM LOOKING FOR %s".format(class_name=self.__class__.__name__),people_name)
+
+        response_perception = self._lt_perception.get_people_in_room(room)
+        people_list = response_perception.payload
+        if people_list == []:
+            rospy.logwarn("{class_name}: I DIDN'T FIND ANYONE IN THAT ROOM BEFORE.".format(class_name=self.__class__.__name__))
+
+            response_nav = self._lt_navigation.send_nav_rotation_order("NT", 2*math.pi, 90.0)
+            response_perception = self._lt_perception.get_people_in_room(room)
+            people_list = response_perception.payload
+            if people_list == []:
+                rospy.logwarn("{class_name}: I STILL FIND NO ONE IN THAT ROOM.".format(class_name=self.__class__.__name__))
+
+        else:
+            for people in people_list:
+                rospy.loginfo("{class_name}: I HAVE FOUND %s in the %s".format(class_name=self.__class__.__name__),str(people),room)
+
+            ##### TO DO : recuperer les donnees du people_name et faire la rotation vers la personne si besoin
+
 
     def turn_around_and_detect_someone(self,people_name):
 

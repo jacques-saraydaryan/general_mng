@@ -21,7 +21,7 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 
-from tf_broadcaster.srv import GetObjectsInRoom
+from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom
 from tf import TransformListener
 import math
 
@@ -55,6 +55,7 @@ class LTPerception(LTAbstract):
 
     _enableCheckForObjectsInRoom = True
     _enableTakePicturePalbator = True
+    _enableCheckForPeopleInRoom = True
 
 
 
@@ -95,6 +96,15 @@ class LTPerception(LTAbstract):
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("{class_name}: Unable to connect to the get_objects_in_room service.".format(class_name=self.__class__.__name__))
 
+        if self._enableCheckForPeopleInRoom:
+            service_name = 'get_people_list_in_room'
+            self.get_people_in_room_proxy = rospy.ServiceProxy(service_name,GetPeopleInRoom)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: get_people_in_room server connected".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the get_people_in_room service.".format(class_name=self.__class__.__name__))
+        
         if self._enableObjectDetectionMngAction:
             self._actionObjectDetectionMng_server = actionlib.SimpleActionClient('object_detection_action',
                                                                                  ObjectDetectionAction)
@@ -208,6 +218,44 @@ class LTPerception(LTAbstract):
     #             response.payload = result
     #             return response
     #     return response
+
+    def get_people_in_room(self,room,service_mode=LTAbstract.SERVICE):
+        """
+        Will send a perception order with a specific room in order to get the list of people in that room. 
+        Returns a response containing the result, the status and the feedback of the executed action.
+
+        :param room: name of the room in which the system will look for people
+        :type room: string
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__get_people_in_room,
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for get_people_in_room" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(room)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during get_people_in_room "
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success get_people_in_room "
+                response.payload = result
+                return response
+        return response
 
     def get_object_in_room(self,room,service_mode=LTAbstract.SERVICE):
         """
@@ -911,6 +959,27 @@ class LTPerception(LTAbstract):
     #######################################
     # PERCEPTION ACTION
     ######################################
+    
+    def __get_people_in_room(self,room):
+        """
+        Service client which will send a perception order with a specific room in order to get the list of people in that room. 
+        Returns a GoalStatus and a people list
+
+        :param room: name of the room in which the system will look for people
+        :type room: string
+        """
+        try:
+            result = self.get_people_in_room_proxy(room)
+            people_list = result.people_list
+
+            return GoalStatus.SUCCEEDED, people_list
+
+        except rospy.ServiceException as e:
+            rospy.logerr("{class_name}: Service get_people_in_room could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("{class_name}: Service get_people_in_room could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
 
     def __get_object_in_room(self,room):
         """
