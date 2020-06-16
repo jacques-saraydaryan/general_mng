@@ -26,7 +26,7 @@
     "debug_variables":{
         "allow_navigation": true,
         "allow_perception": true,
-        "allow_simulation": true
+        "allow_simulation": false
     },
     "path_folder_to_save_imgs": "../../../../../fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public"
   },

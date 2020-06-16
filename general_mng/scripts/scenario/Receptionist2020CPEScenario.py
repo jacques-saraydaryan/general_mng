@@ -240,7 +240,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         count = 0
         if self.allow_perception:
             while (detection_result is None or detection_result == {}) and count < 5:
-                response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
+                response = self._lt_perception.detect_meta_people_from_img_topic(timeout=20)
             
                 detection_result = response.payload
 
@@ -521,7 +521,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.restart_order=False
         self.steps = deepcopy(self._scenario["steps"])
 
-        self.end_step_index = self.steps[-1]["order"]
+        self.end_step_index = self.steps[-1]["order"] - 1
 
         rospy.logerr("END STEP INDEX : %s",str(self.end_step_index))
 

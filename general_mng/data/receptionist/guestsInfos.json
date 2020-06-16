@@ -1,9 +1,9 @@
 {
     "Guest_2": {
-        "age": 89, 
-        "drink": "Sprite", 
-        "name": "Matt", 
-        "pathOnTablet": "img/drinks/sprite.png", 
+        "age": "24", 
+        "drink": "PEPSI", 
+        "name": "BILL", 
+        "pathOnTablet": "img/drinks/pepsi.png", 
         "guestPhotoPath": "img/people/Guest_2.png"
     }, 
     "John": {
@@ -14,10 +14,10 @@
         "guestPhotoPath": "img/people/John.png"
     }, 
     "Guest_1": {
-        "age": 9, 
-        "drink": "Oasis", 
-        "name": "Jack", 
-        "pathOnTablet": "img/drinks/oasis.png", 
+        "age": "25", 
+        "drink": "SPRITE", 
+        "name": "AMY", 
+        "pathOnTablet": "img/drinks/sprite.png", 
         "guestPhotoPath": "img/people/Guest_1.png"
     }
 }
