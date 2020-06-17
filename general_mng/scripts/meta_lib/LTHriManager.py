@@ -158,7 +158,7 @@ class LTHriManagerPalbator(LTAbstract):
 
 
 class LTHriManager(LTAbstract):
-    import qi
+    
 
     GOAL = "goal"
     RESULT = "result"
@@ -166,6 +166,7 @@ class LTHriManager(LTAbstract):
     _enableNavAction = True
 
     def __init__(self, ip_address="127.0.0.1", tcp_port=9559, prefix="HRI_MNG_"):
+        import qi
         self.configure_intern(ip_address, tcp_port, prefix)
 
         #Inform configuration is ready
