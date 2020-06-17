@@ -11,7 +11,6 @@ import actionlib
 import rospy
 
 import time
-import qi
 import threading
 import json
 import uuid
