@@ -216,6 +216,12 @@ class Receptionist2020CPEScenario(AbstractScenario):
         people_name = self._guest_infos[guest_to_find]['name']
         if self.allow_high_behaviour:
             response = self._lt_high_behaviour.turn_around_and_detect_someone(people_name)
+        elif self.allow_perception:
+            response_perception = self._lt_perception.detect_meta_people_from_img_topic(timeout=20)
+
+            rospy.logwarn("RESPONSE PEOPLE : %s",str(response_perception.payload))
+
+            
 
         rospy.sleep(1)
         result={

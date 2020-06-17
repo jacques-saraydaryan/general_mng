@@ -159,6 +159,7 @@ class LTHriManagerPalbator(LTAbstract):
 
 
 class LTHriManager(LTAbstract):
+    import qi
 
     GOAL = "goal"
     RESULT = "result"
