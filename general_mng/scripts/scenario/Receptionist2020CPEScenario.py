@@ -229,7 +229,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
             #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
             json_data = {
-                "people_list" = []
+                "people_list": []
             }
             peopleList = response_perception.payload.peopleMetaList.peopleList
             if peopleList:
@@ -283,7 +283,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
                         
                         #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
                         json_data = {
-                            "people_list" = []
+                            "people_list": []
                         }
                         peopleList = response.payload.peopleMetaList.peopleList
                         if peopleList:
