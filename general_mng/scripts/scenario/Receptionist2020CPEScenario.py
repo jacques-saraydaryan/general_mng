@@ -228,14 +228,17 @@ class Receptionist2020CPEScenario(AbstractScenario):
             rospy.logwarn("RESPONSE PEOPLE : %s",str(response_perception.payload))
 
             #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
-            json_data = []
+            json_data = {
+                "people_list" = []
+            }
             peopleList = response_perception.payload.peopleMetaList.peopleList
             if peopleList:
                 for people in peopleList:
-                    json_data.append({
+                    json_data['people_list'].append({
                         "name": people.label_id,
                         "score": people.label_score
                     })
+
 
             self.socketIO.emit("sendPeopleListDebug",json_data,broadcast=True)
             ###########
@@ -279,11 +282,13 @@ class Receptionist2020CPEScenario(AbstractScenario):
                         # if detection.label_id == "Unknown":
                         
                         #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
-                        json_data = []
+                        json_data = {
+                            "people_list" = []
+                        }
                         peopleList = response.payload.peopleMetaList.peopleList
                         if peopleList:
                             for people in peopleList:
-                                json_data.append({
+                                json_data['people_list'].append({
                                     "name": people.label_id,
                                     "score": people.label_score
                                 })
