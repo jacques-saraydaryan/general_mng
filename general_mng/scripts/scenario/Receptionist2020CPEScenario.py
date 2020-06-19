@@ -19,6 +19,8 @@ from copy import deepcopy
 from std_msgs.msg import String, Bool
 from actionlib_msgs.msg import GoalStatus
 import os
+from socketIO_client import SocketIO, LoggingNamespace
+
 
 def singleton(cls): 
     """
@@ -74,6 +76,10 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         
         ######### FOR DEBUG #############
+
+        self.socketIO = SocketIO('http://127.0.0.1', 5000, LoggingNamespace)
+
+
         # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
         self.allow_navigation = self.debug_variables['allow_navigation']
         self.allow_perception = self.debug_variables['allow_perception']
@@ -221,6 +227,18 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
             rospy.logwarn("RESPONSE PEOPLE : %s",str(response_perception.payload))
 
+            #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
+            json_data = []
+            peopleList = response_perception.payload.peopleMetaList.peopleList
+            if peopleList:
+                for people in peopleList:
+                    json_data.append({
+                        "name": people.label_id,
+                        "score": people.label_score
+                    })
+
+            self.socketIO.emit("sendPeopleListDebug",json_data,broadcast=True)
+            ###########
             
 
         rospy.sleep(1)
@@ -256,23 +274,37 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
                     else:
                         rospy.logwarn("{class_name} : PEOPLE LIST DETECTION %s".format(class_name=self.__class__.__name__),str(response.payload.peopleMetaList.peopleList))
-                        detection = response.payload.peopleMetaList.peopleList[0]
+                        # detection = response.payload.peopleMetaList.peopleList[0]
 
-                        if detection.label_id == "Unknown":
+                        # if detection.label_id == "Unknown":
+                        
+                        #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
+                        json_data = []
+                        peopleList = response.payload.peopleMetaList.peopleList
+                        if peopleList:
+                            for people in peopleList:
+                                json_data.append({
+                                    "name": people.label_id,
+                                    "score": people.label_score
+                                })
+
+                        self.socketIO.emit("sendPeopleListDebug",json_data,broadcast=True)
+                        ###########
                             
-                            img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
-                            img_path = os.path.join(img_path,"img/people/"+guest_to_find+".png")
-                            self._lt_perception.take_picture_and_save_it_Palbator(img_path)
-                            result={
-                                "NextIndex": indexStep+1
-                            }
-                            break
-                        else:
-                            rospy.logwarn("{class_name} : I DETECTED %s BUT I ALREADY KNOW THIS PERSON".format(class_name=self.__class__.__name__),str(detection.label_id))
-                            result={
-                                "NextIndex": indexStep+2
-                            }
-                            break
+
+                        img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
+                        img_path = os.path.join(img_path,"img/people/"+guest_to_find+".png")
+                        self._lt_perception.take_picture_and_save_it_Palbator(img_path)
+                        result={
+                            "NextIndex": indexStep+1
+                        }
+                        break
+                        # else:
+                        #     rospy.logwarn("{class_name} : I DETECTED %s BUT I ALREADY KNOW THIS PERSON".format(class_name=self.__class__.__name__),str(detection.label_id))
+                        #     result={
+                        #         "NextIndex": indexStep+2
+                        #     }
+                        #     break
                 count+=1
 
             if detection_result is None or detection_result == {}:
