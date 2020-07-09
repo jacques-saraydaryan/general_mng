@@ -226,6 +226,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         "releaseObject": self.gm_release_object,
         "openDoor": self.gm_open_door,
         "objectAction": self.gm_object_action,
+        "foundNoObject": self.gm_found_no_object,
         # "askRoomToClean" : self.gm_ask_room,
         }
         # Get the function from switcher dictionary
@@ -244,6 +245,22 @@ class CleanUp2020CPEScenario(AbstractScenario):
     #     rospy.loginfo("{class_name} ACTION FOUND OBJECT")
     #     time.sleep(2)
     #     return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
+
+    def gm_found_no_object(self,stepIndex):
+        """
+        Function dealing with the foundNoObject action. The robot couldn't find anything in the choosen room.
+
+        :param stepIndex: Step index
+        :type stepIndex: int
+        """
+        rospy.loginfo("{class_name} ACTION FOUND NO OBJECT".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
+        time.sleep(3)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
+
     def gm_object_action(self,stepIndex):
         """
         Function dealing with an Object action. The robot will accomplish an action related to an object.
@@ -321,7 +338,9 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     detection = ''
             
         else:
-            detection = 'cracker'
+            # detection = 'cracker'
+            detection = ''
+
 
             
 
