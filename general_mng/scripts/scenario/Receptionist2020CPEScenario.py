@@ -80,6 +80,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.socketIO = SocketIO('http://127.0.0.1', 5000, LoggingNamespace)
 
 
+
         # DEFAULT -> TRUE. TO MDDIFY, SEE JSON SCENARIO FILE
         self.allow_navigation = self.debug_variables['allow_navigation']
         self.allow_perception = self.debug_variables['allow_perception']

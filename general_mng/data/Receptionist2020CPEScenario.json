@@ -24,11 +24,11 @@
       "timeout": 90.0
     },
     "debug_variables":{
-        "allow_navigation": true,
-        "allow_perception": true,
+        "allow_navigation": false,
+        "allow_perception": false ,
         "allow_simulation": false
     },
-    "path_folder_to_save_imgs": "../../../../../fakePkgForTabletPalbator/tablet_code/robocup_palbator-hri_js/public"
+    "path_folder_to_save_imgs": "../../../../../robocup_palbator-hri_js/public"
   },
   "steps": [
     {
