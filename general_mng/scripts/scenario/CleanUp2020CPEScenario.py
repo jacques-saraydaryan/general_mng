@@ -73,6 +73,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
+        self._videos = self._scenario['imports']['videos']
 
 
         self.labels_list_darknet = []
@@ -227,6 +228,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         "openDoor": self.gm_open_door,
         "objectAction": self.gm_object_action,
         "foundNoObject": self.gm_found_no_object,
+        "showVideo": self.gm_show_video,
         # "askRoomToClean" : self.gm_ask_room,
         }
         # Get the function from switcher dictionary
@@ -246,6 +248,20 @@ class CleanUp2020CPEScenario(AbstractScenario):
     #     time.sleep(2)
     #     return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
 
+    def gm_show_video(self,stepIndex):
+        """
+        Function dealing with the showVideo action. A video will be displayed on tablet.
+        :param stepIndex: Step index
+        :type stepIndex: int
+        """
+        rospy.loginfo("{class_name} ACTION SHOW VIDEO".format(class_name=self.__class__.__name__))
+        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._videos),self.NO_TIMEOUT)
+        time.sleep(10)
+        result = {
+            "NextIndex": stepIndex+1
+        }
+        return result
+    
     def gm_found_no_object(self,stepIndex):
         """
         Function dealing with the foundNoObject action. The robot couldn't find anything in the choosen room.

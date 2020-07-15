@@ -115,6 +115,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         self.people_name_by_id = {}
         self.people_drink_by_id = {}
         self.people_age_by_id = {}
+        self.people_face_path_by_id = {}
         self.steps = None
         self.exit_scenario=False
         self.current_guest=None
@@ -184,7 +185,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
         :type indexStep: int
         """
         rospy.loginfo("{class_name} : SCN ACTION FOUND NEW GUEST".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step(indexStep,self.NO_TIMEOUT)
+        self._lm_wrapper.timeboard_set_current_step_with_data(indexStep,deepcopy(self.people_face_path_by_id),self.NO_TIMEOUT)
         rospy.sleep(1)
         result={
                 "NextIndex": indexStep+2
@@ -304,6 +305,7 @@ class Receptionist2020CPEScenario(AbstractScenario):
                         result={
                             "NextIndex": indexStep+1
                         }
+                        self.people_face_path_by_id[guest_to_find] = "img/people/"+guest_to_find+".png"
                         break
                         # else:
                         #     rospy.logwarn("{class_name} : I DETECTED %s BUT I ALREADY KNOW THIS PERSON".format(class_name=self.__class__.__name__),str(detection.label_id))

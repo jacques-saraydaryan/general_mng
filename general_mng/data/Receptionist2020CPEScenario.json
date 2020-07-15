@@ -24,8 +24,8 @@
       "timeout": 90.0
     },
     "debug_variables":{
-        "allow_navigation": false,
-        "allow_perception": false ,
+        "allow_navigation": true,
+        "allow_perception": true ,
         "allow_simulation": false
     },
     "path_folder_to_save_imgs": "../../../../../robocup_palbator-hri_js/public"
@@ -109,7 +109,7 @@
       },
       "arguments": {
         "who": "Guest_1",
-        "pathOnTablet":"img/people/Guest_1.png"
+        "guestPhotoPath":"Guest_1_face_path"
       },
       "action": "foundGuest",
       "id": "foundG1"
@@ -517,7 +517,7 @@
       },
       "arguments": {
         "who": "Guest_2",
-        "pathOnTablet":"img/people/Guest_2.png"
+        "guestPhotoPath":"Guest_2_face_path"
       },
       "action": "foundGuest",
       "id": "foundG2"

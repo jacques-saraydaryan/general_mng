@@ -1,6 +1,6 @@
 {
     "ChoosenRoom_1": {
-        "name": "Living Room", 
-        "pathOnTablet": "img/locations/livingRoom.png"
+        "name": "Kitchen", 
+        "pathOnTablet": "img/locations/kitchen.png"
     }
 }
