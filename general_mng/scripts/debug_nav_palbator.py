@@ -19,6 +19,18 @@ class Test():
 
         rospy.sleep(3)
 
+        self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_diningRoom", 90.0)
+
+        rospy.sleep(3)
+
+        self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_kitchen", 90.0)
+
+        rospy.sleep(3)
+        
+        self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_bedroom", 90.0)
+
+        rospy.sleep(3)
+
         for i in range(0,4):
             rotation_angle = math.pi / 2.0
             rospy.logwarn("ROTATION ANGLE : %s",str(rotation_angle))
