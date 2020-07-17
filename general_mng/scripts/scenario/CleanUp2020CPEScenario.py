@@ -234,7 +234,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         "objectAction": self.gm_object_action,
         "foundNoObject": self.gm_found_no_object,
         "showVideo": self.gm_show_video,
-        # "askRoomToClean" : self.gm_ask_room,
+        "askRoom" : self.gm_ask_room
         }
         # Get the function from switcher dictionary
         func = switcher.get(stepAction, lambda: "Invalid action")
@@ -242,16 +242,16 @@ class CleanUp2020CPEScenario(AbstractScenario):
         return func(self.current_index_scenario)
 
 
-    # def gm_ask_room(self,stepIndex):
-    #     """
-    #     Function dealing with the askRoomToClean action. The robot asks to the referee the room to clean.
+    def gm_ask_room(self,stepIndex):
+        """
+        Function dealing with the askRoomToClean action. The robot asks to the referee the room to clean.
 
-    #     :param stepIndex: Step index
-    #     :type stepIndex: int
-    #     """
-    #     rospy.loginfo("{class_name} ACTION FOUND OBJECT")
-    #     time.sleep(2)
-    #     return self._lm_wrapper.timeboard_set_current_step(stepIndex,self.NO_TIMEOUT)[1]
+        :param stepIndex: Step index
+        :type stepIndex: int
+        """
+        rospy.loginfo("{class_name} ACTION ASK ROOM")
+        result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._locations),self.NO_TIMEOUT)[1]
+        return result
 
     def gm_show_video(self,stepIndex):
         """

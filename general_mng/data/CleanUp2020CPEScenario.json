@@ -8,9 +8,9 @@
             "timeout": 90.0
         },
         "debug_variables":{
-            "allow_perception": true,
-            "allow_navigation": true,
-            "allow_highbehaviour": true,
+            "allow_perception": false,
+            "allow_navigation": false,
+            "allow_highbehaviour": false,
             "allow_motion": false,
             "allow_simulation": false
         }
@@ -60,7 +60,8 @@
                 "title": "In which room do I have to go ?"
             },
             "arguments": {
-                "what": "location"
+                "what": "location",
+                "rooms": ""
             },
             "action": "askRoom",
             "id": "chooseLoc1"
