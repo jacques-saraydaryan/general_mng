@@ -11,7 +11,8 @@
             "allow_perception": true,
             "allow_navigation": true,
             "allow_highbehaviour": true,
-            "allow_motion": false
+            "allow_motion": false,
+            "allow_simulation": false
         }
       },
     "imports":{

@@ -108,7 +108,11 @@ class Receptionist2020CPEScenario(AbstractScenario):
             self._lt_simulation.guest_spawner_for_receptionist("G1_entrance")
 
         if self.allow_high_behaviour:
-            self._lt_high_behaviour = LTHighBehaviour()
+            if self.allow_simulation:
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="simulation")
+            else:
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="real")
+
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
         # Scenario data

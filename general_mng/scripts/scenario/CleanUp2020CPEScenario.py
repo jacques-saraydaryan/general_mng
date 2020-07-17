@@ -52,6 +52,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.allow_navigation = debug_variables['allow_navigation']
         self.allow_highbehaviour = debug_variables['allow_highbehaviour']
         self.allow_motion = debug_variables['allow_motion']
+        self.allow_simulation = debug_variables['allow_simulation']
 
         ####################################################
 
@@ -66,7 +67,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
             #####################################################
             
         if self.allow_highbehaviour:
-            self._lt_high_behaviour = LTHighBehaviour()
+            if self.allow_simulation:
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="simulation")
+            else:
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="real")
+
 
         if self.allow_motion:
             self._lt_motion = LTMotionPalbator()
@@ -317,23 +322,28 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
             if len(objects_list) == 0:
                 number_of_rotation = 8
-                detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, number_of_rotation, self._nav_strategy['timeout'])
+                if self.allow_perception and self.allow_navigation:
+                    detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, number_of_rotation, self._nav_strategy['timeout'])
 
-                if not detection_result is None:
-                    rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                    detection_json = json.loads(detection_result)
-                    object_label = detection_json['label']+'_TF'
+                    if not detection_result is None:
+                        rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
+                        detection_json = json.loads(detection_result)
+                        object_label = detection_json['label']+'_TF'
 
-                    rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
-                    self._lt_high_behaviour.point_an_object(object_label)
+                        rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
+                        
+                        if self.allow_motion:
+                            self._lt_high_behaviour.point_an_object(object_label)
 
-                    for item in self._objects:
-                        if item['id'] in object_label:
-                            detection = item['id']
+                        for item in self._objects:
+                            if item['id'] in object_label:
+                                detection = item['id']
 
+                    else:
+                        rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
+                        detection = ''
                 else:
-                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
-                    detection = ''
+                    rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
         
             else:
                 detection_result = self._lt_high_behaviour.get_closest_object(objects_list)
@@ -343,7 +353,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     object_label = detection_json['label']+'_TF'
 
                     rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
-                    self._lt_high_behaviour.point_an_object(object_label)
+                    if self.allow_motion:
+                        self._lt_high_behaviour.point_an_object(object_label)
 
                     for item in self._objects:
                         if item['id'] in object_label:

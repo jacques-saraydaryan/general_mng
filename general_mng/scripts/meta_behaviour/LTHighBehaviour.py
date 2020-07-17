@@ -19,11 +19,12 @@ class LTHighBehaviour(LTAbstract):
 
     _enableHighBehaviour = True
 
-    def __init__(self):
+    def __init__(self,execution_mode):
         """
         Initializes the LTHighBehaviour API for Palbator. It will manage high-level behaviours which combine several low-level APIs 
         (LTPerception + LTMotion to detect object + turn around for instance)
         """
+        self.execution_mode = execution_mode
         self.configure_intern()
 
         #Inform configuration is ready
@@ -43,6 +44,8 @@ class LTHighBehaviour(LTAbstract):
         self._lt_perception = LTPerception()
         self._lt_navigation = LTNavigation()
         self._lt_motion_palbator = LTMotionPalbator()
+
+         
         
 
     def reset(self):
@@ -217,25 +220,28 @@ class LTHighBehaviour(LTAbstract):
             rospy.logerr("{class_name} : I COULD NOT DETECT %s".format(class_name=self.__class__.__name__),people_name)
             return "NO DETECTION"
         else:
-            listener=TransformListener()
-            now = rospy.Time(0)
-            object_point = PointStamped()
-            object_point.header.frame_id = "palbator_arm_kinect_link"
-            object_point.header.stamp = now
-            object_point.point.x = pose.position.x
-            object_point.point.y = pose.position.y
-            object_point.point.z = pose.position.z
-            rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
-            listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
-            target = listener.transformPoint("/base_footprint",object_point)
+            
+            if self.execution_mode == "simulation":
 
-            rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+                listener=TransformListener()
+                now = rospy.Time(0)
+                object_point = PointStamped()
+                object_point.header.frame_id = "palbator_arm_kinect_link"
+                object_point.header.stamp = now
+                object_point.point.x = pose.position.x
+                object_point.point.y = pose.position.y
+                object_point.point.z = pose.position.z
+                rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
+                listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+                target = listener.transformPoint("/base_footprint",object_point)
 
-            alpha = np.arctan(target.point.y/target.point.x)
+                rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
-            rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
-            # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
-            response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
-            return "PEOPLE DETECTED"
+                alpha = np.arctan(target.point.y/target.point.x)
+
+                rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
+                # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
+                response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
+                return "PEOPLE DETECTED"
 
 
