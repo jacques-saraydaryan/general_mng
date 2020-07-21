@@ -3,19 +3,19 @@
         "id": "bleach",
         "pathOnTablet": "img/objects/bleach.png",
         "name": "Bleach",
-        "storage": "Kitchen"
+        "storage": "Bedroom"
     },
     {
         "id": "chips",
         "pathOnTablet": "img/objects/chips.png",
         "name": "Chips",
-        "storage": "Double Bedroom"
+        "storage": "Bedroom"
     },
     {
         "id": "coffee",
         "pathOnTablet": "img/objects/coffee.png",
         "name": "Coffee",
-        "storage": "Single Bedroom"
+        "storage": "Bedroom"
     },
     {
         "id": "cracker",
@@ -33,7 +33,7 @@
         "id": "mustard",
         "pathOnTablet": "img/objects/mustard.png",
         "name": "Mustard",
-        "storage": "Single Bedroom"
+        "storage": "Bedroom"
     },
     {
         "id": "pitcher",
@@ -51,7 +51,7 @@
         "id": "pudding",
         "pathOnTablet": "img/objects/pudding.png",
         "name": "Pudding",
-        "storage": "Double Bedroom"
+        "storage": "Bedroom"
     },
     {
         "id": "sugar",
@@ -63,7 +63,7 @@
         "id": "tomatosoup",
         "pathOnTablet": "img/objects/tomatosoup.png",
         "name": "Tomato Soup",
-        "storage": "Kitchen"
+        "storage": "Bedroom"
     },
     {
         "id": "tuna",
@@ -75,7 +75,7 @@
         "id": "windex",
         "pathOnTablet": "img/objects/windex.png",
         "name": "Windex",
-        "storage": "Kitchen"
+        "storage": "Bedroom"
     },
     {
         "id": "unknown",

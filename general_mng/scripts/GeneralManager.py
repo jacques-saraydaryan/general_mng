@@ -55,33 +55,33 @@ class GeneralManager:
                 self.scenarios_data_folder, scenario_name, class_name=self.__class__.__name__))
             return None
 
+        #try:
+        with open(scenario_path) as json_scenario:
+            scenario_data = yaml.safe_load(json_scenario)
+
+        if "imports" in scenario_data:
+            for key, rel_path in scenario_data["imports"].items():
+                with open(path.join(self.scenarios_data_folder, rel_path)) as imported_json_file:
+                    scenario_data["imports"][key] = yaml.safe_load(imported_json_file)
+
         try:
-            with open(scenario_path) as json_scenario:
-                scenario_data = yaml.safe_load(json_scenario)
-
-            if "imports" in scenario_data:
-                for key, rel_path in scenario_data["imports"].items():
-                    with open(path.join(self.scenarios_data_folder, rel_path)) as imported_json_file:
-                        scenario_data["imports"][key] = yaml.safe_load(imported_json_file)
-
+            scenario_module = importlib.import_module("scenario." + scenario_name)
             try:
-                scenario_module = importlib.import_module("scenario." + scenario_name)
+                scenario_class = getattr(scenario_module, scenario_name)
                 try:
-                    scenario_class = getattr(scenario_module, scenario_name)
-                    try:
-                        return scenario_class(scenario_data, self.scenarios_data_folder)
-                    except Exception as e:
-                        rospy.logerr("{class_name} : Scenario data and class were loaded properly but scenario object could not be created.".format(class_name=self.__class__))
-                        rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
-                except AttributeError as e:
-                    rospy.logerr("{class_name} : Could not find a class in scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
+                    return scenario_class(scenario_data, self.scenarios_data_folder)
+                except Exception as e:
+                    rospy.logerr("{class_name} : Scenario data and class were loaded properly but scenario object could not be created.".format(class_name=self.__class__))
                     rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
-            except ImportError as e:
-                rospy.logerr("{class_name} : Could not find a scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
+            except AttributeError as e:
+                rospy.logerr("{class_name} : Could not find a class in scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
                 rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
-        except yaml.YAMLError as e:
-            rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + "File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.")
+        except ImportError as e:
+            rospy.logerr("{class_name} : Could not find a scenario python module with name ".format(class_name=self.__class__.__name__) + scenario_name)
             rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
+        #except yaml.YAMLError as e:
+        #    rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + "File {0} is not properly formatted JSON or YAML. Please fix it or remove it from the folder.")
+        #    rospy.logerr("{class_name} : ".format(class_name=self.__class__.__name__) + e.__class__.__name__ + ": " + e.message)
 
     def execute_current_scenario(self):
         """

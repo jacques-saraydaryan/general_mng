@@ -78,7 +78,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
-        self._videos = self._scenario['imports']['videos']
+        # self._videos = self._scenario['imports']['videos']
 
 
         self.labels_list_darknet = []
@@ -403,7 +403,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         else:
             result = {
-                "NextIndex": stepIndex+5
+                "NextIndex": stepIndex+9
             }
             return result
 
