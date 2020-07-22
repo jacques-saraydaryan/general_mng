@@ -14,6 +14,7 @@ import numpy as np
 from geometry_msgs.msg import PointStamped
 import math
 from tf import TransformListener
+from map_manager.srv import getitP_service
 
 class LTHighBehaviour(LTAbstract):
 
@@ -45,8 +46,14 @@ class LTHighBehaviour(LTAbstract):
         self._lt_navigation = LTNavigation()
         self._lt_motion_palbator = LTMotionPalbator()
 
-         
-        
+        # service_name = "get_InterestPoint"
+        # self.get_coord_itp_proxy = rospy.ServiceProxy(service_name,getitP_service)
+        # try:
+        #     rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+        #     rospy.loginfo("{class_name}: get iTP server connected".format(class_name=self.__class__.__name__))
+        # except (ROSException, ROSInterruptException) as e:
+        #     rospy.logwarn("{class_name}: Unable to connect to the iTP service.".format(class_name=self.__class__.__name__))
+
 
     def reset(self):
         """
@@ -91,6 +98,11 @@ class LTHighBehaviour(LTAbstract):
             rospy.logwarn("{class_name}: ###### TURN AROUND AND DETECT OBJECT FAILURE , State: %s".format(class_name=self.__class__.__name__), str(e))
             return None
 
+    # def travel_to_object(self,object_label):
+
+    #     interest_point = self.get_coord_itp_proxy(object_label)
+
+
     
     def get_closest_object(self,objects_list):
         """
@@ -108,7 +120,6 @@ class LTHighBehaviour(LTAbstract):
 
 
             minimum_distance = 0
-            list_distance_objects = []
             choosen_item = None
             for item in objects_list:
                 data_item = json.loads(item)

@@ -9,7 +9,7 @@
         },
         "debug_variables":{
             "allow_perception": true,
-            "allow_navigation": false,
+            "allow_navigation": true,
             "allow_highbehaviour": true,
             "allow_motion": false,
             "allow_simulation": false
@@ -151,8 +151,8 @@
             "order": 10,
             "eta": 0,
             "speech": {
-                "said": "I am catching the Object_1_name",
-                "title": "I am catching the Object_1_name"
+                "said": "I will catch the Object_1_name",
+                "title": "I will catch the Object_1_name"
             },
             "arguments": {
                 "what": "Object_1",
@@ -360,8 +360,8 @@
             "order": 22,
             "eta": 0,
             "speech": {
-                "said": "I am catching the Object_2_name",
-                "title": "I am catching the Object_2_name"
+                "said": "I will catch the Object_2_name",
+                "title": "I will catch the Object_2_name"
             },
             "arguments": {
                 "what": "Object_2",
@@ -566,8 +566,8 @@
             "order": 34,
             "eta": 0,
             "speech": {
-                "said": "I am catching the Object_3_name",
-                "title": "I am catching the Object_3_name"
+                "said": "I will catch the Object_3_name",
+                "title": "I will catch the Object_3_name"
             },
             "arguments": {
                 "what": "Object_3",
@@ -605,7 +605,7 @@
             "eta": 0,
             "speech": {
                 "said": "Can you confirm that you gave me the Object_3_name ?",
-                "title": "Can you confirm that you stored the Object_3_name ?"
+                "title": "Can you confirm that you gave me the Object_3_name ?"
             },
             "arguments": {
                 "what": "Object_3",

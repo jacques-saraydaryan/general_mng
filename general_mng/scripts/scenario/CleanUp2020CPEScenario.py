@@ -357,7 +357,9 @@ class CleanUp2020CPEScenario(AbstractScenario):
             self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=self.detected_object)
         rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
-        time.sleep(3)
+        time.sleep(1)
+        if "Catch" in self.current_step['name']:
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], self.detected_object, self._nav_strategy['timeout'])
         # result = {
         #     "NextIndex": stepIndex+1
         # }
