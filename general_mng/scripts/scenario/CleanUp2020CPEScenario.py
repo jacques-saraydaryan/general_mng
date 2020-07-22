@@ -89,6 +89,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
         self._path_objects_folder = self._scenario['variables']['path_to_objects']
         self.reset_infos_JSON()
+        self.reset_known_objects()
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
 
@@ -290,7 +291,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         "openDoor": self.gm_open_door,
         "objectAction": self.gm_object_action,
         "foundNoObject": self.gm_found_no_object,
-        "showVideo": self.gm_show_video,
+        # "showVideo": self.gm_show_video,
         "askRoom" : self.gm_ask_room
         }
         # Get the function from switcher dictionary
@@ -366,6 +367,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
+        detection = ''
         if self.allow_perception:
 
             response = self._lt_perception.get_object_in_room(self.choosenRoom)
