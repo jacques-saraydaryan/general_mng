@@ -21,7 +21,7 @@
     },
     "variables":{
         "scenarioInfos": "cleanup/scenarioInfos.json",
-        "path_to_objects": "../../../../../data/world_mng"
+        "path_to_objects": "../../../../../../data/world_mng"
     },
     "steps": [
         {

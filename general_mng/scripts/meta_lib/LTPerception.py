@@ -21,7 +21,7 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 
-from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom
+from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom, ResetObjects
 from tf import TransformListener
 import math
 
@@ -56,6 +56,7 @@ class LTPerception(LTAbstract):
     _enableCheckForObjectsInRoom = True
     _enableTakePicturePalbator = True
     _enableCheckForPeopleInRoom = True
+    _enableResetObjects = True
 
 
 
@@ -77,6 +78,15 @@ class LTPerception(LTAbstract):
         Loads the configuration needed to use correctly every perception function.
         """
         rospy.loginfo("{class_name}: Loading configuration for LTPerception ... ".format(class_name=self.__class__.__name__))
+
+        if self._enableResetObjects:
+            service_name = "reset_object_files"
+            self.reset_objects_proxy = rospy.ServiceProxy(service_name, ResetObjects)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: reset objects server connected".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the reset objects service.".format(class_name=self.__class__.__name__))
 
         if self._enableTakePicturePalbator:
             service_name = "take_picture_service"
@@ -218,6 +228,34 @@ class LTPerception(LTAbstract):
     #             response.payload = result
     #             return response
     #     return response
+
+    def reset_objects_in_map_manager(self,all_objects, object_label, service_mode=LTAbstract.SERVICE):
+        response = LTServiceResponse()
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__reset_objects_in_map_manager,
+        }
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for reset_objects_in_map_manager" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(all_objects,object_label)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during reset_objects_in_map_manager "
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success reset_objects_in_map_manager "
+                response.payload = result
+                return response
+        return response
 
     def get_people_in_room(self,room,service_mode=LTAbstract.SERVICE):
         """
@@ -959,6 +997,17 @@ class LTPerception(LTAbstract):
     #######################################
     # PERCEPTION ACTION
     ######################################
+
+    def __reset_objects_in_map_manager(self,all_objects, object_label):
+        try:
+            self.reset_objects_proxy(all_objects,object_label)
+            return GoalStatus.SUCCEEDED, None
+        except rospy.ServiceException as e:
+            rospy.logerr("{class_name}: Service reset_object_in_map_manager could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("{class_name}: Service reset_object_in_map_manager could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
     
     def __get_people_in_room(self,room):
         """

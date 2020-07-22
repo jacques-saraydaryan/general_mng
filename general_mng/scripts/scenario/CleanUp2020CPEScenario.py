@@ -91,7 +91,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
         self._path_objects_folder = self._scenario['variables']['path_to_objects']
         self.reset_infos_JSON()
-        self.reset_known_objects()
+        self._lt_perception.reset_objects_in_map_manager(all_objects=True,object_label='')
+        # self.reset_known_objects()
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
 
@@ -99,63 +100,63 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.detected_object = None
         self.configuration_ready = True
 
-    def reset_known_objects(self):
+    # def reset_known_objects(self):
 
-        rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
-        initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
-        temp_folder = os.path.join(initial_folder,"temp")
-        for filename in os.listdir(temp_folder):
-            file_path = os.path.join(temp_folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
+    #     rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
+    #     initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
+    #     temp_folder = os.path.join(initial_folder,"temp")
+    #     for filename in os.listdir(temp_folder):
+    #         file_path = os.path.join(temp_folder, filename)
+    #         try:
+    #             if os.path.isfile(file_path) or os.path.islink(file_path):
+    #                 os.unlink(file_path)
+    #             elif os.path.isdir(file_path):
+    #                 shutil.rmtree(file_path)
+    #         except Exception as e:
+    #             rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
         
-        rospy.loginfo("{class_name} : RESETTING OBJECT FILES".format(class_name=self.__class__.__name__))
-        itp_folder = os.path.join(initial_folder,"interest_points")
+    #     rospy.loginfo("{class_name} : RESETTING OBJECT FILES".format(class_name=self.__class__.__name__))
+    #     itp_folder = os.path.join(initial_folder,"interest_points")
 
-        for filename in os.listdir(itp_folder):
-            if "object_" in filename:
-                file_path = os.path.join(itp_folder,filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
+    #     for filename in os.listdir(itp_folder):
+    #         if "object_" in filename:
+    #             file_path = os.path.join(itp_folder,filename)
+    #             try:
+    #                 if os.path.isfile(file_path) or os.path.islink(file_path):
+    #                     os.unlink(file_path)
+    #                 elif os.path.isdir(file_path):
+    #                     shutil.rmtree(file_path)
+    #             except Exception as e:
+    #                 rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
-    def remove_choosen_object(self,object_label):
-        rospy.loginfo("{class_name} : RESETTING OBJECT %s".format(class_name=self.__class__.__name__),object_label)
-        initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
-        itp_folder = os.path.join(initial_folder,"interest_points")
+    # def remove_choosen_object(self,object_label):
+    #     rospy.loginfo("{class_name} : RESETTING OBJECT %s".format(class_name=self.__class__.__name__),object_label)
+    #     initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
+    #     itp_folder = os.path.join(initial_folder,"interest_points")
 
-        for filename in os.listdir(itp_folder):
-            if object_label in filename:
-                file_path = os.path.join(itp_folder,filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
+    #     for filename in os.listdir(itp_folder):
+    #         if object_label in filename:
+    #             file_path = os.path.join(itp_folder,filename)
+    #             try:
+    #                 if os.path.isfile(file_path) or os.path.islink(file_path):
+    #                     os.unlink(file_path)
+    #                 elif os.path.isdir(file_path):
+    #                     shutil.rmtree(file_path)
+    #             except Exception as e:
+    #                 rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
-        temp_folder = os.path.join(initial_folder,"temp")
-        for filename in os.listdir(temp_folder):
-            if object_label in filename:
-                file_path = os.path.join(temp_folder,filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
+    #     temp_folder = os.path.join(initial_folder,"temp")
+    #     for filename in os.listdir(temp_folder):
+    #         if object_label in filename:
+    #             file_path = os.path.join(temp_folder,filename)
+    #             try:
+    #                 if os.path.isfile(file_path) or os.path.islink(file_path):
+    #                     os.unlink(file_path)
+    #                 elif os.path.isdir(file_path):
+    #                     shutil.rmtree(file_path)
+    #             except Exception as e:
+    #                 rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
 
     def start_scenario(self):   
@@ -423,7 +424,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
                         if item['id'] in object_label:
                             detection = item['id']
                 
-                    self.remove_choosen_object(detection_json['label'])
+                    self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=detection_json['label'])
+                    # self.remove_choosen_object(detection_json['label'])
 
                 else:
                     rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
