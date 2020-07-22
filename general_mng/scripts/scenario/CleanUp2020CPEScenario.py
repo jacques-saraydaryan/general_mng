@@ -100,6 +100,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.detected_object = None
         self.configuration_ready = True
 
+
     # def reset_known_objects(self):
 
     #     rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
@@ -352,6 +353,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
+        if "Storing" in self.current_step['name']:
+            self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=self.detected_object)
         rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
         time.sleep(3)
@@ -387,6 +390,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
             if len(objects_list) == 0:
                 number_of_rotation = 8
                 if self.allow_perception and self.allow_navigation:
+                    rospy.sleep(2)
                     detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, number_of_rotation, self._nav_strategy['timeout'])
 
                     if not detection_result is None:
@@ -402,6 +406,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
                         for item in self._objects:
                             if item['id'] in object_label:
                                 detection = item['id']
+                        self.detected_object = detection_json['label']
 
                     else:
                         rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
@@ -423,8 +428,10 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     for item in self._objects:
                         if item['id'] in object_label:
                             detection = item['id']
+
+                    self.detected_object = detection_json['label']
                 
-                    self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=detection_json['label'])
+                    # self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=detection_json['label'])
                     # self.remove_choosen_object(detection_json['label'])
 
                 else:
@@ -543,7 +550,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(class_name=self.__class__.__name__))
+        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(self.detected_object = detection_json['label']class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
         time.sleep(3)
         result = {

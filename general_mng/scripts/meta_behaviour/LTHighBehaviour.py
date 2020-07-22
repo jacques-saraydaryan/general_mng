@@ -75,7 +75,7 @@ class LTHighBehaviour(LTAbstract):
                 rotation_angle = (2*math.pi)/float(number_of_rotation)
                 rospy.loginfo("{class_name}: ROTATION %s of %s radians".format(class_name=self.__class__.__name__),str(i),str(rotation_angle))
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
-                rospy.sleep(2)
+                rospy.sleep(4)
 
             response = self._lt_perception.get_object_in_room(room_to_inspect)
             objects_list = response.payload
