@@ -36,6 +36,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
         """
         self._scenario_path_folder = scenario_path_folder
 
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
+
         self._scenario=config
         _name_action_server_HRI = self._scenario['parameters']['LTHri_action_server_name']
         self._nav_strategy = self._scenario['parameters']['nav_strategy_parameters']
@@ -100,7 +102,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
     def reset_known_objects(self):
 
         rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
-        temp_folder = os.path.join(self._scenario_path_folder,"temp")
+        initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
+        temp_folder = os.path.join(initial_folder,"temp")
         for filename in os.listdir(temp_folder):
             file_path = os.path.join(temp_folder, filename)
             try:
@@ -109,11 +112,11 @@ class CleanUp2020CPEScenario(AbstractScenario):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+                rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
         
         rospy.loginfo("{class_name} : RESETTING OBJECT FILES".format(class_name=self.__class__.__name__))
-        itp_folder = os.path.join(self._scenario_path_folder,"interest_points")
+        itp_folder = os.path.join(initial_folder,"interest_points")
 
         for filename in os.listdir(itp_folder):
             if "object_" in filename:
@@ -124,11 +127,12 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
     def remove_choosen_object(self,object_label):
         rospy.loginfo("{class_name} : RESETTING OBJECT %s".format(class_name=self.__class__.__name__),object_label)
-        itp_folder = os.path.join(self._scenario_path_folder,"interest_points")
+        initial_folder = os.path.join(self.current_dir,self._path_objects_folder)
+        itp_folder = os.path.join(initial_folder,"interest_points")
 
         for filename in os.listdir(itp_folder):
             if object_label in filename:
@@ -139,9 +143,9 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
-        temp_folder = os.path.join(self._scenario_path_folder,"temp")
+        temp_folder = os.path.join(initial_folder,"temp")
         for filename in os.listdir(temp_folder):
             if object_label in filename:
                 file_path = os.path.join(temp_folder,filename)
@@ -151,7 +155,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+                    rospy.logerr('Failed to delete %s. Reason: %s',file_path, e)
 
 
     def start_scenario(self):   
