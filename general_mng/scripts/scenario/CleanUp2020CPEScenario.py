@@ -18,7 +18,7 @@ import math
 from copy import deepcopy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
-import os
+import os, shutil
 
 
 
@@ -87,6 +87,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         
 
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
+        self._path_objects_folder = self._scenario['variables']['path_to_objects']
         self.reset_infos_JSON()
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
@@ -94,6 +95,62 @@ class CleanUp2020CPEScenario(AbstractScenario):
         self.Room_to_clean = None
         self.detected_object = None
         self.configuration_ready = True
+
+    def reset_known_objects(self):
+
+        rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
+        temp_folder = os.path.join(self._scenario_path_folder,"temp")
+        for filename in os.listdir(temp_folder):
+            file_path = os.path.join(temp_folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+        
+        rospy.loginfo("{class_name} : RESETTING OBJECT FILES".format(class_name=self.__class__.__name__))
+        itp_folder = os.path.join(self._scenario_path_folder,"interest_points")
+
+        for filename in os.listdir(itp_folder):
+            if "object_" in filename:
+                file_path = os.path.join(itp_folder,filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def remove_choosen_object(self,object_label):
+        rospy.loginfo("{class_name} : RESETTING OBJECT %s".format(class_name=self.__class__.__name__),object_label)
+        itp_folder = os.path.join(self._scenario_path_folder,"interest_points")
+
+        for filename in os.listdir(itp_folder):
+            if object_label in filename:
+                file_path = os.path.join(itp_folder,filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+        temp_folder = os.path.join(self._scenario_path_folder,"temp")
+        for filename in os.listdir(temp_folder):
+            if object_label in filename:
+                file_path = os.path.join(temp_folder,filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
     def start_scenario(self):   
@@ -253,19 +310,19 @@ class CleanUp2020CPEScenario(AbstractScenario):
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._locations),self.NO_TIMEOUT)[1]
         return result
 
-    def gm_show_video(self,stepIndex):
-        """
-        Function dealing with the showVideo action. A video will be displayed on tablet.
-        :param stepIndex: Step index
-        :type stepIndex: int
-        """
-        rospy.loginfo("{class_name} ACTION SHOW VIDEO".format(class_name=self.__class__.__name__))
-        self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._videos),self.NO_TIMEOUT)
-        time.sleep(10)
-        result = {
-            "NextIndex": stepIndex+1
-        }
-        return result
+    # def gm_show_video(self,stepIndex):
+    #     """
+    #     Function dealing with the showVideo action. A video will be displayed on tablet.
+    #     :param stepIndex: Step index
+    #     :type stepIndex: int
+    #     """
+    #     rospy.loginfo("{class_name} ACTION SHOW VIDEO".format(class_name=self.__class__.__name__))
+    #     self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._videos),self.NO_TIMEOUT)
+    #     time.sleep(10)
+    #     result = {
+    #         "NextIndex": stepIndex+1
+    #     }
+    #     return result
     
     def gm_found_no_object(self,stepIndex):
         """
@@ -359,6 +416,8 @@ class CleanUp2020CPEScenario(AbstractScenario):
                     for item in self._objects:
                         if item['id'] in object_label:
                             detection = item['id']
+                
+                    self.remove_choosen_object(detection_json['label'])
 
                 else:
                     rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
