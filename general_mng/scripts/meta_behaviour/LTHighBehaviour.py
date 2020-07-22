@@ -210,9 +210,9 @@ class LTHighBehaviour(LTAbstract):
                     break
         
         cp = 0
-        while self.people_detected == False and cp<4:
+        while self.people_detected == False and cp<8:
             cp = cp + 1
-            rotation_angle = math.pi/2.0
+            rotation_angle = math.pi/4.0
             response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , 90.0)
             response = self._lt_perception.detect_meta_people_from_img_topic(timeout=10)
             result = response.payload
@@ -244,6 +244,29 @@ class LTHighBehaviour(LTAbstract):
                 object_point.point.z = pose.position.z
                 rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
                 listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+                target = listener.transformPoint("/base_footprint",object_point)
+
+                rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+
+                alpha = np.arctan(target.point.y/target.point.x)
+
+                rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
+                # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
+                response_nav = self._lt_navigation.send_nav_rotation_order("NT", alpha , 90.0) 
+                return "PEOPLE DETECTED"
+
+            else:
+
+                listener=TransformListener()
+                now = rospy.Time(0)
+                object_point = PointStamped()
+                object_point.header.frame_id = "kinect_rgb_optical_frame"
+                object_point.header.stamp = now
+                object_point.point.x = pose.position.x
+                object_point.point.y = pose.position.y
+                object_point.point.z = pose.position.z
+                rospy.loginfo("{class_name} : Object coords in kinect_rgb_optical_frame : %s".format(class_name=self.__class__.__name__),str(object_point))
+                listener.waitForTransform("/base_footprint", "/kinect_rgb_optical_frame", now, rospy.Duration(20))
                 target = listener.transformPoint("/base_footprint",object_point)
 
                 rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
