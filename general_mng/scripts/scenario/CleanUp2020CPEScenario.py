@@ -550,7 +550,7 @@ class CleanUp2020CPEScenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(self.detected_object = detection_json['label']class_name=self.__class__.__name__))
+        rospy.loginfo("{class_name} ACTION RELEASE OBJECT".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._objects),self.NO_TIMEOUT)
         time.sleep(3)
         result = {
