@@ -284,7 +284,14 @@ class LTHighBehaviour(LTAbstract):
 
                 rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
-                alpha = np.arctan(target.point.y/target.point.x)
+                if target.point.x > 0:
+                    alpha = np.arctan(target.point.y/target.point.x)
+                else:
+                    if target.point.y > 0:
+                        alpha = math.pi + np.arctan(target.point.y/target.point.x) 
+                    else:
+                        alpha = -math.pi + np.arctan(target.point.y/target.point.x) 
+
 
                 rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
                 # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
