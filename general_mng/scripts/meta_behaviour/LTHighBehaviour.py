@@ -279,18 +279,19 @@ class LTHighBehaviour(LTAbstract):
                 object_point.point.y = pose.position.y
                 object_point.point.z = pose.position.z
                 rospy.loginfo("{class_name} : Object coords in palbator_arm_kinect_link : %s".format(class_name=self.__class__.__name__),str(object_point))
-                listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
-                target = listener.transformPoint("/base_footprint",object_point)
+                # listener.waitForTransform("/base_footprint", "/palbator_arm_kinect_link", now, rospy.Duration(20))
+                # target = listener.transformPoint("/base_footprint",object_point)
 
-                rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+                # rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
-                if target.point.x > 0:
-                    alpha = np.arctan(target.point.y/target.point.x)
+
+                if object_point.point.x > 0:
+                    alpha = np.arctan(object_point.point.y/object_point.point.x)
                 else:
-                    if target.point.y > 0:
-                        alpha = math.pi + np.arctan(target.point.y/target.point.x) 
+                    if object_point.point.y > 0:
+                        alpha = math.pi + np.arctan(object_point.point.y/object_point.point.x) 
                     else:
-                        alpha = -math.pi + np.arctan(target.point.y/target.point.x) 
+                        alpha = -math.pi + np.arctan(object_point.point.y/object_point.point.x) 
 
 
                 rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
@@ -309,17 +310,17 @@ class LTHighBehaviour(LTAbstract):
                 object_point.point.y = pose.position.y
                 object_point.point.z = pose.position.z
                 rospy.loginfo("{class_name} : Object coords in kinect2_rgb_optical_frame : %s".format(class_name=self.__class__.__name__),str(object_point))
-                listener.waitForTransform("/base_footprint", "/kinect2_rgb_optical_frame", now, rospy.Duration(20))
-                target = listener.transformPoint("/base_footprint",object_point)
-                rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
+                # listener.waitForTransform("/base_footprint", "/kinect2_rgb_optical_frame", now, rospy.Duration(20))
+                # target = listener.transformPoint("/base_footprint",object_point)
+                # rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
-                if target.point.x > 0:
-                    alpha = np.arctan(target.point.y/target.point.x)
+                if object_point.point.x > 0:
+                    alpha = np.arctan(object_point.point.y/object_point.point.x)
                 else:
-                    if target.point.y > 0:
-                        alpha = math.pi + np.arctan(target.point.y/target.point.x) 
+                    if object_point.point.y > 0:
+                        alpha = math.pi + np.arctan(object_point.point.y/object_point.point.x) 
                     else:
-                        alpha = -math.pi + np.arctan(target.point.y/target.point.x)
+                        alpha = -math.pi + np.arctan(object_point.point.y/object_point.point.x)
 
                 rospy.logerr("{class_name} : ALPHA ROTATION NEEDED: %s".format(class_name=self.__class__.__name__),str(alpha))
                 # rospy.logerr("ALPHA DEGRES : %s",str((alpha*360)/(2*math.pi)))
