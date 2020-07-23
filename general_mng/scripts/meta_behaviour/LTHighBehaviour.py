@@ -296,13 +296,13 @@ class LTHighBehaviour(LTAbstract):
                 listener=TransformListener()
                 now = rospy.Time(0)
                 object_point = PointStamped()
-                object_point.header.frame_id = "kinect_rgb_optical_frame"
+                object_point.header.frame_id = "kinect2_rgb_optical_frame"
                 object_point.header.stamp = now
                 object_point.point.x = pose.position.x
                 object_point.point.y = pose.position.y
                 object_point.point.z = pose.position.z
-                rospy.loginfo("{class_name} : Object coords in kinect_rgb_optical_frame : %s".format(class_name=self.__class__.__name__),str(object_point))
-                listener.waitForTransform("/base_footprint", "/kinect_rgb_optical_frame", now, rospy.Duration(20))
+                rospy.loginfo("{class_name} : Object coords in kinect2_rgb_optical_frame : %s".format(class_name=self.__class__.__name__),str(object_point))
+                listener.waitForTransform("/base_footprint", "/kinect2_rgb_optical_frame", now, rospy.Duration(20))
                 target = listener.transformPoint("/base_footprint",object_point)
                 rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
