@@ -15,16 +15,20 @@ from geometry_msgs.msg import PointStamped
 import math
 from tf import TransformListener
 from map_manager.srv import getitP_service
+from socketIO_client import SocketIO, LoggingNamespace
+
 
 class LTHighBehaviour(LTAbstract):
 
     _enableHighBehaviour = True
 
-    def __init__(self,execution_mode):
+    def __init__(self,execution_mode,socket=None):
         """
         Initializes the LTHighBehaviour API for Palbator. It will manage high-level behaviours which combine several low-level APIs 
         (LTPerception + LTMotion to detect object + turn around for instance)
         """
+        if socket:
+            self.socketIO = socket
         self.execution_mode = execution_mode
         self.configure_intern()
 
@@ -202,6 +206,22 @@ class LTHighBehaviour(LTAbstract):
         if result != None and result != {}:
             detection = result.peopleMetaList.peopleList
             rospy.logwarn("{class_name} : DETECTED PEOPLE LIST  : %s".format(class_name=self.__class__.__name__),str(detection))
+            
+            #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
+            if self.socketIO:
+                json_data = {
+                    "people_list": []
+                }
+                if detection:
+                    for people in detection:
+                        json_data['people_list'].append({
+                            "name": people.label_id,
+                            "score": people.label_score
+                        })
+
+                self.socketIO.emit("sendPeopleListDebug",json_data,broadcast=True)
+            ###########
+
             for people in detection:
                 if people.label_id == people_name:
                     self.people_detected = True
@@ -220,6 +240,22 @@ class LTHighBehaviour(LTAbstract):
             if result != None and result != {}:
                 detection = result.peopleMetaList.peopleList
                 rospy.logwarn("{class_name} : DETECTED PEOPLE LIST : %s".format(class_name=self.__class__.__name__),str(detection))
+                
+                #### FOR DEBUG : GET LABEL AND SCORE TO PRINT IT ON TABLET####
+                if self.socketIO:
+                    json_data = {
+                        "people_list": []
+                    }
+                    if detection:
+                        for people in detection:
+                            json_data['people_list'].append({
+                                "name": people.label_id,
+                                "score": people.label_score
+                            })
+
+                    self.socketIO.emit("sendPeopleListDebug",json_data,broadcast=True)
+                ###########
+                
                 for people in detection:
                     if people.label_id == people_name:
                         self.people_detected = True
@@ -268,7 +304,6 @@ class LTHighBehaviour(LTAbstract):
                 rospy.loginfo("{class_name} : Object coords in kinect_rgb_optical_frame : %s".format(class_name=self.__class__.__name__),str(object_point))
                 listener.waitForTransform("/base_footprint", "/kinect_rgb_optical_frame", now, rospy.Duration(20))
                 target = listener.transformPoint("/base_footprint",object_point)
-
                 rospy.loginfo("{class_name} : Object coords in base_footprint : %s".format(class_name=self.__class__.__name__),str(target))
 
                 alpha = np.arctan(target.point.y/target.point.x)

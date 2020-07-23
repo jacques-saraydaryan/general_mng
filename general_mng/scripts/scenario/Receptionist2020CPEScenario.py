@@ -109,9 +109,9 @@ class Receptionist2020CPEScenario(AbstractScenario):
 
         if self.allow_high_behaviour:
             if self.allow_simulation:
-                self._lt_high_behaviour = LTHighBehaviour(execution_mode="simulation")
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="simulation",socket=self.socketIO)
             else:
-                self._lt_high_behaviour = LTHighBehaviour(execution_mode="real")
+                self._lt_high_behaviour = LTHighBehaviour(execution_mode="real",socket=self.socketIO)
 
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))

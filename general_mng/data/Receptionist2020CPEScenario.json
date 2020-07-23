@@ -90,11 +90,12 @@
       "order": 5,
       "eta": 0,
       "speech": {
-        "said": "I am looking for a new guest",
-        "title": "I am looking for a new guest"
+        "said": "I am looking for a new guest. Please look at my camera on my head.",
+        "title": "I am looking for a new guest. Please look at my camera on my head."
       },
       "arguments": {
-        "who": "Guest_1"
+        "who": "Guest_1",
+        "time": 3
       },
       "action": "lookForGuest",
       "id": "findg1_look"
@@ -498,11 +499,12 @@
       "order": 32,
       "eta": 0,
       "speech": {
-        "said": "I am looking for a new guest",
-        "title": "I am looking for a new guest"
+        "said": "I am looking for a new guest. Please look at my camera on my head.",
+        "title": "I am looking for a new guest. Please look at my camera on my head."
       },
       "arguments": {
-        "who": "Guest_2"
+        "who": "Guest_2",
+        "time": 3
       },
       "action": "lookForGuest",
       "id": "findg2_look"
