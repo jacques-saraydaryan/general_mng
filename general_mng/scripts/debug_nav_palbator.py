@@ -23,9 +23,9 @@ class Test():
 
         # rospy.sleep(3)
 
-        # self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_kitchen", 90.0)
+        self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_kitchen", 90.0)
 
-        # rospy.sleep(3)
+        rospy.sleep(3)
         
         self._lt_navigation.send_nav_order("NP", "CRRCloseToGoal", "place_bedroom", 90.0)
 
