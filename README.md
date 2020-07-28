@@ -91,7 +91,7 @@ Create a json configuration file if needed into the config_folder directory, e.g
     "it_list": ["A_sim","B_sim","C_sim","F_sim"]
 }
 ```
-
+Further information about [how the steps should be built in the json file](https://github.com/jacques-saraydaryan/general_mng/blob/dev_palbator/doc/Documentation%20configuration%20vues%20tablettes.pdf). Examples of functional json files can be found [here](https://github.com/jacques-saraydaryan/general_mng/tree/dev_palbator/general_mng/data). 
 
 Update the GeneralManager.py file
 ```python
