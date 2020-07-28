@@ -28,7 +28,7 @@
         "allow_perception": true ,
         "allow_simulation": false
     },
-    "path_folder_to_save_imgs": "../../../../../robocup_palbator-hri_js/public"
+    "path_folder_to_save_imgs": "../../../../robocup_palbator-hri_js/public"
   },
   "steps": [
     {
