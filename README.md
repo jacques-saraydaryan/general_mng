@@ -12,11 +12,15 @@ Currently the Action call is mainly developed. <br/>
 The scenario to execute is specified in the configuration file.<br/>
 The scenario start if a 'START' is received on the /gm_start topic. Note that the pepper_door_open_detection node (navigation_manager package) could start the scenario if a min distance of k is detected in front of the robot.
 
-
 ![Sample Face Recognition](img/archi.gif "General Architecture in the robocup context") 
 
 
 A complete video demonstration is available [here](https://youtu.be/rouCK6CH_eM)
+
+
+Overview of General Manager Behavior,
+
+<img src="img/gm-metalib.svg" alt="Overview of General Manager Behavior" width="800px" >
 
 ## 2. Authors
 * Jacques Saraydaryan
