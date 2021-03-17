@@ -1,30 +1,10 @@
 {
-    "Object_2_storage": {
-        "name": "Bedroom", 
-        "pathOnTablet": "img/locations/bedroom.png"
-    }, 
-    "Object_1_storage": {
-        "name": "Bedroom", 
-        "pathOnTablet": "img/locations/bedroom.png"
-    }, 
-    "Object_1": {
-        "name": "Coffee", 
-        "pathOnTablet": "img/objects/coffee.png"
-    }, 
-    "Object_2": {
-        "name": "Coffee", 
-        "pathOnTablet": "img/objects/coffee.png"
-    }, 
-    "ChoosenRoom_1": {
+    "ChoosenRoom_2": {
         "name": "Kitchen", 
         "pathOnTablet": "img/locations/kitchen.png"
     }, 
-    "Object_3_storage": {
-        "name": "Bedroom", 
-        "pathOnTablet": "img/locations/bedroom.png"
-    }, 
-    "Object_3": {
-        "name": "Coffee", 
-        "pathOnTablet": "img/objects/coffee.png"
+    "ChoosenRoom_1": {
+        "name": "Dining Room", 
+        "pathOnTablet": "img/locations/dining_room.png"
     }
 }
