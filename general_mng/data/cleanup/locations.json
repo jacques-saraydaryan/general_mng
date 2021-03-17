@@ -25,8 +25,21 @@
     },
     {
         "id": "diningRoom",
-        "pathOnTablet": "img/locations/kitchen.png",
+        "pathOnTablet": "img/locations/dining_room.png",
         "name": "Dining Room",
         "interestPoint": "place_diningRoom"
+    },
+    {
+        "id": "person",
+        "pathOnTablet": "img/locations/person.png",
+        "name": "Person",
+        "interestPoint": "person"
+    },
+    {
+        "id": "etagere",
+        "pathOnTablet": "img/locations/etagere.png",
+        "name": "Etagere",
+        "interestPoint": "objets_etagere"
     }
+
 ]
