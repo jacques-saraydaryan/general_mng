@@ -287,16 +287,79 @@
                 "object": {
                     "pathOnTablet": "Object_1_pathOnTablet",
                     "name": "Object_1_name"
-                },
-                "help_mode": false
-
+                }
             },
             "action": "objectAction",
             "id": "foundObj1"
         },
         {
-            "name": "Finish Scenario",
+            "name": "Catch the first object",
             "order": 21,
+            "eta": 0,
+            "speech": {
+                "said": "I am catching the Object_1_name",
+                "title": "I am catching the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_pathOnTablet",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "catchObj1"
+        },
+        {
+            "name": "Travel to first object storage",
+            "order": 22,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the Object_1_storage_name",
+                "title": "I am travelling to the Object_1_storage_name"
+            },
+            "arguments": {
+                "where": "Object_1_storage",
+                "location": {
+                    "pathOnTablet" : "Object_1_storage_pathOnTablet",
+                    "name": "Object_1_storage_name"
+                  } 
+            },
+            "action": "goTo",
+            "id": "goTo2"
+        },
+        {
+            "name": "Storing the first object",
+            "order": 23,
+            "eta": 0,
+            "speech": {
+                "said": "I am storing the Object_1_name",
+                "title": "I am storing the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_pathOnTablet",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "storeObj1"
+        },
+        {
+            "name": "Can not find first object",
+            "order": 24,
+            "eta": 0,
+            "speech": {
+                "said": "No first object was found",
+                "title": "No first object was found"
+            },
+            "action": "foundNoObject",
+            "id": "foundNoObject1"
+        },
+        {
+            "name": "Finish Scenario",
+            "order": 25,
             "eta": 0,
             "arguments": {},
             "action": "",

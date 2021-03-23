@@ -407,6 +407,17 @@ class LTMotion(LTAbstract):
                 return response
         return response
 
+    def catch_object(self, x, y, z, head, arm, duration, service_mode=LTAbstract.ACTION):
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__point_at
+        }
+
+
+
+
     def release_arms(self, service_mode=LTAbstract.SERVICE):
         response = LTServiceResponse()
 
