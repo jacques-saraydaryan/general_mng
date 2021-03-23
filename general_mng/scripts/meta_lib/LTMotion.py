@@ -143,6 +143,84 @@ class LTMotionPalbator(LTAbstract):
                 return response
         return response
 
+    def catch_object_label(self, object_label, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__catch_object_label,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for catch_object_label" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(object_label)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during catch_object_label to object: %s" % (object_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes catch_object_label to object: %s" % (object_label)
+                response.result = result
+                return response
+        return response
+
+    def catch_object_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param coord_x: x coord of the target object
+        :param coord_y: y coord of the target object
+        :param coord_z: z coord of the target object
+        :type coord_x: float32
+        :type coord_y: float32
+        :type coord_z: float32
+        """
+
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__catch_object_XYZ,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for catch_object_XYZ" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(coord_x, coord_y, coord_z)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during catch_object_XYZ to object: %s" % (object_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes catch_object_XYZ to object: %s" % (object_label)
+                response.result = result
+                return response
+        return response
+
     #######################################
     # MOTION ACTION
     ######################################
@@ -185,7 +263,53 @@ class LTMotionPalbator(LTAbstract):
             rospy.logerr("{class_name}: Action point_at_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
+    def __catch_object_label(self, object_label):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        try:
+            goal = ArmControlAction()
+            goal.action = 'Grasping'
+            goal.object_label = object_label
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING CATCHING LABEL GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
 
+        except Exception as e:
+            rospy.logerr("{class_name}: Action catch_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+    
+    def __catch_object_XYZ(self, coord_x, coord_y, coord_z):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param coord_x: x coord of the target object
+        :param coord_y: y coord of the target object
+        :param coord_z: z coord of the target object
+        :type coord_x: float32
+        :type coord_y: float32
+        :type coord_z: float32
+        """
+        try:
+            goal = ArmControlAction()
+            goal.action = 'GraspingXYZ'
+            goal.coord_x = coord_x
+            goal.coord_y = coord_y
+            goal.coord_z = coord_z
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING CATCHING XYZ GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action catch_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
 
 class LTMotion(LTAbstract):
 
@@ -406,16 +530,6 @@ class LTMotion(LTAbstract):
                 response.result = result
                 return response
         return response
-
-    def catch_object(self, x, y, z, head, arm, duration, service_mode=LTAbstract.ACTION):
-        # Check different service mode
-        switcher = {
-            LTAbstract.ACTION: None,
-            LTAbstract.BUS: None,
-            LTAbstract.SERVICE: self.__point_at
-        }
-
-
 
 
     def release_arms(self, service_mode=LTAbstract.SERVICE):

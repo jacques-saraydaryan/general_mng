@@ -427,8 +427,13 @@ class CPETest_scenario(AbstractScenario):
         rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
         time.sleep(1)
-        if "Catch" in self.current_step['name']:
+        if "Catch Label" in self.current_step['name']:
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], self.detected_object, self._nav_strategy['timeout'])
+            self._lt_motion.catch_object_label(self.detected_object)
+
+        if "Catch XYZ" in self.current_step['name']:
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], self.detected_object, self._nav_strategy['timeout'])
+            self._lt_motion.catch_object_label(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
         # result = {
         #     "NextIndex": stepIndex+1
         # }
@@ -479,6 +484,9 @@ class CPETest_scenario(AbstractScenario):
                             if item['id'] in object_label:
                                 detection = item['id']
                         self.detected_object = detection_json['label']
+                        self.detected_object_coord_x = detection_json['pose']['position']['x']
+                        self.detected_object_coord_y = detection_json['pose']['position']['y']
+                        self.detected_object_coord_z = detection_json['pose']['position']['z']
 
                     else:
                         rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
