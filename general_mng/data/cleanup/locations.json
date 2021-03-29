@@ -40,6 +40,12 @@
         "pathOnTablet": "img/locations/etagere.png",
         "name": "Etagere",
         "interestPoint": "objets_etagere"
+    },
+    {
+        "id": "catchKitchen",
+        "pathOnTablet": "img/locations/kitchen.png",
+        "name": "Objet Kitchen",
+        "interestPoint": "catch_kitchen"
     }
 
 ]

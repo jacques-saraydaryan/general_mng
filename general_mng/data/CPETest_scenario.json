@@ -25,7 +25,7 @@
             "allow_simulation": true,
             "allow_perception": true,
             "allow_highbehaviour": true,
-            "allow_motion": false
+            "allow_motion": true
         },
         "path_folder_to_save_imgs": "../../../../robocup_palbator-hri_js/public"
       },
@@ -293,8 +293,79 @@
             "id": "foundObj1"
         },
         {
-            "name": "Catch the first object",
+            "name": "Ask room to go to",
             "order": 21,
+            "eta": 15,
+            "arguments": {},
+            "action": "",
+            "id": "FindLoc3"
+        },
+        {
+            "name": "Choose room to go",
+            "order": 22,
+            "eta": 0,
+            "speech": {
+                "said": "In which room do I have to go ?",
+                "title": "In which room do I have to go ?"
+            },
+            "arguments": {
+                "what": "location",
+                "rooms": ""
+            },
+            "action": "askRoom",
+            "id": "chooseLoc3"
+        },
+        {
+            "name": "Confirm room",
+            "order": 23,
+            "eta": 0,
+            "speech": {
+                "said": "Did you choose the location_name ?",
+                "title": "Did you choose the location_name ?"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_3"
+            },
+            "action": "confirm",
+            "id": "chooseLoc3_confirm"
+        },
+        {
+            "name": "Travelling...",
+            "order": 24,
+            "eta": 60,
+            "arguments": {},
+            "action": "",
+            "id": "Travel3"
+        },
+        {
+            "name": "Travel to room",
+            "order": 25,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the ChoosenRoom_3_name",
+                "title": "I am travelling to the ChoosenRoom_3_name"
+            },
+            "arguments": {
+                "where": "ChoosenRoom_3",
+                "location": {
+                    "pathOnTablet" : "ChoosenRoom_3_pathOnTablet",
+                    "name": "ChoosenRoom_3_name"
+                } 
+            },
+            "action": "goTo",
+            "id": "goTo3"
+        },
+        {
+            "name": "Catching the kitchen object",
+            "order": 26,
+            "eta": 40,
+            "arguments": {},
+            "action": "",
+            "id": "Catch1"
+        },
+        {
+            "name": "Catch Label the first object",
+            "order": 27,
             "eta": 0,
             "speech": {
                 "said": "I am catching the Object_1_name",
@@ -311,55 +382,8 @@
             "id": "catchObj1"
         },
         {
-            "name": "Travel to first object storage",
-            "order": 22,
-            "eta": 0,
-            "speech": {
-                "said": "I am travelling to the Object_1_storage_name",
-                "title": "I am travelling to the Object_1_storage_name"
-            },
-            "arguments": {
-                "where": "Object_1_storage",
-                "location": {
-                    "pathOnTablet" : "Object_1_storage_pathOnTablet",
-                    "name": "Object_1_storage_name"
-                  } 
-            },
-            "action": "goTo",
-            "id": "goTo2"
-        },
-        {
-            "name": "Storing the first object",
-            "order": 23,
-            "eta": 0,
-            "speech": {
-                "said": "I am storing the Object_1_name",
-                "title": "I am storing the Object_1_name"
-            },
-            "arguments": {
-                "what": "Object_1",
-                "object": {
-                    "pathOnTablet": "Object_1_pathOnTablet",
-                    "name": "Object_1_name"
-                }
-            },
-            "action": "objectAction",
-            "id": "storeObj1"
-        },
-        {
-            "name": "Can not find first object",
-            "order": 24,
-            "eta": 0,
-            "speech": {
-                "said": "No first object was found",
-                "title": "No first object was found"
-            },
-            "action": "foundNoObject",
-            "id": "foundNoObject1"
-        },
-        {
             "name": "Finish Scenario",
-            "order": 25,
+            "order": 28,
             "eta": 0,
             "arguments": {},
             "action": "",

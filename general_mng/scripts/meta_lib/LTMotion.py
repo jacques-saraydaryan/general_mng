@@ -271,9 +271,10 @@ class LTMotionPalbator(LTAbstract):
         :type object_label: string
         """
         try:
-            goal = ArmControlAction()
+            goal = ArmControlGoal()
             goal.action = 'Grasping'
             goal.object_label = object_label
+            rospy.logwarn("{class_name}: CATCHING LABEL GOAL: %s", goal)
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("{class_name}: SENDING CATCHING LABEL GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()
@@ -296,7 +297,7 @@ class LTMotionPalbator(LTAbstract):
         :type coord_z: float32
         """
         try:
-            goal = ArmControlAction()
+            goal = ArmControlGoal()
             goal.action = 'GraspingXYZ'
             goal.coord_x = coord_x
             goal.coord_y = coord_y
