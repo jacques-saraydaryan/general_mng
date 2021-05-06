@@ -15,7 +15,7 @@ from pepper_pose_for_nav.srv import MoveHeadAtPosition
 from dialogue_hri_srvs.srv import MoveTurn
 from dialogue_hri_srvs.srv import PointAt
 from dialogue_hri_srvs.srv import TurnToInterestPoint
-
+from convert_2d_to_3d.srv import SwitchMode
 from pmb2_apps.msg import ArmControlGoal, ArmControlAction
 
 def singleton(cls):   
@@ -55,8 +55,18 @@ class LTMotionPalbator(LTAbstract):
         Loads the configuration needed to use correctly every motion function for Palbator.
         """
         if self._enableArmControlAction:
-            self._action_client_arm_control = actionlib.SimpleActionClient("Moveit_Palbator_global_action",ArmControlAction)
+            service_name ="merge_register_data_switch_config"
+            self.switch_config = rospy.ServiceProxy(service_name, SwitchMode)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: merge_register_data_switch_config server connected".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the merge_register_data_switch_config service.".format(class_name=self.__class__.__name__))
+            
+            action_server_name = "/Moveit_Palbator_global_action"
+            self._action_client_arm_control = actionlib.SimpleActionClient(action_server_name,ArmControlAction)
             server_is_up = self._action_client_arm_control.wait_for_server(timeout=rospy.Duration(self.ACTION_WAIT_TIMEOUT))
+            
             if server_is_up:
                 rospy.loginfo("{class_name}: Palbator Moveit control server connected".format(class_name=self.__class__.__name__))
             else:
@@ -150,6 +160,7 @@ class LTMotionPalbator(LTAbstract):
         :param object_label: name of the target object
         :type object_label: string
         """
+        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -178,6 +189,9 @@ class LTMotionPalbator(LTAbstract):
                 response.msg = " Operation succes catch_object_label to object: %s" % (object_label)
                 response.result = result
                 return response
+        
+        self.switch_config(register_or_grap_mode = 0)
+
         return response
 
     def catch_object_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
@@ -191,6 +205,7 @@ class LTMotionPalbator(LTAbstract):
         :type coord_y: float32
         :type coord_z: float32
         """
+        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -212,13 +227,104 @@ class LTMotionPalbator(LTAbstract):
             feedback, result = fct(coord_x, coord_y, coord_z)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
-                response.msg = " Failure during catch_object_XYZ to object: %s" % (object_label)
+                response.msg = " Failure during catch_object_XYZ at: %i %i %i" % (coord_x, coord_y, coord_z)
                 return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
-                response.msg = " Operation succes catch_object_XYZ to object: %s" % (object_label)
+                response.msg = " Operation succes catch_object_XYZ to object: %i %i %i" % (coord_x, coord_y, coord_z)
                 response.result = result
                 return response
+
+        self.switch_config(register_or_grap_mode = 0)
+
+        return response
+
+
+    def dropping_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param coord_x: x coord of the target object
+        :param coord_y: y coord of the target object
+        :param coord_z: z coord of the target object
+        :type coord_x: float32
+        :type coord_y: float32
+        :type coord_z: float32
+        """
+        self.switch_config(register_or_grap_mode = 1)
+
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__dropping_XYZ,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for dropping_xyz" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(coord_x, coord_y, coord_z)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during dropping_xyz at: %i %i %i" % (coord_x, coord_y, coord_z)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes dropping_xyz to object: %i %i %i" % (coord_x, coord_y, coord_z)
+                response.result = result
+                return response
+
+        self.switch_config(register_or_grap_mode = 0)
+
+        return response
+
+    def dropping_label(self, object_label, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        
+        self.switch_config(register_or_grap_mode = 1)
+
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__dropping_label,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for dropping_label" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(object_label)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during dropping_label to object: %s" % (object_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes dropping_label to object: %s" % (object_label)
+                response.result = result
+                return response
+        
+        self.switch_config(register_or_grap_mode = 0)
+
         return response
 
     #######################################
@@ -234,8 +340,9 @@ class LTMotionPalbator(LTAbstract):
             goal = ArmControlGoal()
             goal.action = "Travelling"
             self._action_client_arm_control.send_goal(goal)
-            rospy.loginfo("{class_name}: SENDING TRAVELLING GOAL".format(class_name=self.__class__.__name__))
+            rospy.loginfo("{class_name}: SETTING PAL IN TRAVEL MDOE".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()
+            rospy.loginfo("{class_name}: RESULT OF SETTING".format(class_name=self.__class__.__name__))
             result = self._action_client_arm_control.get_result()
             return GoalStatus.SUCCEEDED, result
         except Exception as e:
@@ -312,6 +419,54 @@ class LTMotionPalbator(LTAbstract):
             rospy.logerr("{class_name}: Action catch_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
+    def __dropping_XYZ(self, coord_x, coord_y, coord_z):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param coord_x: x coord of the target object
+        :param coord_y: y coord of the target object
+        :param coord_z: z coord of the target object
+        :type coord_x: float32
+        :type coord_y: float32
+        :type coord_z: float32
+        """
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'DroppingXYZ'
+            goal.coord_x = coord_x
+            goal.coord_y = coord_y
+            goal.coord_z = coord_z
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING DROPPING XYZ GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action dropping_xyz could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+
+    def __dropping_label(self, object_label):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'Dropping'
+            goal.object_label = object_label
+            rospy.logwarn("{class_name}: DROPPING LABEL GOAL: %s", goal)
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING DROPPING LABEL GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action dropping_label could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
 class LTMotion(LTAbstract):
 
     HEAD_PITCH_CENTER = 0.0

@@ -29,7 +29,7 @@ class CPETest_scenario(AbstractScenario):
 
     def __init__(self,config,scenario_path_folder):
         """
-        Initializes the scenario CleanUp and receives the needed parameters to run the scenario.
+        Initializes the scenario CPETest and receives the needed parameters to run the scenario.
         :param config: contains all the data of the scenario : steps list, parameters etc ...
         :type config: dict
         :param scenario_path_folder: path where is stored the JSON scenario file
@@ -108,8 +108,8 @@ class CPETest_scenario(AbstractScenario):
 
         img_path = os.path.join(self.current_dir_path,self.path_folder_to_save_imgs)
         img_path = os.path.join(img_path,"img/people/John_simu.png")
-        if self.allow_perception:    
-            self._lt_perception.learn_people_meta_from_img_path(img_path,"John_simu",10)
+        # if self.allow_perception:    
+        #     self._lt_perception.learn_people_meta_from_img_path(img_path,"John_simu",10)
 
 
     # def reset_known_objects(self):
@@ -262,6 +262,7 @@ class CPETest_scenario(AbstractScenario):
             for location in self._locations:
                 if location['name'] == data['where']:
                     data_JSON[data['what']]['pathOnTablet']=location['pathOnTablet']
+                    self.zone = location['zone']
                     break
         elif data_to_store == 'storeObject':
             data_JSON[data['what']]={}
@@ -433,7 +434,15 @@ class CPETest_scenario(AbstractScenario):
 
         if "Catch XYZ" in self.current_step['name']:
             rospy.logwarn("CATCHING OBJECT")
-            self._lt_motion.catch_object_label(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
+            self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
+
+        if "Dropping Label" in self.current_step['name']:
+            rospy.logwarn("DROPPING OBJECT")
+            self._lt_motion.catch_object_label("GreenBac")
+
+        if "Dropping XYZ" in self.current_step['name']:
+            rospy.logwarn("DROPPING OBJECT")
+            self._lt_motion.dropping_XYZ(1, -1.3 , 0.522383)
         # result = {
         #     "NextIndex": stepIndex+1
         # }
@@ -454,64 +463,66 @@ class CPETest_scenario(AbstractScenario):
         detection = ''
         if self.allow_perception:
 
-            response = self._lt_perception.get_object_in_room(self.choosenRoom)
+            response = self._lt_perception.get_object_in_room(self.zone)
             objects_list = response.payload
-            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
+            objects_names_list = []
+            for obj in objects_list:
+                objects_names_list.append(obj.label)
+            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_names_list))
 
         else:
             objects_list = []
 
         if self.allow_highbehaviour:
 
-            if len(objects_list) == 0:
-                number_of_rotation = 4
+            # if len(objects_list) < 2:
+                number_of_rotation = 8
                 if self.allow_perception and self.allow_navigation:
                     rospy.sleep(2)
                     rospy.logwarn(self.current_index_scenario)
                     rospy.logwarn(self.current_step)
-                    detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.choosenRoom, number_of_rotation, self._nav_strategy['timeout'])
+                    detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
                     if not detection_result is None:
                         rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                        detection_json = json.loads(detection_result)
-                        object_label = detection_json['label']+'_TF'
-
+                        object_label = detection_result.label+'_TF'
                         for item in self._objects:
                             if item['id'] in object_label:
                                 detection = item['id']
-                        self.detected_object = detection_json['label']+'_TF'
-                        self.detected_object_coord_x = detection_json['pose']['position']['x']
-                        self.detected_object_coord_y = detection_json['pose']['position']['y']
-                        self.detected_object_coord_z = detection_json['pose']['position']['z']
-
+                        self.detected_object = detection_result.label+'_TF'
+                        self.detected_object_coord_x = detection_result.pose.position.x
+                        self.detected_object_coord_y = detection_result.pose.position.y
+                        self.detected_object_coord_z = detection_result.pose.position.z
+                        self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], self._nav_strategy['mode'],self.detected_object_coord_x,self.detected_object_coord_y, self._nav_strategy['timeout'])
+                        response = self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z) 
+                        rospy.logwarn("{class_name}: GRASP RESPONSE %s",response.result)
                     else:
-                        rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
+                        rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
                         detection = ''
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
         
-            else:
-                detection_result = self._lt_high_behaviour.get_closest_object(objects_list)
-                if not detection_result is None:
-                    rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                    detection_json = json.loads(detection_result)
-                    object_label = detection_json['label']+'_TF'
+            # else:
+            #     detection_result = self._lt_high_behaviour.get_closest_object(objects_list)
+            #     if not detection_result is None:
+            #         rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
+            #         object_label = detection_result.label+'_TF'
 
-                    rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
-                    if self.allow_motion:
-                        self._lt_high_behaviour.point_an_object(object_label)
+            #         rospy.logwarn("{class_name}: POINTING ACTION %s".format(class_name=self.__class__.__name__),object_label)
+            #         if self.allow_motion:
+            #             self._lt_high_behaviour.point_an_object(object_label)
 
-                    for item in self._objects:
-                        if item['id'] in object_label:
-                            detection = item['id']
+            #         for item in self._objects:
+            #             if item['id'] in object_label:
+            #                 detection = item['id']
 
-                    self.detected_object = detection_json['label']
+            #         self.detected_object = detection_json['label']
                 
-                    # self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=detection_json['label'])
-                    # self.remove_choosen_object(detection_json['label'])
+            #         # self._lt_perception.reset_objects_in_map_manager(all_objects=False,object_label=detection_json['label'])
+            #         # self.remove_choosen_object(detection_json['label'])
 
-                else:
-                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.choosenRoom)
-                    detection = ''
+            #     else:
+            #         rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
+            #         detection = ''
             
         else:
             # detection = 'cracker'
@@ -589,7 +600,7 @@ class CPETest_scenario(AbstractScenario):
         rospy.logwarn(destination)
         for item in self._locations:
             if item['name'] == destination:
-                itp_name = item['interestPoint']
+                itp_name = item['name']
                 break
 
         
@@ -597,8 +608,10 @@ class CPETest_scenario(AbstractScenario):
 
         if self.allow_motion:
             self._lt_motion.set_palbator_ready_to_travel()
+            rospy.logwarn("{class_name}: MOTION SET".format(class_name=self.__class__.__name__))
 
         if self.allow_navigation:
+            rospy.logwarn("{class_name}: SEND NAV".format(class_name=self.__class__.__name__))
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], itp_name, self._nav_strategy['timeout'])
 
         else:

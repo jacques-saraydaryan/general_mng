@@ -1,0 +1,30 @@
+[
+    {
+        "id": "Room1", 
+        "pathOnTablet": "img/locations/bedroom.png",
+        "name": "Room1",
+        "interestPoint": "place_room1",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Room2",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Room2",
+        "interestPoint": "place_room2",
+        "zone": "Room_2"
+    },
+    {
+        "id": "GreenBac",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "GreenBac",
+        "interestPoint": "place_bac",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Plate",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Plate",
+        "interestPoint": "place_plate",
+        "zone": "Room_1"
+    }
+]

@@ -31,7 +31,7 @@
       },
     "guestsInfos": "receptionist/guestsInfos.json",
     "imports":{
-        "locations": "cleanup/locations.json",
+        "locations": "cleanup/locations_wrs.json",
         "objects": "cleanup/objects.json"
     },
     "steps": [
@@ -44,148 +44,8 @@
             "id": "Beginning"
         },
         {
-            "name": "Ask room to go to",
-            "order": 2,
-            "eta": 15,
-            "arguments": {},
-            "action": "",
-            "id": "FindLoc1"
-        },
-        {
-            "name": "Choose room to go",
-            "order": 3,
-            "eta": 0,
-            "speech": {
-                "said": "In which room do I have to go ?",
-                "title": "In which room do I have to go ?"
-            },
-            "arguments": {
-                "what": "location",
-                "rooms": ""
-            },
-            "action": "askRoom",
-            "id": "chooseLoc1"
-        },
-        {
-            "name": "Confirm room",
-            "order": 4,
-            "eta": 0,
-            "speech": {
-                "said": "Did you choose the location_name ?",
-                "title": "Did you choose the location_name ?"
-            },
-            "arguments": {
-                "what": "ChoosenRoom_1"
-            },
-            "action": "confirm",
-            "id": "chooseLoc1_confirm"
-        },
-        {
-            "name": "Travelling...",
-            "order": 5,
-            "eta": 60,
-            "arguments": {},
-            "action": "",
-            "id": "Travel1"
-        },
-        {
-            "name": "Travel to room",
-            "order": 6,
-            "eta": 0,
-            "speech": {
-                "said": "I am travelling to the ChoosenRoom_1_name",
-                "title": "I am travelling to the ChoosenRoom_1_name"
-            },
-            "arguments": {
-                "where": "ChoosenRoom_1",
-                "location": {
-                    "pathOnTablet" : "ChoosenRoom_1_pathOnTablet",
-                    "name": "ChoosenRoom_1_name"
-                } 
-            },
-            "action": "goTo",
-            "id": "goTo1"
-        },
-        {
-            "name": "Going to see Didier",
-            "order": 7,
-            "eta": 60,
-            "arguments": {},
-            "action": "",
-            "id": "Travel1"
-        },
-        {
-            "name": "Travel to guest",
-            "order": 8,
-            "eta": 0,
-            "speech": {
-                "said": "I am going to see Didier.",
-                "title": "I am going to see Didier."
-                },
-            "arguments": {
-                "where": "person",
-                "location": {
-                    "pathOnTablet" : "img/locations/person.png",
-                    "name": "person"
-                  }
-            },
-            "action": "goTo",
-            "id": "goTo1"
-        },
-        {
-            "name": "Guest Recognition",
-            "order": 9,
-            "eta": 30,
-            "arguments": {},
-            "action": "",
-            "id": "Travel1"
-        },
-        {
-            "name": "LookG1",
-            "order": 10,
-            "eta": 0,
-            "speech": {
-                "said": "I am looking for a new guest. Please look at my camera on my head.",
-                "title": "I am looking for a new guest. Please look at my camera on my head."
-                },
-            "arguments": {
-                "who": "John_simu",
-                "time": 3
-            },
-            "action": "lookForGuest",
-            "id": "findg1_look"
-        },
-        {
-            "name": "Found guest",
-            "order": 11,
-            "eta": 0,
-            "speech": {
-                "said": "I have found a new guest",
-                "title": "I have found a new guest"
-            },
-            "arguments": {
-                "who": "Guest_1",
-                "guestPhotoPath":"img/people/John_simu.png"
-            },
-            "action": "foundGuest",
-            "id": "foundG1"
-        },
-        {
-            "name": "NotFoundG1",
-            "order": 12,
-            "eta": 0,
-            "speech": {
-                "said": "I didn't find anyone",
-                "title": "I didn't find anyone"
-            },
-            "arguments": {
-            },
-            "action": "foundAnyone",
-            "id": "findg1_notfound"
-        },
-        {
             "name": "Ask room where to find object",
-            "order": 13,
+            "order": 2,
             "eta": 10,
             "arguments": {},
             "action": "",
@@ -193,7 +53,7 @@
         },
         {
             "name": "Choose room where to find object",
-            "order": 14,
+            "order": 3,
             "eta": 0,
             "speech": {
                 "said": "Choose room where to find object",
@@ -208,7 +68,7 @@
         },
         {
             "name": "Confirm room",
-            "order": 15,
+            "order": 4,
             "eta": 0,
             "speech": {
                 "said": "Did you choose the location_name ?",
@@ -222,7 +82,7 @@
         },
         {
             "name": "Going to find object",
-            "order": 16,
+            "order": 5,
             "eta": 40,
             "arguments": {},
             "action": "",
@@ -230,7 +90,7 @@
         },
         {
             "name": "Travel to room",
-            "order": 17,
+            "order": 6,
             "eta": 0,
             "speech": {
                 "said": "I am travelling to the ChoosenRoom_2_name",
@@ -248,7 +108,7 @@
         },
         {
             "name": "Find first object",
-            "order": 18,
+            "order": 7,
             "eta": 100,
             "arguments": {},
             "action": "",
@@ -256,7 +116,7 @@
         },
         {
             "name": "Find the first object",
-            "order": 19,
+            "order": 8,
             "eta": 0,
             "speech": {
                 "said": "I am looking for objects in the ChoosenRoom_2_name",
@@ -276,7 +136,7 @@
         },
         {
             "name": "Found the first object",
-            "order": 20,
+            "order": 9,
             "eta": 0,
             "speech": {
                 "said": "I have found the Object_1_name",
@@ -293,83 +153,38 @@
             "id": "foundObj1"
         },
         {
-            "name": "Ask room to go to",
-            "order": 21,
-            "eta": 15,
-            "arguments": {},
-            "action": "",
-            "id": "FindLoc3"
-        },
-        {
-            "name": "Choose room to go",
-            "order": 22,
-            "eta": 0,
-            "speech": {
-                "said": "In which room do I have to go ?",
-                "title": "In which room do I have to go ?"
-            },
-            "arguments": {
-                "what": "location",
-                "rooms": ""
-            },
-            "action": "askRoom",
-            "id": "chooseLoc3"
-        },
-        {
-            "name": "Confirm room",
-            "order": 23,
-            "eta": 0,
-            "speech": {
-                "said": "Did you choose the location_name ?",
-                "title": "Did you choose the location_name ?"
-            },
-            "arguments": {
-                "what": "ChoosenRoom_3"
-            },
-            "action": "confirm",
-            "id": "chooseLoc3_confirm"
-        },
-        {
-            "name": "Travelling...",
-            "order": 24,
+            "name": "Going to Store Object",
+            "order": 10,
             "eta": 60,
             "arguments": {},
             "action": "",
-            "id": "Travel3"
+            "id": "Travel1"
         },
         {
-            "name": "Travel to room",
-            "order": 25,
+            "name": "Travel to guest",
+            "order": 8,
             "eta": 0,
             "speech": {
-                "said": "I am travelling to the ChoosenRoom_3_name",
-                "title": "I am travelling to the ChoosenRoom_3_name"
-            },
+                "said": "I am going to Store.",
+                "title": "I am going to Store."
+                },
             "arguments": {
-                "where": "ChoosenRoom_3",
+                "where": "place_bac",
                 "location": {
-                    "pathOnTablet" : "ChoosenRoom_3_pathOnTablet",
-                    "name": "ChoosenRoom_3_name"
-                } 
+                    "pathOnTablet" : "img/locations/person.png",
+                    "name": "place_bac"
+                  }
             },
             "action": "goTo",
-            "id": "goTo3"
+            "id": "goTo1"
         },
         {
-            "name": "Catching the kitchen object",
-            "order": 26,
-            "eta": 40,
-            "arguments": {},
-            "action": "",
-            "id": "Catch1"
-        },
-        {
-            "name": "Catch Label the first object",
-            "order": 27,
+            "name": "Dropping Label the first object",
+            "order": 11,
             "eta": 0,
             "speech": {
-                "said": "I am catching the Object_1_name",
-                "title": "I am catching the Object_1_name"
+                "said": "I am dropping the Object_1_name",
+                "title": "I am dropping the Object_1_name"
             },
             "arguments": {
                 "what": "Object_1",
@@ -379,11 +194,11 @@
                 }
             },
             "action": "objectAction",
-            "id": "catchObj1"
+            "id": "dropObj1"
         },
         {
             "name": "Finish Scenario",
-            "order": 28,
+            "order": 12,
             "eta": 0,
             "arguments": {},
             "action": "",
