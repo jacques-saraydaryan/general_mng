@@ -151,36 +151,36 @@
             },
             "action": "objectAction",
             "id": "foundObj1"
-        },
+        }, 
         {
-            "name": "Going to Store Object",
+            "name": "Catching the kitchen object",
             "order": 10,
-            "eta": 60,
+            "eta": 40,
             "arguments": {},
             "action": "",
-            "id": "Travel1"
+            "id": "Catch1"
         },
         {
-            "name": "Travel to guest",
-            "order": 8,
+            "name": "Catch Label the first object",
+            "order": 11,
             "eta": 0,
             "speech": {
-                "said": "I am going to Store.",
-                "title": "I am going to Store."
-                },
-            "arguments": {
-                "where": "place_bac",
-                "location": {
-                    "pathOnTablet" : "img/locations/person.png",
-                    "name": "place_bac"
-                  }
+                "said": "I am catching the Object_1_name",
+                "title": "I am catching the Object_1_name"
             },
-            "action": "goTo",
-            "id": "goTo1"
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_pathOnTablet",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "catchObj1"
         },
         {
             "name": "Dropping Label the first object",
-            "order": 11,
+            "order": 12,
             "eta": 0,
             "speech": {
                 "said": "I am dropping the Object_1_name",
@@ -198,7 +198,7 @@
         },
         {
             "name": "Finish Scenario",
-            "order": 12,
+            "order": 13,
             "eta": 0,
             "arguments": {},
             "action": "",

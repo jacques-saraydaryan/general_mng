@@ -92,7 +92,10 @@ class LTHighBehaviour(LTAbstract):
                 response_list = response.payload
                 objects_list = []
                 for obj in response_list:
-                    objects_list.append(obj.label)
+                    if obj.type == 'Itp':
+                        response_list.remove(obj)
+                    else:
+                        objects_list.append(obj.type)
                 rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
 
             if len(objects_list) != 0:

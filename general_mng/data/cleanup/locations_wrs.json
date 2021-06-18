@@ -26,5 +26,26 @@
         "name": "Plate",
         "interestPoint": "place_plate",
         "zone": "Room_1"
+    },
+    {
+        "id": "Perception_1",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_1",
+        "interestPoint": "place_perception_1",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Perception_2",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_2",
+        "interestPoint": "place_perception_2",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Perception_3",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_3",
+        "interestPoint": "place_perception_3",
+        "zone": "Room_2"
     }
 ]

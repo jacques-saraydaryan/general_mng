@@ -17,7 +17,8 @@ from dialogue_hri_srvs.srv import PointAt
 from dialogue_hri_srvs.srv import TurnToInterestPoint
 from convert_2d_to_3d.srv import SwitchMode
 from pmb2_apps.msg import ArmControlGoal, ArmControlAction
-
+from geometry_msgs.msg import Pose, Point, Quaternion
+from shape_msgs.msg import SolidPrimitive
 def singleton(cls):   
     """
     Enables the system to create at most one instance of the class. Two instances of the same class can't be running at the same time.
@@ -82,6 +83,39 @@ class LTMotionPalbator(LTAbstract):
     #######################################
     # MOTION API
     ######################################
+    def arm_controller(self, action, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to move the robot into a pose to travel without risks (to avoid arm collisions with walls for instance).
+        Returns a response containing the result, the status and the feedback of the executed action.
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__arm_controller,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for set_palbator_ready_to_travel" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(action)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during " + str(action)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes " + str(action)
+                response.result = result
+                return response
+        return response
 
     def set_palbator_ready_to_travel(self,service_mode=LTAbstract.ACTION):
         """
@@ -153,6 +187,42 @@ class LTMotionPalbator(LTAbstract):
                 return response
         return response
 
+    def look_at_object(self, object_label, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__look_at_object,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for look_at_object" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(object_label)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during look_at_object to object: %s" % (object_label)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes look_at_object to object: %s" % (object_label)
+                response.result = result
+                return response
+        return response
+
     def catch_object_label(self, object_label, service_mode=LTAbstract.ACTION):
         """
         Will send a request to the Moveit Global controller to point an object.
@@ -160,7 +230,6 @@ class LTMotionPalbator(LTAbstract):
         :param object_label: name of the target object
         :type object_label: string
         """
-        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -177,21 +246,16 @@ class LTMotionPalbator(LTAbstract):
         if fct is None:
             response.status = LTServiceResponse.FAILURE_STATUS
             response.msg = "[%s] is not available for catch_object_label" % (service_mode)
-            return response
         else:
             feedback, result = fct(object_label)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
                 response.msg = " Failure during catch_object_label to object: %s" % (object_label)
-                return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
                 response.msg = " Operation succes catch_object_label to object: %s" % (object_label)
                 response.result = result
-                return response
         
-        self.switch_config(register_or_grap_mode = 0)
-
         return response
 
     def catch_object_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
@@ -205,7 +269,6 @@ class LTMotionPalbator(LTAbstract):
         :type coord_y: float32
         :type coord_z: float32
         """
-        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -222,20 +285,17 @@ class LTMotionPalbator(LTAbstract):
         if fct is None:
             response.status = LTServiceResponse.FAILURE_STATUS
             response.msg = "[%s] is not available for catch_object_XYZ" % (service_mode)
-            return response
+
         else:
             feedback, result = fct(coord_x, coord_y, coord_z)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
                 response.msg = " Failure during catch_object_XYZ at: %i %i %i" % (coord_x, coord_y, coord_z)
-                return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
                 response.msg = " Operation succes catch_object_XYZ to object: %i %i %i" % (coord_x, coord_y, coord_z)
                 response.result = result
-                return response
 
-        self.switch_config(register_or_grap_mode = 0)
 
         return response
 
@@ -251,7 +311,6 @@ class LTMotionPalbator(LTAbstract):
         :type coord_y: float32
         :type coord_z: float32
         """
-        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -268,20 +327,17 @@ class LTMotionPalbator(LTAbstract):
         if fct is None:
             response.status = LTServiceResponse.FAILURE_STATUS
             response.msg = "[%s] is not available for dropping_xyz" % (service_mode)
-            return response
+
         else:
             feedback, result = fct(coord_x, coord_y, coord_z)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
                 response.msg = " Failure during dropping_xyz at: %i %i %i" % (coord_x, coord_y, coord_z)
-                return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
                 response.msg = " Operation succes dropping_xyz to object: %i %i %i" % (coord_x, coord_y, coord_z)
                 response.result = result
-                return response
 
-        self.switch_config(register_or_grap_mode = 0)
 
         return response
 
@@ -293,7 +349,6 @@ class LTMotionPalbator(LTAbstract):
         :type object_label: string
         """
         
-        self.switch_config(register_or_grap_mode = 1)
 
         response = LTServiceResponse()
 
@@ -310,26 +365,38 @@ class LTMotionPalbator(LTAbstract):
         if fct is None:
             response.status = LTServiceResponse.FAILURE_STATUS
             response.msg = "[%s] is not available for dropping_label" % (service_mode)
-            return response
         else:
             feedback, result = fct(object_label)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
                 response.msg = " Failure during dropping_label to object: %s" % (object_label)
-                return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
                 response.msg = " Operation succes dropping_label to object: %s" % (object_label)
                 response.result = result
-                return response
-        
-        self.switch_config(register_or_grap_mode = 0)
+
 
         return response
 
     #######################################
     # MOTION ACTION
     ######################################
+    def __arm_controller(self, action):
+        """
+        Action client which will send a request to the Moveit Global controller to move the robot into a pose to travel without risks (to avoid arm collisions with walls for instance).
+        Returns a GoalStatus and an action result.
+        """
+        try:
+            goal = ArmControlGoal()
+            goal.action = action
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING %s GOAL".format(class_name=self.__class__.__name__), str(action))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+        except Exception as e:
+            rospy.logerr("{class_name}: Action set_palbator_ready_to_travel could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
 
     def __set_palbator_ready_to_travel(self):
         """
@@ -370,6 +437,28 @@ class LTMotionPalbator(LTAbstract):
             rospy.logerr("{class_name}: Action point_at_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
+    def __look_at_object(self,object_label):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'Looking'
+            goal.object_label = object_label
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING LOOKING GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action look_at_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+
+
     def __catch_object_label(self, object_label):
         """
         Action client which will send a request to the Moveit Global controller to point an object.
@@ -406,9 +495,21 @@ class LTMotionPalbator(LTAbstract):
         try:
             goal = ArmControlGoal()
             goal.action = 'GraspingXYZ'
-            goal.coord_x = coord_x
-            goal.coord_y = coord_y
-            goal.coord_z = coord_z
+            # goal.coord_x = coord_x
+            # goal.coord_y = coord_y
+            # goal.coord_z = coord_z
+            pose = Pose()
+            pose.position.x = coord_x
+            pose.position.y = coord_y
+            pose.position.z = coord_z
+            pose.orientation.x = 0.0
+            pose.orientation.y = 0.0
+            pose.orientation.z = 0.0
+            pose.orientation.w = 1.0
+            goal.pose = pose
+            # solid = SolidPrimitive()
+            # solid.type = 1
+            # solid.dimensions.BOX
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("{class_name}: SENDING CATCHING XYZ GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()

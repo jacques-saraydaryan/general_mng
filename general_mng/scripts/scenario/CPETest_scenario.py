@@ -18,8 +18,11 @@ import math
 from copy import deepcopy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalStatus
+from convert_2d_to_3d.srv import SwitchMode
+from object_management.srv import ConfigureFLowSwitcherService
 import os, shutil
 from socketIO_client import SocketIO, LoggingNamespace
+from tf import TransformListener
 
 
 
@@ -93,7 +96,7 @@ class CPETest_scenario(AbstractScenario):
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
         self._path_objects_folder = self._scenario['variables']['path_to_objects']
         self.reset_infos_JSON()
-        self._lt_perception.reset_objects_in_map_manager(all_objects=True,object_label='')
+        #self._lt_perception.reset_objects_in_map_manager(all_objects=True,object_label='')
         # self.reset_known_objects()
         
         rospy.loginfo("{class_name}: JSON FILES LOADED.".format(class_name=self.__class__.__name__))
@@ -111,7 +114,13 @@ class CPETest_scenario(AbstractScenario):
         # if self.allow_perception:    
         #     self._lt_perception.learn_people_meta_from_img_path(img_path,"John_simu",10)
 
+        service_name ="merge_register_data_switch_config"
+        self.switch_config = rospy.ServiceProxy(service_name, SwitchMode)
+        service_name_2 ="merge_flow_config_service"
+        self.switch_camera = rospy.ServiceProxy(service_name_2, ConfigureFLowSwitcherService)
+        self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
 
+        self.listener = TransformListener()
     # def reset_known_objects(self):
 
     #     rospy.loginfo("{class_name} : RESET OBJECTS IN TEMP FOLDER".format(class_name=self.__class__.__name__))
@@ -249,7 +258,7 @@ class CPETest_scenario(AbstractScenario):
         try:
             with open(os.path.join(self._scenario_path_folder,self._path_scenario_infos),"r") as f:
                 data_JSON=json.load(f)
-        except:
+        except :
             rospy.logwarn("{class_name} : INFOS FILE EMPTY".format(class_name=self.__class__.__name__))
             data_JSON = {}
 
@@ -428,16 +437,47 @@ class CPETest_scenario(AbstractScenario):
         rospy.loginfo("{class_name} ACTION DEALING WITH OBJECT".format(class_name=self.__class__.__name__))
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
         time.sleep(1)
+
         if "Catch Label" in self.current_step['name']:
             rospy.logwarn("CATCHING OBJECT")
-            self._lt_motion.catch_object_label(self.detected_object)
-
+            result = {"status":""}
+            tentatives = 0
+            self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
+            while result["status"] != "Success" and tentatives < 5:
+                if tentatives != 0:
+                    nav_strategy = 'RES'
+                    # coord_x = trans[0]
+                    # coord_y = trans[1]
+                else:
+                    nav_strategy = self._nav_strategy['action']
+                    coord_x = self.detected_object_coord_x
+                    coord_y = self.detected_object_coord_y
+                self._lt_motion.set_palbator_ready_to_travel()
+                try:
+                    self._lt_navigation.send_nav_order_to_pt(nav_strategy, 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
+                    self._lt_motion.look_at_object(self.detected_object)
+                    #self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
+                    self.listener.waitForTransform("map", 'Target_TF_0', rospy.Time(0), rospy.Duration(5))
+                    (trans, rot) = self.listener.lookupTransform("map", 'Target_TF_0', rospy.Time(0))
+                    
+                    #result = self._lt_motion.catch_object_XYZ(trans[0],trans[1],trans[2])
+                    result = self._lt_motion.catch_object_XYZ(coord_x,coord_y, self.detected_object_coord_z)
+                    result = json.loads(result.result.action_output)
+                except rospy.ROSInterruptException:
+                    rospy.loginfo("{class_name} ACTION FAILED, NEW TRY")
+                tentatives+=1
+            self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
+           
         if "Catch XYZ" in self.current_step['name']:
             rospy.logwarn("CATCHING OBJECT")
+            self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
+            self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], self._nav_strategy['mode'],self.detected_object_coord_x,self.detected_object_coord_y, self._nav_strategy['timeout'])
             self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
+            self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
 
         if "Dropping Label" in self.current_step['name']:
             rospy.logwarn("DROPPING OBJECT")
+            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'],"GreenBac", self._nav_strategy['timeout'])
             self._lt_motion.catch_object_label("GreenBac")
 
         if "Dropping XYZ" in self.current_step['name']:
@@ -476,28 +516,31 @@ class CPETest_scenario(AbstractScenario):
         if self.allow_highbehaviour:
 
             # if len(objects_list) < 2:
-                number_of_rotation = 8
+                number_of_rotation = 1
                 if self.allow_perception and self.allow_navigation:
                     rospy.sleep(2)
                     rospy.logwarn(self.current_index_scenario)
                     rospy.logwarn(self.current_step)
-                    detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
-                    if not detection_result is None:
-                        rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                        object_label = detection_result.label+'_TF'
-                        for item in self._objects:
-                            if item['id'] in object_label:
-                                detection = item['id']
-                        self.detected_object = detection_result.label+'_TF'
-                        self.detected_object_coord_x = detection_result.pose.position.x
-                        self.detected_object_coord_y = detection_result.pose.position.y
-                        self.detected_object_coord_z = detection_result.pose.position.z
-                        self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], self._nav_strategy['mode'],self.detected_object_coord_x,self.detected_object_coord_y, self._nav_strategy['timeout'])
-                        response = self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z) 
-                        rospy.logwarn("{class_name}: GRASP RESPONSE %s",response.result)
-                    else:
-                        rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
-                        detection = ''
+                    detection_result = None
+                    tentatives = 0
+                    while detection_result == None and tentatives < 2:
+                        tentatives += 1
+                        detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                        if not detection_result is None:
+                            rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
+                            object_label = detection_result.label+'_TF'
+                            for item in self._objects:
+                                if item['id'] in object_label:
+                                    detection = item['id']
+                            self.detected_object = detection_result.uuid+'_TF'
+                            self.detected_object_coord_x = detection_result.pose.position.x
+                            self.detected_object_coord_y = detection_result.pose.position.y
+                            self.detected_object_coord_z = detection_result.pose.position.z 
+                        else:
+                            if tentatives < 2:
+                                rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
+                                rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
+                                detection = ''
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
         
