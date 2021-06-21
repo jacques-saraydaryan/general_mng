@@ -135,26 +135,8 @@
             "id": "findObj1"
         },
         {
-            "name": "Found the first object",
-            "order": 9,
-            "eta": 0,
-            "speech": {
-                "said": "I have found the Object_1_name",
-                "title": "I have found the Object_1_name"
-            },
-            "arguments": {
-                "what": "Object_1",
-                "object": {
-                    "pathOnTablet": "Object_1_pathOnTablet",
-                    "name": "Object_1_name"
-                }
-            },
-            "action": "objectAction",
-            "id": "foundObj1"
-        }, 
-        {
             "name": "Catching the kitchen object",
-            "order": 10,
+            "order": 9,
             "eta": 40,
             "arguments": {},
             "action": "",
@@ -162,7 +144,7 @@
         },
         {
             "name": "Catch Label the first object",
-            "order": 11,
+            "order": 10,
             "eta": 0,
             "speech": {
                 "said": "I am catching the Object_1_name",
@@ -180,7 +162,7 @@
         },
         {
             "name": "Dropping Label the first object",
-            "order": 12,
+            "order": 11,
             "eta": 0,
             "speech": {
                 "said": "I am dropping the Object_1_name",
@@ -198,7 +180,7 @@
         },
         {
             "name": "Finish Scenario",
-            "order": 13,
+            "order": 12,
             "eta": 0,
             "arguments": {},
             "action": "",

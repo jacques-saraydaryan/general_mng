@@ -258,13 +258,14 @@ class LTMotionPalbator(LTAbstract):
         
         return response
 
-    def catch_object_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
+    def catch_object_XYZ(self, coord_x, coord_y, coord_z, dimensions, service_mode=LTAbstract.ACTION):
         """
         Will send a request to the Moveit Global controller to point an object.
         Returns a response containing the result, the status and the feedback of the executed action.
         :param coord_x: x coord of the target object
         :param coord_y: y coord of the target object
         :param coord_z: z coord of the target object
+        :param dimensions : size dimensions of the target object
         :type coord_x: float32
         :type coord_y: float32
         :type coord_z: float32
@@ -287,7 +288,7 @@ class LTMotionPalbator(LTAbstract):
             response.msg = "[%s] is not available for catch_object_XYZ" % (service_mode)
 
         else:
-            feedback, result = fct(coord_x, coord_y, coord_z)
+            feedback, result = fct(coord_x, coord_y, coord_z, dimensions)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
                 response.msg = " Failure during catch_object_XYZ at: %i %i %i" % (coord_x, coord_y, coord_z)
@@ -481,7 +482,7 @@ class LTMotionPalbator(LTAbstract):
             rospy.logerr("{class_name}: Action catch_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
     
-    def __catch_object_XYZ(self, coord_x, coord_y, coord_z):
+    def __catch_object_XYZ(self, coord_x, coord_y, coord_z, dimensions):
         """
         Action client which will send a request to the Moveit Global controller to point an object.
         Returns a GoalStatus and an action result.
@@ -491,13 +492,11 @@ class LTMotionPalbator(LTAbstract):
         :type coord_x: float32
         :type coord_y: float32
         :type coord_z: float32
+        :param dimensions : size dimensions of the target object
         """
         try:
             goal = ArmControlGoal()
             goal.action = 'GraspingXYZ'
-            # goal.coord_x = coord_x
-            # goal.coord_y = coord_y
-            # goal.coord_z = coord_z
             pose = Pose()
             pose.position.x = coord_x
             pose.position.y = coord_y
@@ -507,9 +506,10 @@ class LTMotionPalbator(LTAbstract):
             pose.orientation.z = 0.0
             pose.orientation.w = 1.0
             goal.pose = pose
-            # solid = SolidPrimitive()
-            # solid.type = 1
-            # solid.dimensions.BOX
+            solid = SolidPrimitive()
+            solid.type = 1
+            solid.dimensions = dimensions
+            goal.solidPrimitive = solid
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("{class_name}: SENDING CATCHING XYZ GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()

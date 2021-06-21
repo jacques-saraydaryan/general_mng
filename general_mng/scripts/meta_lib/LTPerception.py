@@ -305,7 +305,7 @@ class LTPerception(LTAbstract):
                 return response
         return response
 
-    def get_object_in_room(self,room,service_mode=LTAbstract.SERVICE):
+    def get_object_in_room(self,room, category_filter, service_mode=LTAbstract.SERVICE):
         """
         Will send a perception order with a specific room in order to get the list of objects from that room. 
         Returns a response containing the result, the status and the feedback of the executed action.
@@ -330,7 +330,7 @@ class LTPerception(LTAbstract):
             response.msg = " is not available for get_object_in_room" % (service_mode)
             return response
         else:
-            feedback, result = fct(room)
+            feedback, result = fct(room, category_filter)
             response.process_state(feedback)
 
             if response.status == LTServiceResponse.FAILURE_STATUS:
@@ -1040,7 +1040,7 @@ class LTPerception(LTAbstract):
             rospy.logerr("{class_name}: Service get_people_in_room could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
-    def __get_object_in_room(self,room):
+    def __get_object_in_room(self,room,category_filter):
         """
         Service client which will send a perception order with a specific room in order to get the list of objects from that room. 
         Returns a GoalStatus and an objects list
@@ -1050,7 +1050,8 @@ class LTPerception(LTAbstract):
         """
         try:
             room = room
-            category_filter = "*"
+            if category_filter == None:
+                category_filter = "*"
             last_update_filter = None
             min_confidence_filter = 0.0
             result = self.get_entity_in_room_proxy(room,category_filter,last_update_filter,min_confidence_filter)

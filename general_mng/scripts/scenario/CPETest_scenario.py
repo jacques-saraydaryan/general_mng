@@ -116,6 +116,7 @@ class CPETest_scenario(AbstractScenario):
 
         service_name ="merge_register_data_switch_config"
         self.switch_config = rospy.ServiceProxy(service_name, SwitchMode)
+        self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
         service_name_2 ="merge_flow_config_service"
         self.switch_camera = rospy.ServiceProxy(service_name_2, ConfigureFLowSwitcherService)
         self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
@@ -452,16 +453,20 @@ class CPETest_scenario(AbstractScenario):
                     nav_strategy = self._nav_strategy['action']
                     coord_x = self.detected_object_coord_x
                     coord_y = self.detected_object_coord_y
+                    coord_z = self.detected_object_coord_z
                 self._lt_motion.set_palbator_ready_to_travel()
                 try:
                     self._lt_navigation.send_nav_order_to_pt(nav_strategy, 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
-                    self._lt_motion.look_at_object(self.detected_object)
+                    self._lt_motion.look_at_object(self.detected_object_TF)
                     #self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
-                    self.listener.waitForTransform("map", 'Target_TF_0', rospy.Time(0), rospy.Duration(5))
-                    (trans, rot) = self.listener.lookupTransform("map", 'Target_TF_0', rospy.Time(0))
-                    
+                    # self.listener.waitForTransform("map", 'Target_TF_0', rospy.Time(0), rospy.Duration(5))
+                    # (trans, rot) = self.listener.lookupTransform("map", 'Target_TF_0', rospy.Time(0))
                     #result = self._lt_motion.catch_object_XYZ(trans[0],trans[1],trans[2])
-                    result = self._lt_motion.catch_object_XYZ(coord_x,coord_y, self.detected_object_coord_z)
+                    dimensions = []
+                    for item in self._objects:
+                        if item['id'] == self.detected_object:
+                            dimensions = item['dimensions']
+                    result = self._lt_motion.catch_object_XYZ(coord_x,coord_y, coord_z, dimensions)
                     result = json.loads(result.result.action_output)
                 except rospy.ROSInterruptException:
                     rospy.loginfo("{class_name} ACTION FAILED, NEW TRY")
@@ -502,12 +507,13 @@ class CPETest_scenario(AbstractScenario):
 
         detection = ''
         if self.allow_perception:
-
-            response = self._lt_perception.get_object_in_room(self.zone)
+            #Filtre pour le retour en simulation
+            category_filter = ['cracker', 'coffee', 'gelatin', 'mustard', 'pottedmeat', 'pudding', 'sugar', 'tomatosoup', 'tuna', 'windex']
+            response = self._lt_perception.get_object_in_room(self.zone, category_filter)
             objects_list = response.payload
             objects_names_list = []
             for obj in objects_list:
-                objects_names_list.append(obj.label)
+                objects_names_list.append(obj.type)
             rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_names_list))
 
         else:
@@ -528,11 +534,12 @@ class CPETest_scenario(AbstractScenario):
                         detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
                         if not detection_result is None:
                             rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                            object_label = detection_result.label+'_TF'
+                            #object_label = detection_result.label+'_TF'
                             for item in self._objects:
-                                if item['id'] in object_label:
+                                if item['id'] in detection_result.type:
                                     detection = item['id']
-                            self.detected_object = detection_result.uuid+'_TF'
+                            self.detected_object_TF = detection_result.uuid+'_TF'
+                            self.detected_object = detection_result.type
                             self.detected_object_coord_x = detection_result.pose.position.x
                             self.detected_object_coord_y = detection_result.pose.position.y
                             self.detected_object_coord_z = detection_result.pose.position.z 
@@ -606,7 +613,7 @@ class CPETest_scenario(AbstractScenario):
 
         else:
             result = {
-                "NextIndex": stepIndex+2
+                "NextIndex": stepIndex+3
             }
             return result
 

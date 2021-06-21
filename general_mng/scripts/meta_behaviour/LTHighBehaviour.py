@@ -87,18 +87,20 @@ class LTHighBehaviour(LTAbstract):
                 rospy.loginfo("{class_name}: ROTATION %s of %s radians".format(class_name=self.__class__.__name__),str(i),str(rotation_angle))
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
                 rospy.sleep(4)
-
-                response = self._lt_perception.get_object_in_room(room_to_inspect)
+                #Filtre pour le retour en simulation
+                category_filter = ['cracker', 'coffee', 'gelatin', 'mustard', 'pottedmeat', 'pudding', 'sugar', 'tomatosoup', 'tuna', 'windex']
+                response = self._lt_perception.get_object_in_room(room_to_inspect, category_filter)
                 response_list = response.payload
-                objects_list = []
-                for obj in response_list:
-                    if obj.type == 'Itp':
-                        response_list.remove(obj)
-                    else:
-                        objects_list.append(obj.type)
-                rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
+                # objects_list = []
+                # indesirables = ['Itp', 'lemon', 'apple', 'orange', 'peach', 'banana', 'strawberry', 'plum', 'pear']
+                # for obj in response_list:
+                #     if obj.type in indesirables:
+                #         response_list.remove(obj)
+                #     else:
+                #         objects_list.append(obj.type)
+                rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(response_list))
 
-            if len(objects_list) != 0:
+            if len(response_list) != 0:
                 closest_object = self.get_closest_object(response_list)
                 return closest_object
             else:

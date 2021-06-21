@@ -3,79 +3,134 @@
         "id": "bleach",
         "pathOnTablet": "img/objects/bleach.png",
         "name": "Bleach",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.06, 0.1, 0.25]
     },
     {
         "id": "chips",
         "pathOnTablet": "img/objects/chips.png",
         "name": "Chips",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.08, 0.08, 0.23]
     },
     {
         "id": "coffee",
         "pathOnTablet": "img/objects/coffee.png",
         "name": "Coffee",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.1, 0.1, 0.14]
     },
     {
         "id": "cracker",
         "pathOnTablet": "img/objects/cracker.png",
         "name": "Cracker",
-        "storage": "Living Room"
+        "storage": "Living Room",
+        "dimensions": [0.06, 0.16, 0.21]
     },
     {
-        "id": "jello",
+        "id": "gelatin",
         "pathOnTablet": "img/objects/jello.png",
-        "name": "Jello",
-        "storage": "Living Room"
+        "name": "gelatin",
+        "storage": "Living Room",
+        "dimensions": [0.07, 0.09, 0.03]
     },
     {
         "id": "mustard",
         "pathOnTablet": "img/objects/mustard.png",
         "name": "Mustard",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.06, 0.095, 0.197]
     },
     {
         "id": "pitcher",
         "pathOnTablet": "img/objects/pitcher.png",
         "name": "Pitcher",
-        "storage": "Entrance"
+        "storage": "Entrance",
+        "dimensions": [0.14, 0.14, 0.24]
     },
     {
         "id": "pottedmeat",
         "pathOnTablet": "img/objects/pottedmeat.png",
         "name": "Potted Meat",
-        "storage": "Entrance"
+        "storage": "Entrance",
+        "dimensions": [0.05, 0.1, 0.08]
     },
     {
         "id": "pudding",
         "pathOnTablet": "img/objects/pudding.png",
         "name": "Pudding",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.09, 0.11, 0.03]
     },
     {
         "id": "sugar",
         "pathOnTablet": "img/objects/sugar.png",
         "name": "Sugar",
-        "storage": "Living Room"
+        "storage": "Living Room",
+        "dimensions": [0.04, 0.08, 0.17] 
     },
     {
         "id": "tomatosoup",
         "pathOnTablet": "img/objects/tomatosoup.png",
         "name": "Tomato Soup",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.07, 0.07, 0.1]
     },
     {
         "id": "tuna",
         "pathOnTablet": "img/objects/tuna.png",
         "name": "Tuna",
-        "storage": "Living Room"
+        "storage": "Living Room",
+        "dimensions": [0.09, 0.09, 0.04]
     },
     {
         "id": "windex",
         "pathOnTablet": "img/objects/windex.png",
         "name": "Windex",
-        "storage": "Bedroom"
+        "storage": "Bedroom",
+        "dimensions": [0.06, 0.11, 0.27]
+    },
+    {
+        "id": "apple",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "apple",
+        "storage": "Bedroom",
+        "dimensions": [0.07, 0.07, 0.07]
+    },
+    {
+        "id": "orange",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "orange",
+        "storage": "Bedroom",
+        "dimensions": [0.07, 0.07, 0.07]
+    },
+    {
+        "id": "mug",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "mug",
+        "storage": "Bedroom",
+        "dimensions": [0.09, 0.09, 0.08]
+    },
+    {
+        "id": "cup",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "cup",
+        "storage": "Bedroom",
+        "dimensions": [0.09, 0.09, 0.08]
+    },
+    {
+        "id": "baseball",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "mug",
+        "storage": "baseball",
+        "dimensions": [0.08, 0.08, 0.08]
+    },
+    {
+        "id": "tennisball",
+        "pathOnTablet": "img/objects/windex.png",
+        "name": "mug",
+        "storage": "tennisball",
+        "dimensions": [0.08, 0.08, 0.08]
     },
     {
         "id": "unknown",
