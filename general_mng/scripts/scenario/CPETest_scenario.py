@@ -95,7 +95,7 @@ class CPETest_scenario(AbstractScenario):
 
         self._path_scenario_infos = self._scenario['variables']['scenarioInfos']
         self._path_objects_folder = self._scenario['variables']['path_to_objects']
-        self.reset_infos_JSON()
+        #self.reset_infos_JSON()
         #self._lt_perception.reset_objects_in_map_manager(all_objects=True,object_label='')
         # self.reset_known_objects()
         
@@ -235,8 +235,8 @@ class CPETest_scenario(AbstractScenario):
                 else:
                     self.scenario_end = True
 
-                if 'saveData' in result:
-                    self.store_infos(result['saveData'])
+                # if 'saveData' in result:
+                #     self.store_infos(result['saveData'])
 
         rospy.logwarn("{class_name} : END OF SCENARIO ".format(class_name=self.__class__.__name__) + self._scenario["name"])
 
@@ -483,7 +483,7 @@ class CPETest_scenario(AbstractScenario):
         if "Dropping Label" in self.current_step['name']:
             rospy.logwarn("DROPPING OBJECT")
             self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'],"GreenBac", self._nav_strategy['timeout'])
-            self._lt_motion.catch_object_label("GreenBac")
+            self._lt_motion.dropping_label("GreenBac")
 
         if "Dropping XYZ" in self.current_step['name']:
             rospy.logwarn("DROPPING OBJECT")
@@ -508,7 +508,7 @@ class CPETest_scenario(AbstractScenario):
         detection = ''
         if self.allow_perception:
             #Filtre pour le retour en simulation
-            category_filter = ['cracker', 'coffee', 'gelatin', 'mustard', 'pottedmeat', 'pudding', 'sugar', 'tomatosoup', 'tuna', 'windex']
+            category_filter = '*'
             response = self._lt_perception.get_object_in_room(self.zone, category_filter)
             objects_list = response.payload
             objects_names_list = []
@@ -528,26 +528,29 @@ class CPETest_scenario(AbstractScenario):
                     rospy.logwarn(self.current_index_scenario)
                     rospy.logwarn(self.current_step)
                     detection_result = None
-                    tentatives = 0
-                    while detection_result == None and tentatives < 2:
-                        tentatives += 1
-                        detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
-                        if not detection_result is None:
-                            rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                            #object_label = detection_result.label+'_TF'
-                            for item in self._objects:
-                                if item['id'] in detection_result.type:
-                                    detection = item['id']
-                            self.detected_object_TF = detection_result.uuid+'_TF'
-                            self.detected_object = detection_result.type
-                            self.detected_object_coord_x = detection_result.pose.position.x
-                            self.detected_object_coord_y = detection_result.pose.position.y
-                            self.detected_object_coord_z = detection_result.pose.position.z 
-                        else:
-                            if tentatives < 2:
-                                rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
-                                rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
-                                detection = ''
+                    self._lt_navigation.send_nav_order_to_pt('RN', 'CloseToObject', 2.42, 4.68, self._nav_strategy['timeout'])
+                    for mouvements in range(1,3):
+                        tentatives = 0
+                        while detection_result == None and tentatives < 2:
+                            tentatives += 1
+                            detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                            if not detection_result is None:
+                                rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
+                                #object_label = detection_result.label+'_TF'
+                                for item in self._objects:
+                                    if item['id'] in detection_result.type:
+                                        detection = item['id']
+                                self.detected_object_TF = detection_result.uuid+'_TF'
+                                self.detected_object = detection_result.type
+                                self.detected_object_coord_x = detection_result.pose.position.x
+                                self.detected_object_coord_y = detection_result.pose.position.y
+                                self.detected_object_coord_z = detection_result.pose.position.z 
+                            else:
+                                if tentatives < 2:
+                                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
+                                    rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
+                                    detection = ''
+                        self._lt_navigation.send_nav_order_to_pt('RES', 'CloseToObject', 2.42, 4.68, self._nav_strategy['timeout'])
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
         
@@ -639,7 +642,7 @@ class CPETest_scenario(AbstractScenario):
         :param stepIndex: Step index
         :type stepIndex: int
         """
-        rospy.loginfo("{class_name} ACTION GO TO".format(class_name=self.__class__.__name__))
+        rospy.loginfo("{class_name} ACTION GO TO %s".format(class_name=self.__class__.__name__), self._scenario_infos)
         result = self._lm_wrapper.timeboard_set_current_step_with_data(stepIndex,deepcopy(self._scenario_infos),self.NO_TIMEOUT)[1]
 
         itp_name = ''

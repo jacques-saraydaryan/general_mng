@@ -44,6 +44,32 @@
             "id": "Beginning"
         },
         {
+            "name": "Going to find object",
+            "order": 2,
+            "eta": 60,
+            "arguments": {},
+            "action": "",
+            "id": "Travel1"
+        },
+        {
+            "name": "Travel to first object",
+            "order": 3,
+            "eta": 0,
+            "speech": {
+                "said": "Travel to first object",
+                "title": "Travel to first object"
+                },
+            "arguments": {
+                "where": "Perception_3_1",
+                "location": {
+                    "pathOnTablet" : "img/locations/person.png",
+                    "name": "Perception_3_1"
+                  }
+            },
+            "action": "goTo",
+            "id": "goTo1"
+        },
+        {
             "name": "Ask room where to find object",
             "order": 2,
             "eta": 10,

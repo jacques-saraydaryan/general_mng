@@ -39,7 +39,7 @@
         "pathOnTablet": "img/objects/mustard.png",
         "name": "Mustard",
         "storage": "Bedroom",
-        "dimensions": [0.06, 0.095, 0.197]
+        "dimensions": [0.06, 0.095, 0.17]
     },
     {
         "id": "pitcher",
