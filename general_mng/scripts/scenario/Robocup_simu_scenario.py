@@ -11,14 +11,14 @@ from meta_behaviour.LTHighBehaviour import LTHighBehaviour
 
 import json
 import time
-from copy import deepcopy
 from std_msgs.msg import String
-from actionlib_msgs.msg import GoalStatus
 from convert_2d_to_3d.srv import SwitchMode
 from object_management.srv import ConfigureFLowSwitcherService
 from tf import TransformListener
-
+from std_msgs.msg import Int16
+from message_parser.conv import ycb_conv
 class Robocup_simu_scenario(AbstractScenario):
+
     DEFAULT_TIMEOUT = 5.0
     NO_TIMEOUT = -1.0
 
@@ -40,6 +40,8 @@ class Robocup_simu_scenario(AbstractScenario):
             "timeout": 90.0
         }
 
+        # META LIB
+
         self.allow_perception = True
         self.allow_navigation = True
         self.allow_highbehaviour = True
@@ -58,16 +60,21 @@ class Robocup_simu_scenario(AbstractScenario):
             else:
                 self._lt_high_behaviour = LTHighBehaviour(execution_mode="real")
 
-
         if self.allow_motion:
             self._lt_motion = LTMotionPalbator()
+
+        # Scenario Infos
 
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
 
-        self.detected_object = None
-        self.configuration_ready = True
+        # Subscribers
+        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
+        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
+        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
 
+        # Services
         service_name ="merge_register_data_switch_config"
         self.switch_config = rospy.ServiceProxy(service_name, SwitchMode)
         self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
@@ -77,8 +84,18 @@ class Robocup_simu_scenario(AbstractScenario):
 
         self.listener = TransformListener()
 
+        # Declare attributes
         self.zone = 'Room_1'
         self.current_itp = ''
+        self.personne_message = "pending"
+        self.object_message = "pending"
+        self.darknet_object_message = "pending"
+        self.object_num_message = -1
+        self.detected_object = None
+        self.configuration_ready = True
+        self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
+        self.detection_result = ''
+        self.grasp_message = False
 
     def start_scenario(self):   
 
@@ -91,8 +108,10 @@ class Robocup_simu_scenario(AbstractScenario):
                 self.go_To('Perception_3_'+str(i))
                 self.find_object()
                 i+=1
-            self.catch_object("Catch XYZ")
-            self.go_To('Left_Person')
+            if self.grasp_message == True:
+                result = self.catch_object("Catch XYZ")
+            self.grasping_pondere()
+            self.go_To(self.personne_message)
             self.scenario_end = True
 
     
@@ -120,7 +139,6 @@ class Robocup_simu_scenario(AbstractScenario):
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
 
-        detection = ''
         if self.allow_perception:
             #Filtre pour le retour en simulation
             category_filter = '*'
@@ -135,35 +153,31 @@ class Robocup_simu_scenario(AbstractScenario):
             objects_list = []
 
         if self.allow_highbehaviour:
-
             # if len(objects_list) < 2:
                 number_of_rotation = 1
                 if self.allow_perception and self.allow_navigation:
                     rospy.sleep(2)
-                    detection_result = None
-                    #self._lt_navigation.send_nav_order_to_pt('RN', 'CloseToObject', 2.42, 4.68, self._nav_strategy['timeout'])
                     for mouvements in range(1,3):
                         tentatives = 0
-                        while detection_result == None and tentatives < 2:
+                        while self.detection_result == None and tentatives < 2:
                             tentatives += 1
-                            detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
-                            if not detection_result is None:
+                            self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                            if not self.detection_result is None:
                                 rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
                                 #object_label = detection_result.label+'_TF'
-                                for item in self._objects:
-                                    if item['id'] in detection_result.type:
-                                        detection = item['id']
-                                self.detected_object_TF = detection_result.uuid+'_TF'
-                                self.detected_object = detection_result.type
-                                self.detected_object_coord_x = detection_result.pose.position.x
-                                self.detected_object_coord_y = detection_result.pose.position.y
-                                self.detected_object_coord_z = detection_result.pose.position.z 
+                                if self.object_message != 'undefined':
+                                    for el in self.detection_result:
+                                        if el.type == self.object_message:
+                                            self.actualise_detected_obj(el)
+                                            self.grasp_message = True
+                                else :
+                                    self.grasp_message = False
+
                             else:
                                 if tentatives < 2:
                                     rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
                                     rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
                                     self.detected_object = None
-                        #self._lt_navigation.send_nav_order_to_pt('RES', 'CloseToObject', 2.42, 4.68, self._nav_strategy['timeout'])
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
 
@@ -184,7 +198,7 @@ class Robocup_simu_scenario(AbstractScenario):
             result = {"status":""}
             tentatives = 0
             self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
-            while result["status"] != "Success" and tentatives < 5:
+            while result["status"] != "Success" and tentatives < 2:
                 if tentatives != 0:
                     nav_strategy = 'RES'
                     # coord_x = trans[0]
@@ -228,10 +242,45 @@ class Robocup_simu_scenario(AbstractScenario):
         if action == "Dropping XYZ":
             rospy.logwarn("DROPPING OBJECT")
             self._lt_motion.dropping_XYZ(1, -1.3 , 0.522383)
-        # result = {
-        #     "NextIndex": stepIndex+1
-        # }
+        
         return result
+
+    def message_personne(self, msg):
+        if 'left' in msg.data:
+            self.personne_message = 'Left_Person'
+        elif 'right' in msg.data:
+            self.personne_message = 'Right_Person'
+        if self.personne_message != 'pending':
+            self.subPerson.unregister()
+
+    def message_object(self, msg):
+        self.object_message = msg.data
+        if self.object_message != 'pending':
+            self.subObject.unregister()
+
+    def message_object_num(self,msg):
+        self.object_num_message = msg.data
+        if self.object_num_message != -1:
+            self.subObjectNum.unregister()
+
+    def message_object_darknet(self, msg):
+        self.subObjectDarknet = msg.data
+        if self.darknet_object_message != 'pending':
+            self.subObjectDarknet.unregister()
+
+    def actualise_detected_obj(self, detected_obj):
+        self.detected_object_TF = detected_obj.uuid+'_TF'
+        self.detected_object = detected_obj.type
+        self.detected_object_coord_x = detected_obj.pose.position.x
+        self.detected_object_coord_y = detected_obj.pose.position.y
+        self.detected_object_coord_z = detected_obj.pose.position.z
+
+    def grasping_pondere(self):
+        for objects in self.objets_ponderes:
+            for el in self.detection_result :
+                if el.type == objects :
+                    self.actualise_detected_obj(el)
+                    result = self.catch_object("Catch XYZ")
 
 
 if __name__ == '__main__':

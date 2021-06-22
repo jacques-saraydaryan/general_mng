@@ -88,7 +88,7 @@ class LTHighBehaviour(LTAbstract):
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
                 rospy.sleep(4)
                 #Filtre pour le retour en simulation
-                category_filter = ['cracker', 'coffee', 'gelatin', 'mustard', 'pottedmeat', 'pudding', 'sugar', 'tomatosoup', 'windex', 'apple']
+                category_filter = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
                 response = self._lt_perception.get_object_in_room(room_to_inspect, category_filter)
                 response_list = response.payload
                 # objects_list = []
@@ -101,8 +101,9 @@ class LTHighBehaviour(LTAbstract):
                 rospy.logwarn("{class_name}: GRASPABLE OBJECTS IN ROOM AFTER FILTER %s".format(class_name=self.__class__.__name__),str(response_list))
 
             if len(response_list) != 0:
-                closest_object = self.get_closest_object(response_list)
-                return closest_object
+                return response_list
+                # closest_object = self.get_closest_object(response_list)
+                # return closest_object
             else:
                 return None
 
