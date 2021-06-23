@@ -16,7 +16,10 @@ from convert_2d_to_3d.srv import SwitchMode
 from object_management.srv import ConfigureFLowSwitcherService
 from tf import TransformListener
 from std_msgs.msg import Int16
-from message_parser.conv import ycb_conv
+from nav_msgs.srv import GetPlan
+from geometry_msgs.msg import PoseStamped
+from world_manager.srv import getNamoEntity
+
 class Robocup_simu_scenario(AbstractScenario):
 
     DEFAULT_TIMEOUT = 5.0
@@ -68,12 +71,6 @@ class Robocup_simu_scenario(AbstractScenario):
         self._locations = self._scenario['imports']['locations']
         self._objects = self._scenario['imports']['objects']
 
-        # Subscribers
-        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
-        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
-        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
-        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
-
         # Services
         service_name ="merge_register_data_switch_config"
         self.switch_config = rospy.ServiceProxy(service_name, SwitchMode)
@@ -81,6 +78,10 @@ class Robocup_simu_scenario(AbstractScenario):
         service_name_2 ="merge_flow_config_service"
         self.switch_camera = rospy.ServiceProxy(service_name_2, ConfigureFLowSwitcherService)
         self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
+
+        # namo services
+        self._makePlan = rospy.ServiceProxy('/move_base/make_plan', GetPlan)
+        self._getNamoEntity = rospy.ServiceProxy('/get_namo_entity', getNamoEntity)
 
         self.listener = TransformListener()
 
@@ -94,8 +95,14 @@ class Robocup_simu_scenario(AbstractScenario):
         self.detected_object = None
         self.configuration_ready = True
         self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
-        self.detection_result = ''
+        self.detection_result = None
         self.grasp_message = False
+
+        # Subscribers
+        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
+        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
+        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
 
     def start_scenario(self):   
 
@@ -104,13 +111,16 @@ class Robocup_simu_scenario(AbstractScenario):
 
         while self.scenario_end == False and not rospy.is_shutdown():
             i = 1
-            while self.detected_object == None and i<4:
+            self.NAMO()
+            while self.detection_result == None and i<4:
                 self.go_To('Perception_3_'+str(i))
                 self.find_object()
                 i+=1
+            result = ''
             if self.grasp_message == True:
                 result = self.catch_object("Catch XYZ")
-            self.grasping_pondere()
+            if result['status'] != 'Success':
+                self.grasping_pondere()
             self.go_To(self.personne_message)
             self.scenario_end = True
 
@@ -125,11 +135,13 @@ class Robocup_simu_scenario(AbstractScenario):
 
         if self.allow_navigation:
             rospy.logwarn("{class_name}: SEND NAV".format(class_name=self.__class__.__name__))
-            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], Itp, self._nav_strategy['timeout'])
+            result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], Itp, self._nav_strategy['timeout'])
             self.current_itp = Itp
         else:
             rospy.logwarn("{class_name}: NAV GOAL TO : ".format(class_name=self.__class__.__name__) + Itp + " ACTION "+self._nav_strategy['action'] +" MODE "+self._nav_strategy['mode'] + " itp " + Itp + " timeout "+ str(self._nav_strategy['timeout']))    
             time.sleep(2)
+            result = None
+        return result
 
     def find_object(self):
         """
@@ -157,27 +169,24 @@ class Robocup_simu_scenario(AbstractScenario):
                 number_of_rotation = 1
                 if self.allow_perception and self.allow_navigation:
                     rospy.sleep(2)
-                    for mouvements in range(1,3):
-                        tentatives = 0
-                        while self.detection_result == None and tentatives < 2:
-                            tentatives += 1
-                            self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
-                            if not self.detection_result is None:
-                                rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),detection_result)
-                                #object_label = detection_result.label+'_TF'
-                                if self.object_message != 'undefined':
-                                    for el in self.detection_result:
-                                        if el.type == self.object_message:
-                                            self.actualise_detected_obj(el)
-                                            self.grasp_message = True
-                                else :
-                                    self.grasp_message = False
-
-                            else:
-                                if tentatives < 2:
-                                    rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
-                                    rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
-                                    self.detected_object = None
+                    tentatives = 0
+                    while self.detection_result == None and tentatives < 3:
+                        tentatives += 1
+                        self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                        rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
+                        if not (self.detection_result is None):
+                            #object_label = detection_result.label+'_TF'
+                            if self.darknet_object_message != 'undefined':
+                                for el in self.detection_result:
+                                    if el.type == self.darknet_object_message:
+                                        self.actualise_detected_obj(el)
+                                        self.grasp_message = True
+                                        return
+                        else:
+                            if tentatives < 2:
+                                rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
+                                rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
+                                self.detected_object = None
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
 
@@ -227,21 +236,21 @@ class Robocup_simu_scenario(AbstractScenario):
                 tentatives+=1
             self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
            
-        if action == "Catch Label":
-            rospy.logwarn("CATCHING OBJECT")
-            self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
-            self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], self._nav_strategy['mode'],self.detected_object_coord_x,self.detected_object_coord_y, self._nav_strategy['timeout'])
-            self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
-            self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
+        # if action == "Catch Label":
+        #     rospy.logwarn("CATCHING OBJECT")
+        #     self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
+        #     self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], self._nav_strategy['mode'],self.detected_object_coord_x,self.detected_object_coord_y, self._nav_strategy['timeout'])
+        #     self._lt_motion.catch_object_XYZ(self.detected_object_coord_x, self.detected_object_coord_y, self.detected_object_coord_z)
+        #     self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
 
-        if action == "Dropping Label":
-            rospy.logwarn("DROPPING OBJECT")
-            self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'],"GreenBac", self._nav_strategy['timeout'])
-            self._lt_motion.dropping_label("GreenBac")
+        # if action == "Dropping Label":
+        #     rospy.logwarn("DROPPING OBJECT")
+        #     self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'],"GreenBac", self._nav_strategy['timeout'])
+        #     self._lt_motion.dropping_label("GreenBac")
 
-        if action == "Dropping XYZ":
-            rospy.logwarn("DROPPING OBJECT")
-            self._lt_motion.dropping_XYZ(1, -1.3 , 0.522383)
+        # if action == "Dropping XYZ":
+        #     rospy.logwarn("DROPPING OBJECT")
+        #     self._lt_motion.dropping_XYZ(1, -1.3 , 0.522383)
         
         return result
 
@@ -276,15 +285,70 @@ class Robocup_simu_scenario(AbstractScenario):
         self.detected_object_coord_z = detected_obj.pose.position.z
 
     def grasping_pondere(self):
-        for objects in self.objets_ponderes:
-            for el in self.detection_result :
-                if el.type == objects :
-                    self.actualise_detected_obj(el)
-                    result = self.catch_object("Catch XYZ")
+        for obj in self.detection_result:
+            if obj.type in self.objets_ponderes:
+                self.actualise_detected_obj(self.detection_result)
+                result = self.catch_object("Catch XYZ")
+                if result['status'] == 'Success':
+                    return True
+        return False
 
+    def NAMO(self):
+        free = False
+        while not free:
+            self.go_To('NAMO_Observ')
+            # result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], 'Simple', 'Perception_3_2', self._nav_strategy['timeout'])
+            start = self.getRobotPose()
+            goal = self.getItp()
+            rospy.loginfo("{class_name} GOT POSE AND ITP")
+            current_plan = self._makePlan(start, goal, 0.2)
+            if len(current_plan.plan.poses) == 0:
+                # rospy.logerr("GOOD")
+                rospy.loginfo("{class_name} PROCESS NAMO")
+                self.processNamo()
+            else:
+                free = True
+        
+    def processNamo(self):
+        entity = self._getNamoEntity(2.0, 3.0, 3.15, 2.0, 0.1, 1, 100).entity
+        outEntity = []
+        for i in range(len(entity)):
+            if entity[i].position.x > 2.64:
+                continue
+            else:
+                outEntity.append(entity[i])
+        minY = 10
+        selectedEntity = ''
+        for e in outEntity:
+            if e.position.y < minY:
+                minY = e.position.y
+                selectedEntity = e
+        self._lt_navigation.send_nav_order_to_pt("RN", 'CloseToObject', selectedEntity.position.x, selectedEntity.position.y, self._nav_strategy['timeout'])
+        self._lt_motion.namo_XYZ(selectedEntity.position.x, selectedEntity.position.y)
 
-if __name__ == '__main__':
-    
-    scenario = Robocup_simu_scenario()
-    scenario.scenario_launcher()
-    rospy.spin()
+    def getRobotPose(self):
+        self.listener.waitForTransform("/base_link", "/map", rospy.Time(0), rospy.Duration(5.0))
+        robot_p = PoseStamped()
+        robot_p.header.frame_id = "/base_link"
+        robot_p.pose.position.x = 0
+        robot_p.pose.position.y = 0
+        robot_p.pose.position.z = 0
+        robotPose = self.listener.transformPose("map", robot_p)
+        return robotPose
+
+    def getItp(self):
+        self.listener.waitForTransform("map", "Perception_3_2_TF", rospy.Time(0), rospy.Duration(5))
+        (trans, rot) = self.listener.lookupTransform("map", "Perception_3_2_TF", rospy.Time(0))
+
+        poseStamped = PoseStamped()
+        poseStamped.header.frame_id = "map"
+        poseStamped.header.stamp = rospy.Time(0)
+        poseStamped.pose.position.x = trans[0]
+        poseStamped.pose.position.y = trans[1]
+        poseStamped.pose.position.z = trans[2]
+        poseStamped.pose.orientation.x = rot[0]
+        poseStamped.pose.orientation.y = rot[1]
+        poseStamped.pose.orientation.z = rot[2]
+        poseStamped.pose.orientation.w = rot[3]
+
+        return poseStamped

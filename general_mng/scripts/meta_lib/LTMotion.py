@@ -379,6 +379,36 @@ class LTMotionPalbator(LTAbstract):
 
         return response
 
+    def namo_XYZ(self, coord_x, coord_y, service_mode=LTAbstract.ACTION):
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__namo_XYZ,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for namo_XYZ" % (service_mode)
+
+        else:
+            feedback, result = fct(coord_x, coord_y)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during namo_XYZ at: %i %i" % (coord_x, coord_y)
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes namo_XYZ to object: %i %i" % (coord_x, coord_y)
+                response.result = result
+
+
+        return response
+
     #######################################
     # MOTION ACTION
     ######################################
@@ -567,6 +597,28 @@ class LTMotionPalbator(LTAbstract):
 
         except Exception as e:
             rospy.logerr("{class_name}: Action dropping_label could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+
+    def __namo_XYZ(self, coord_x, coord_y):
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'NamoXYZ'
+            pose = Pose()
+            pose.position.x = coord_x
+            pose.position.y = coord_y
+            pose.orientation.x = 0.0
+            pose.orientation.y = 0.0
+            pose.orientation.z = 0.0
+            pose.orientation.w = 1.0
+            goal.pose = pose
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING NAMO XYZ GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action namo_xyz could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 class LTMotion(LTAbstract):
 
