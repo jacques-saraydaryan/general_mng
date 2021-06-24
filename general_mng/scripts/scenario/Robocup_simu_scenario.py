@@ -111,7 +111,7 @@ class Robocup_simu_scenario(AbstractScenario):
 
         while self.scenario_end == False and not rospy.is_shutdown():
             i = 1
-            #self.NAMO()
+            self.NAMO()
             # while self.detection_result == None and i<4:
             #     self.go_To('Perception_3_'+str(i))
             #     self.find_object()
