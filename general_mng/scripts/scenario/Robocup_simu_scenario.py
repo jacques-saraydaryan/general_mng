@@ -18,7 +18,6 @@ from tf import TransformListener
 from std_msgs.msg import Int16
 from nav_msgs.srv import GetPlan
 from geometry_msgs.msg import PoseStamped
-from robocup_msgs.msg import EntityList
 from world_manager.srv import getNamoEntity
 
 class Robocup_simu_scenario(AbstractScenario):
@@ -78,7 +77,7 @@ class Robocup_simu_scenario(AbstractScenario):
         self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
         service_name_2 ="merge_flow_config_service"
         self.switch_camera = rospy.ServiceProxy(service_name_2, ConfigureFLowSwitcherService)
-        self.switch_camera(flow_list =["/camera/connais_pas"], switch_period = 1)
+        self.switch_camera(flow_list =["/fake_camera"], switch_period = 1)
 
         # namo services
         self._makePlan = rospy.ServiceProxy('/move_base/make_plan', GetPlan)
@@ -89,21 +88,21 @@ class Robocup_simu_scenario(AbstractScenario):
         # Declare attributes
         self.zone = 'Room_1'
         self.current_itp = ''
-        self.personne_message = "pending"
+        self.personne_message = "Right_Person"
         self.object_message = "pending"
-        self.darknet_object_message = "pending"
+        self.darknet_object_message = "mustard"
         self.object_num_message = -1
         self.detected_object = None
         self.configuration_ready = True
         self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
-        self.detection_result = EntityList()
+        self.detection_result = None
         self.grasp_message = False
 
-        # Subscribers
-        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
-        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
-        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
-        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
+        # # Subscribers
+        # self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
+        # self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
+        # self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+        # self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
 
     def start_scenario(self):   
 
@@ -112,14 +111,18 @@ class Robocup_simu_scenario(AbstractScenario):
 
         while self.scenario_end == False and not rospy.is_shutdown():
             i = 1
-            self.NAMO()
-            while self.detection_result == None and i<4:
-                self.go_To('Perception_3_'+str(i))
+            #self.NAMO()
+            # while self.detection_result == None and i<4:
+            #     self.go_To('Perception_3_'+str(i))
+            #     self.find_object()
+            #     i+=1
+            # result = ''
+            # if self.grasp_message == True:
+            #     result = self.catch_object("Catch XYZ")
+            self.go_To("Perception_3_2")
+            while self.detection_result == None:
                 self.find_object()
-                i+=1
-            result = {"status":''}
-            if self.grasp_message == True:
-                result = self.catch_object("Catch XYZ")
+            result = self.catch_object("Catch XYZ")
             if result['status'] != 'Success':
                 self.grasping_pondere()
             self.go_To(self.personne_message)
@@ -151,21 +154,20 @@ class Robocup_simu_scenario(AbstractScenario):
         rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__.__name__))
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
-
         self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
 
-        if self.allow_perception:
-            #Filtre pour le retour en simulation
-            category_filter = '*'
-            response = self._lt_perception.get_object_in_room(self.current_zone(), category_filter)
-            objects_list = response.payload
-            objects_names_list = []
-            for obj in objects_list:
-                objects_names_list.append(obj.type)
-            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_names_list))
+        # if self.allow_perception:
+        #     #Filtre pour le retour en simulation
+        #     category_filter = '*'
+        #     response = self._lt_perception.get_object_in_room(self.current_zone(), category_filter)
+        #     objects_list = response.payload
+        #     objects_names_list = []
+        #     for obj in objects_list:
+        #         objects_names_list.append(obj.type)
+        #     rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_names_list))
 
-        else:
-            objects_list = []
+        # else:
+        #     objects_list = []
 
         if self.allow_highbehaviour:
             # if len(objects_list) < 2:
@@ -173,11 +175,14 @@ class Robocup_simu_scenario(AbstractScenario):
                 if self.allow_perception and self.allow_navigation:
                     rospy.sleep(2)
                     tentatives = 0
-                    while self.detection_result.entityList == [] and tentatives < 3:
+                    while self.detection_result == None and tentatives < 1:
                         tentatives += 1
-                        self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                        #self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
+                        category_filter = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
+                        response = self._lt_perception.get_object_in_room(self.current_zone(), category_filter)
+                        self.detection_result = response.payload
                         rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
-                        if self.detection_result.entityList != []:
+                        if self.detection_result != None:
                             #object_label = detection_result.label+'_TF'
                             if self.darknet_object_message != 'undefined':
                                 for el in self.detection_result:
@@ -193,9 +198,7 @@ class Robocup_simu_scenario(AbstractScenario):
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
 
-        self.switch_camera(flow_list =["/camera/connais_pas"], switch_period = 1)
-
-        
+        self.switch_camera(flow_list =["/fake_camera"], switch_period = 1)
     def current_zone(self):
 
         for location in self._locations:
