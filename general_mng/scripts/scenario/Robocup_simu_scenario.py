@@ -329,8 +329,9 @@ class Robocup_simu_scenario(AbstractScenario):
             if e.position.y < minY:
                 minY = e.position.y
                 selectedEntity = e
-        self._lt_navigation.send_nav_order_to_pt("RN", 'CloseToObject', selectedEntity.position.x, selectedEntity.position.y, self._nav_strategy['timeout'])
-        self._lt_motion.namo_XYZ(selectedEntity.position.x, selectedEntity.position.y)
+        if selectedEntity != '':
+            self._lt_navigation.send_nav_order_to_pt("RN", 'CloseToObject', selectedEntity.position.x, selectedEntity.position.y, self._nav_strategy['timeout'])
+            self._lt_motion.namo_XYZ(selectedEntity.position.x, selectedEntity.position.y)
 
     def getRobotPose(self):
         self.listener.waitForTransform("/base_link", "/map", rospy.Time(0), rospy.Duration(5.0))
