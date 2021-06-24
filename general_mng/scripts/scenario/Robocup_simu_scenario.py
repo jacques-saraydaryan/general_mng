@@ -95,9 +95,10 @@ class Robocup_simu_scenario(AbstractScenario):
         self.detected_object = None
         self.configuration_ready = True
         self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
-        self.detection_result = None
+        self.detection_result = []
         self.grasp_message = False
 
+        self.detected_object = ''
         # # Subscribers
         # self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
         # self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
@@ -111,18 +112,21 @@ class Robocup_simu_scenario(AbstractScenario):
 
         while self.scenario_end == False and not rospy.is_shutdown():
             i = 1
-            self.NAMO()
+            # self.NAMO()
             # while self.detection_result == None and i<4:
             #     self.go_To('Perception_3_'+str(i))
             #     self.find_object()
             #     i+=1
-            # result = ''
+            result = {'status':''}
             # if self.grasp_message == True:
             #     result = self.catch_object("Catch XYZ")
             self.go_To("Perception_3_2")
-            while self.detection_result == None:
+            attempt = 0
+            while len(self.detection_result) == 0 and attempt < 4 and self.detected_object == '':
                 self.find_object()
-            result = self.catch_object("Catch XYZ")
+                attempt += 1
+            if self.detected_object != '':
+                result = self.catch_object("Catch XYZ")
             if result['status'] != 'Success':
                 self.grasping_pondere()
             self.go_To(self.personne_message)
@@ -151,7 +155,7 @@ class Robocup_simu_scenario(AbstractScenario):
         """
         Function dealing with the find action. The robot finds something or someone.
         """
-        rospy.loginfo("{class_name} ACTION FOUND OBJECT".format(class_name=self.__class__.__name__))
+        rospy.loginfo("{class_name} ACTION FIND OBJECT".format(class_name=self.__class__.__name__))
 
         ############################# ACTION CLIENT DETECTION OBJET ICI
         self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
@@ -173,16 +177,16 @@ class Robocup_simu_scenario(AbstractScenario):
             # if len(objects_list) < 2:
                 number_of_rotation = 1
                 if self.allow_perception and self.allow_navigation:
-                    rospy.sleep(2)
+                    rospy.sleep(6)
                     tentatives = 0
-                    while self.detection_result == None and tentatives < 1:
+                    while self.detection_result == [] and tentatives < 3:
                         tentatives += 1
                         #self.detection_result = self._lt_high_behaviour.turn_around_and_detect_objects(self.zone, number_of_rotation, self._nav_strategy['timeout'])
-                        category_filter = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
+                        category_filter = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker']
                         response = self._lt_perception.get_object_in_room(self.current_zone(), category_filter)
                         self.detection_result = response.payload
                         rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
-                        if self.detection_result != None:
+                        if self.detection_result != []:
                             #object_label = detection_result.label+'_TF'
                             if self.darknet_object_message != 'undefined':
                                 for el in self.detection_result:
@@ -194,7 +198,6 @@ class Robocup_simu_scenario(AbstractScenario):
                             if tentatives < 2:
                                 rospy.logwarn("{class_name}: NO OBJECTS DETECTED IN %s".format(class_name=self.__class__.__name__),self.zone)
                                 rospy.logwarn("{class_name}: NEW TRY FAILED TRY NUM %s", tentatives)
-                                self.detected_object = None
                 else:
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
 
@@ -229,7 +232,7 @@ class Robocup_simu_scenario(AbstractScenario):
                 self._lt_motion.set_palbator_ready_to_travel()
                 try:
                     self._lt_navigation.send_nav_order_to_pt(nav_strategy, 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
-                    self._lt_motion.look_at_object(self.detected_object_TF)
+                    #self._lt_motion.look_at_object(self.detected_object_TF)
                     #self.switch_camera(flow_list =["/camera/color/image_raw"], switch_period = 1)
                     # self.listener.waitForTransform("map", 'Target_TF_0', rospy.Time(0), rospy.Duration(5))
                     # (trans, rot) = self.listener.lookupTransform("map", 'Target_TF_0', rospy.Time(0))
@@ -296,7 +299,7 @@ class Robocup_simu_scenario(AbstractScenario):
     def grasping_pondere(self):
         for obj in self.detection_result:
             if obj.type in self.objets_ponderes:
-                self.actualise_detected_obj(self.detection_result)
+                self.actualise_detected_obj(obj)
                 result = self.catch_object("Catch XYZ")
                 if result['status'] == 'Success':
                     return True
