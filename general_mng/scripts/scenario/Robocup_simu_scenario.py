@@ -121,6 +121,7 @@ class Robocup_simu_scenario(AbstractScenario):
             while len(self.detection_result) == 0 and attempt < 4 and self.detected_object == '':
                 self.find_object()
                 attempt += 1
+            rospy.logwarn("MESSAGE INFORMATIONS( OBJECT: %s, PERSONNE %s)", self.darknet_object_message, self.personne_message)
             if self.detected_object != '':
                 result = self.catch_object("Catch XYZ")
             if result['status'] != 'Success':
