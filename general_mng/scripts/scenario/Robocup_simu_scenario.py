@@ -103,8 +103,9 @@ class Robocup_simu_scenario(AbstractScenario):
         # # Subscribers
         self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
         self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
-        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
         self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
+        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+       
 
     def start_scenario(self):   
 
@@ -221,17 +222,16 @@ class Robocup_simu_scenario(AbstractScenario):
         return result
 
     def message_personne(self, msg):
-        if 'left' in msg.data:
-            self.personne_message = 'Left_Person'
-        elif 'right' in msg.data:
-            self.personne_message = 'Right_Person'
-        if self.personne_message != 'pending':
-            self.subPerson.unregister()
+        if msg.data != 'pending':
+            if 'left' in msg.data:
+                self.personne_message = 'Left_Person'
+            elif 'right' in msg.data:
+                self.personne_message = 'Right_Person'
+        
 
     def message_object(self, msg):
-        self.object_message = msg.data
-        if self.object_message != 'pending':
-            self.subObject.unregister()
+        if msg.data != 'pending':
+            self.object_message = msg.data
 
     def message_object_num(self,msg):
         self.object_num_message = msg.data
@@ -239,9 +239,9 @@ class Robocup_simu_scenario(AbstractScenario):
             self.subObjectNum.unregister()
 
     def message_object_darknet(self, msg):
-        self.subObjectDarknet = msg.data
-        if self.darknet_object_message != 'pending':
-            self.subObjectDarknet.unregister()
+        if msg.data != 'pending':
+            self.subObjectDarknet = msg.data
+
 
     def actualise_detected_obj(self, detected_obj):
         self.detected_object_TF = detected_obj.uuid+'_TF'
