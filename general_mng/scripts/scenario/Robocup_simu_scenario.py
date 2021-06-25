@@ -11,9 +11,12 @@ from meta_behaviour.LTHighBehaviour import LTHighBehaviour
 
 import json
 import time
+import math
 from std_msgs.msg import String
 from convert_2d_to_3d.srv import SwitchMode
 from object_management.srv import ConfigureFLowSwitcherService
+from robocup_launcher.srv import MessageParserSrv
+
 from tf import TransformListener
 from std_msgs.msg import Int16
 from nav_msgs.srv import GetPlan
@@ -83,6 +86,8 @@ class Robocup_simu_scenario(AbstractScenario):
         self._makePlan = rospy.ServiceProxy('/move_base/make_plan', GetPlan)
         self._getNamoEntity = rospy.ServiceProxy('/get_namo_entity', getNamoEntity)
 
+        self.message_parser = rospy.ServiceProxy("/message_parser", MessageParserSrv)
+
         self.listener = TransformListener()
 
         # Declare attributes
@@ -92,19 +97,17 @@ class Robocup_simu_scenario(AbstractScenario):
         self.object_message = "pending"
         self.darknet_object_message = "mustard"
         self.object_num_message = -1
-        self.detected_object = None
         self.configuration_ready = True
         self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
         self.detection_result = []
         self.grasp_message = False
-
         self.detected_object = ''
         
         # # Subscribers
-        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
-        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
-        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
-        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+        # self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
+        # self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
+        # self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
+        # self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
        
 
     def start_scenario(self):   
@@ -118,15 +121,21 @@ class Robocup_simu_scenario(AbstractScenario):
             result = {'status':''}
             self.go_To("Perception_3_2")
             attempt = 0
+            result = {'status':''}
+            parser_result = self.message_parser()
+            self.personne_message = parser_result.person
+            self.darknet_object_message = parser_result.object_darknet
+            rospy.logwarn("MESSAGE INFORMATIONS( OBJECT: %s, PERSONNE %s)", self.darknet_object_message, self.personne_message)
             while len(self.detection_result) == 0 and attempt < 4 and self.detected_object == '':
                 self.find_object()
                 attempt += 1
-            rospy.logwarn("MESSAGE INFORMATIONS( OBJECT: %s, PERSONNE %s)", self.darknet_object_message, self.personne_message)
             if self.detected_object != '':
                 result = self.catch_object("Catch XYZ")
             if result['status'] != 'Success':
-                self.grasping_pondere()
-            self.go_To(self.personne_message)
+                grasp = self.get_closest_object(self.detection_result)
+                self.actualise_detected_obj(grasp)
+            #     self.grasping_pondere()
+            result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], self.personne_message, self._nav_strategy['timeout'])
             self.scenario_end = True
 
     
