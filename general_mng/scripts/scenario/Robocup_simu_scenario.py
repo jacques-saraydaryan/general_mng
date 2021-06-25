@@ -236,8 +236,8 @@ class Robocup_simu_scenario(AbstractScenario):
 
     def message_object_num(self,msg):
         self.object_num_message = msg.data
-        if self.object_num_message != -1:
-            self.subObjectNum.unregister()
+        # if self.object_num_message != -1:
+        #     self.subObjectNum.unregister()
 
     def message_object_darknet(self, msg):
         if msg.data != 'pending':
@@ -321,3 +321,39 @@ class Robocup_simu_scenario(AbstractScenario):
         poseStamped.pose.orientation.w = rot[3]
 
         return poseStamped
+
+    def get_closest_object(self,objects_list):
+        """
+        Will get the closest object to the robot from an object list.
+        Return the data of the closest object.
+
+        :param objects_list: list of objects detected in a room
+        :type objects_list: list
+        """
+        try:
+            tflistener = TransformListener()
+            now = rospy.Time(0)
+            tflistener.waitForTransform("/map", "/base_footprint", now, rospy.Duration(2.0))
+            (trans, rot) = tflistener.lookupTransform("/map", "/base_footprint", now)
+
+
+            minimum_distance = 0
+            choosen_item = None
+            for item in objects_list:
+
+                x_data_item = item.pose.position.x
+                y_data_item = item.pose.position.y
+
+                item_distance = math.sqrt(pow(x_data_item-trans[0],2)+pow(y_data_item-trans[1],2))
+                
+                if minimum_distance == 0:
+                    minimum_distance = item_distance
+                    choosen_item = item
+                else:
+                    if item_distance < minimum_distance:
+                        minimum_distance = item_distance
+                        choosen_item = item
+
+            return choosen_item
+        except:
+            rospy.loginfo("{class_name} COULDN'T GET CLOSEST OBJECT")
