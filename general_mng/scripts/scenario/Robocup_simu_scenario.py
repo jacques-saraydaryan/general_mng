@@ -101,10 +101,10 @@ class Robocup_simu_scenario(AbstractScenario):
         self.detected_object = ''
         
         # # Subscribers
-        # self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
-        # self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
-        # self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
-        # self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
+        self.subPerson = rospy.Subscriber("/message/person", String, self.message_personne)
+        self.subObject = rospy.Subscriber("/message/object", String, self.message_object)
+        self.subObjectNum = rospy.Subscriber("/message/object_num", Int16, self.message_object_num)
+        self.subObjectDarknet = rospy.Subscriber("/message/object_darknet", String, self.message_object_darknet)
 
     def start_scenario(self):   
 
@@ -166,7 +166,7 @@ class Robocup_simu_scenario(AbstractScenario):
                         self.detection_result = response.payload
                         rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
                         if self.detection_result != []:
-                            if self.darknet_object_message != 'undefined':
+                            if self.darknet_object_message != 'undefined' and self.darknet_object_message != 'pending':
                                 for el in self.detection_result:
                                     if el.type == self.darknet_object_message:
                                         self.actualise_detected_obj(el)
@@ -180,6 +180,7 @@ class Robocup_simu_scenario(AbstractScenario):
                     rospy.logwarn("{class_name} : Can't use the turn around and detect object behaviour".format(class_name=self.__class__.__name__))
 
         self.switch_camera(flow_list =["/fake_camera"], switch_period = 1)
+
     def current_zone(self):
 
         for location in self._locations:
@@ -198,27 +199,25 @@ class Robocup_simu_scenario(AbstractScenario):
             tentatives = 0
             self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
             while result["status"] != "Success" and tentatives < 2:
-                if tentatives != 0:
-                    nav_strategy = 'RES'
-                else:
-                    nav_strategy = self._nav_strategy['action']
+                self._lt_motion.set_palbator_ready_to_travel()
+                if tentatives == 0:
                     coord_x = self.detected_object_coord_x
                     coord_y = self.detected_object_coord_y
                     coord_z = self.detected_object_coord_z
-                self._lt_motion.set_palbator_ready_to_travel()
+                    self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
                 try:
-                    self._lt_navigation.send_nav_order_to_pt(nav_strategy, 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
+                    self._lt_navigation.send_nav_order_to_pt('RES', 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
                     dimensions = []
                     for item in self._objects:
                         if item['id'] == self.detected_object:
                             dimensions = item['dimensions']
+                    rospy.logwarn("CATCHING OBJECT: %s", self.detected_object)
                     result = self._lt_motion.catch_object_XYZ(coord_x,coord_y, coord_z, dimensions)
                     result = json.loads(result.result.action_output)
                 except rospy.ROSInterruptException:
                     rospy.loginfo("{class_name} ACTION FAILED, NEW TRY")
                 tentatives+=1
             self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
-        
         return result
 
     def message_personne(self, msg):
@@ -253,6 +252,7 @@ class Robocup_simu_scenario(AbstractScenario):
 
     def grasping_pondere(self):
         for obj in self.detection_result:
+            
             if obj.type in self.objets_ponderes:
                 self.actualise_detected_obj(obj)
                 result = self.catch_object("Catch XYZ")
