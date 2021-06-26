@@ -111,12 +111,12 @@ class Robocup_Cleanup(AbstractScenario):
 
             self.perception_phase('Table_Perception')
             self.return_objects()
-            grasp = self.get_closest_object(self.detection_result)
-            self.actualise_detected_obj(grasp)
-            self.go_To('Table_Grasp')
-            self.catch_object_table()
+            if self.detection_result != [] :
+                grasp = self.get_closest_object(self.detection_result)
+                self.actualise_detected_obj(grasp)
+                self.go_To('Table_Grasp')
+                self.catch_object_table()
 
-            self.go_To()
             self.perception_phase('Perception_2')
             self.perception_phase('Room_1')
             self.perception_phase('Perception_0')
@@ -146,7 +146,11 @@ class Robocup_Cleanup(AbstractScenario):
     def return_objects(self):
         response = self._lt_perception.get_object_in_room(self.current_zone(), self.objets_ponderes)
         self.detection_result = response.payload
-        rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
+        for object in self.detection_result:
+            if object.pose.position.z < 0.2:
+                self.detection_result.remove(object)
+
+        rospy.loginfo("{class_name}: DETECTION RESULT ON TABLE %s".format(class_name=self.__class__.__name__),self.detection_result)
 
     def find_object(self):
         """
@@ -259,7 +263,7 @@ class Robocup_Cleanup(AbstractScenario):
             
             if obj.type in self.objets_ponderes:
                 self.actualise_detected_obj(obj)
-                result = self.catch_object("Catch XYZ")
+                result = self.catch_object()
                 if result['status'] == 'Success':
                     return True
         return False
@@ -364,8 +368,9 @@ class Robocup_Cleanup(AbstractScenario):
     def perception_phase(self, Itp):
         self.go_To(Itp)
         if Itp == "Table_Perception":
-            self._lt_motion.look_at_object_XYZ(1.4, 1.9, 0.4)
+            self._lt_motion.look_at_object_XYZ(1.4, 1.9, 0.9)
+        rospy.loginfo("{class_name} GETTING OBJECTS TFs")
         self.switch_camera(flow_list = ["/camera/color/image_raw"], switch_period = 1)
         rospy.sleep(12)
-        self.switch_camera(flow_list =["/fake_camera"], switch_period = 1)
+        self.switch_camera(flow_list = ["/fake_camera"], switch_period = 1)
 

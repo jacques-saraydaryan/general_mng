@@ -475,7 +475,7 @@ class LTMotionPalbator(LTAbstract):
             goal = ArmControlGoal()
             goal.action = "Travelling"
             self._action_client_arm_control.send_goal(goal)
-            rospy.loginfo("{class_name}: SETTING PAL IN TRAVEL MDOE".format(class_name=self.__class__.__name__))
+            rospy.loginfo("{class_name}: SETTING PAL IN TRAVEL MODE".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()
             rospy.loginfo("{class_name}: RESULT OF SETTING".format(class_name=self.__class__.__name__))
             result = self._action_client_arm_control.get_result()
