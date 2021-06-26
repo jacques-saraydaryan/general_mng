@@ -234,7 +234,7 @@ class Robocup_Cleanup(AbstractScenario):
         result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], 'Plate', self._nav_strategy['timeout'])
         dropping_achieved = False
         while not dropping_achieved:
-            result = self._lt_motion.dropping(self.plate_places[0])
+            result = self._lt_motion.dropping_label(self.plate_places[0])
             if result['action'] == 'Success':
                 self.plate_places.pop(0)
                 dropping_achieved = True
