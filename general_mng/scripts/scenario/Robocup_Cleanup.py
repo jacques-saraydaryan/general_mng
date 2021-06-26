@@ -23,7 +23,7 @@ from nav_msgs.srv import GetPlan
 from geometry_msgs.msg import PoseStamped
 from world_manager.srv import getNamoEntity
 
-class Robocup_simu_scenario(AbstractScenario):
+class Robocup_Cleanup(AbstractScenario):
 
     DEFAULT_TIMEOUT = 5.0
     NO_TIMEOUT = -1.0
@@ -116,6 +116,7 @@ class Robocup_simu_scenario(AbstractScenario):
             self.go_To('Table_Grasp')
             self.catch_object_table()
 
+            self.go_To()
             self.perception_phase('Perception_2')
             self.perception_phase('Room_1')
             self.perception_phase('Perception_0')

@@ -5,6 +5,6 @@
 scenarios_data_folder: '../data'
 #default_scenario_name: 'CleanUp2020CPEScenario'
 #default_scenario_name: 'CPETest_scenario'
-default_scenario_name: 'Robocup_simu_scenario'
+default_scenario_name: 'Robocup_Cleanup'
 #default_scenario_name: 'Receptionist2020CPEScenario'
 
