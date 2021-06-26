@@ -98,6 +98,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.detection_result = []
         self.grasp_message = False
         self.detected_object = ''
+        self.plate_places = ['Plate_0', 'Plate_1','Plate_2', 'Plate_3']
 
 
         self.configuration_ready = True
@@ -115,7 +116,10 @@ class Robocup_Cleanup(AbstractScenario):
                 grasp = self.get_closest_object(self.detection_result)
                 self.actualise_detected_obj(grasp)
                 self.go_To('Table_Grasp')
-                self.catch_object()
+                result = self.catch_object()
+                if result['status'] == 'Success':
+                    result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], 'Plate', self._nav_strategy['timeout'])
+                    self.droppin_action()
 
             self.perception_phase('Perception_2')
             self.perception_phase('Room_1')
@@ -225,6 +229,16 @@ class Robocup_Cleanup(AbstractScenario):
             tentatives+=1
         self.switch_config(register_or_grap_mode = 0, category_filter_tag_list="*")
         return result
+
+    def droppin_action(self):
+        rospy.logwarn("DROPPING OBJECT")
+        dropping_achieved = False
+        while not dropping_achieved:
+            result = self._lt_motion.dropping(self.plate_places[0])
+            if result['action'] == 'Success':
+                self.plate_places.pop(0)
+                dropping_achieved = True
+        
 
     def catch_object_table(self):
         """
@@ -371,7 +385,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.go_To(Itp)
         if Itp == "Table_Perception":
             self._lt_motion.look_at_object_XYZ(1.4, 1.9, 0.9)
-        rospy.loginfo("{class_name} GETTING OBJECTS TFs")
+        rospy.loginfo(" GETTING OBJECTS TFs")
         self.switch_camera(flow_list = ["/camera/color/image_raw"], switch_period = 1)
         rospy.sleep(15)
         self.switch_camera(flow_list = ["/fake_camera"], switch_period = 1)
