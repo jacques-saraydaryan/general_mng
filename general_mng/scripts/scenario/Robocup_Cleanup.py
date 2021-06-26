@@ -234,6 +234,7 @@ class Robocup_Cleanup(AbstractScenario):
         dropping_achieved = False
         while not dropping_achieved:
             result = self._lt_motion.dropping_label(self.plate_places[0])
+            rospy.logwarn("DROPPING RESULT : %s", result)
             if result['action'] == 'Success':
                 self.plate_places.pop(0)
                 dropping_achieved = True
