@@ -111,7 +111,7 @@ class Robocup_simu_scenario(AbstractScenario):
 
             self.perception_phase('Table_Perception')
             self.return_objects()
-            grasp = self.get_closest_object()
+            grasp = self.get_closest_object(self.detection_result)
             self.actualise_detected_obj(grasp)
             self.go_To('Table_Grasp')
             self.catch_object_table()
@@ -119,7 +119,7 @@ class Robocup_simu_scenario(AbstractScenario):
             self.perception_phase('Perception_2')
             self.perception_phase('Room_1')
             self.perception_phase('Perception_0')
-            
+
             self.grasping_pondere()
             self.scenario_end = True
 
