@@ -115,7 +115,7 @@ class Robocup_Cleanup(AbstractScenario):
                 grasp = self.get_closest_object(self.detection_result)
                 self.actualise_detected_obj(grasp)
                 self.go_To('Table_Grasp')
-                self.catch_object_table()
+                self.catch_object()
 
             self.perception_phase('Perception_2')
             self.perception_phase('Room_1')
@@ -204,13 +204,15 @@ class Robocup_Cleanup(AbstractScenario):
         self.switch_config(register_or_grap_mode = 1, category_filter_tag_list="*")
         while result["status"] != "Success" and tentatives < 2:
             self._lt_motion.set_palbator_ready_to_travel()
-            if tentatives == 0:
+            if tentatives != 0:
+                nav_strategy = 'RES'
+            else:
                 coord_x = self.detected_object_coord_x
                 coord_y = self.detected_object_coord_y
                 coord_z = self.detected_object_coord_z
-                self._lt_navigation.send_nav_order_to_pt(self._nav_strategy['action'], 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
+                nav_strategy = self._nav_strategy['action']
             try:
-                self._lt_navigation.send_nav_order_to_pt('RES', 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
+                self._lt_navigation.send_nav_order_to_pt(nav_strategy, 'CloseToObject', coord_x, coord_y, self._nav_strategy['timeout'])
                 dimensions = []
                 for item in self._objects:
                     if item['id'] == self.detected_object:
@@ -371,6 +373,6 @@ class Robocup_Cleanup(AbstractScenario):
             self._lt_motion.look_at_object_XYZ(1.4, 1.9, 0.9)
         rospy.loginfo("{class_name} GETTING OBJECTS TFs")
         self.switch_camera(flow_list = ["/camera/color/image_raw"], switch_period = 1)
-        rospy.sleep(12)
+        rospy.sleep(15)
         self.switch_camera(flow_list = ["/fake_camera"], switch_period = 1)
 
