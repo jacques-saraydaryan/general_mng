@@ -251,11 +251,11 @@ class LTMotionPalbator(LTAbstract):
             feedback, result = fct(coord_x, coord_y, coord_z)
             response.process_state(feedback)
             if response.status == LTServiceResponse.FAILURE_STATUS:
-                response.msg = " Failure during look_at_object XYZ: %s" % (coord_x, coord_y, coord_z)
+                response.msg = " Failure during look_at_object XYZ: %s" % ([coord_x, coord_y, coord_z])
                 return response
             else:
                 # FIXME to be completed with all ACTION status in GoalStatus
-                response.msg = " Operation succes look_at_object XYZ: %s" % (coord_x, coord_y, coord_z)
+                response.msg = " Operation succes look_at_object XYZ: %s" % ([coord_x, coord_y, coord_z])
                 response.result = result
                 return response
         return response
@@ -536,9 +536,15 @@ class LTMotionPalbator(LTAbstract):
         try:
             goal = ArmControlGoal()
             goal.action = 'LookingXYZ'
-            goal.coord_x = coord_x
-            goal.coord_y = coord_y
-            goal.coord_z = coord_z
+            pose = Pose()
+            pose.position.x = coord_x
+            pose.position.y = coord_y
+            pose.position.z = coord_z
+            pose.orientation.x = 0.0
+            pose.orientation.y = 0.0
+            pose.orientation.z = 0.0
+            pose.orientation.w = 1.0
+            goal.pose = pose
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("{class_name}: SENDING LOOKING XYZ GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()

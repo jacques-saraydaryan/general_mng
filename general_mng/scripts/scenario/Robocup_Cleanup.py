@@ -94,7 +94,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.zone = 'Room_1'
         self.current_itp = ''
         
-        self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'mug', 'cup', 'cracker']
+        self.objets_ponderes = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'bleach', 'mug', 'cup', 'cracker']
         self.detection_result = []
         self.grasp_message = False
         self.detected_object = ''
