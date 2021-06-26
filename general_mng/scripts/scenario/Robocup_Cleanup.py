@@ -143,12 +143,9 @@ class Robocup_simu_scenario(AbstractScenario):
         return result
 
     def return_objects(self):
-        tentatives = 0
-        while self.detection_result == [] and tentatives < 3:
-            tentatives += 1
-            response = self._lt_perception.get_object_in_room(self.current_zone(), self.objets_ponderes)
-            self.detection_result = response.payload
-            rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
+        response = self._lt_perception.get_object_in_room(self.current_zone(), self.objets_ponderes)
+        self.detection_result = response.payload
+        rospy.loginfo("{class_name}: DETECTION RESULT %s".format(class_name=self.__class__.__name__),self.detection_result)
 
     def find_object(self):
         """

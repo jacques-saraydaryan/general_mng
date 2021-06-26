@@ -61,5 +61,26 @@
         "name": "Perception_3_3",
         "interestPoint": "place_perception_3",
         "zone": "Room_2"
+    },
+    {
+        "id": "Perception_0",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_0",
+        "interestPoint": "place_perception_0",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Table_Perception",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Table_Perception",
+        "interestPoint": "place_table_perception",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Table_Grasp",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Table_Grasp",
+        "interestPoint": "place_table_grasp",
+        "zone": "Room_1"
     }
 ]
