@@ -115,7 +115,6 @@ class Robocup_Cleanup(AbstractScenario):
             if self.detection_result != [] :
                 grasp = self.get_closest_object(self.detection_result)
                 self.actualise_detected_obj(grasp)
-                self.go_To('Table_Grasp')
                 result = self.catch_object()
                 if result['status'] == 'Success':
                     self.droppin_action()
