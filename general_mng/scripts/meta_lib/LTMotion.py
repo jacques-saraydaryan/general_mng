@@ -223,6 +223,43 @@ class LTMotionPalbator(LTAbstract):
                 return response
         return response
 
+
+    def look_at_object_XYZ(self, coord_x, coord_y, coord_z, service_mode=LTAbstract.ACTION):
+        """
+        Will send a request to the Moveit Global controller to point an object.
+        Returns a response containing the result, the status and the feedback of the executed action.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: self.__look_at_object_XYZ,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: None
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = "[%s] is not available for look_at_object XYZ" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(coord_x, coord_y, coord_z)
+            response.process_state(feedback)
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during look_at_object XYZ: %s" % (coord_x, coord_y, coord_z)
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation succes look_at_object XYZ: %s" % (coord_x, coord_y, coord_z)
+                response.result = result
+                return response
+        return response
+
     def catch_object_label(self, object_label, service_mode=LTAbstract.ACTION):
         """
         Will send a request to the Moveit Global controller to point an object.
@@ -487,6 +524,29 @@ class LTMotionPalbator(LTAbstract):
 
         except Exception as e:
             rospy.logerr("{class_name}: Action look_at_object could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+
+    def __look_at_object_XYZ(self, coord_x, coord_y, coord_z):
+        """
+        Action client which will send a request to the Moveit Global controller to point an object.
+        Returns a GoalStatus and an action result.
+        :param object_label: name of the target object
+        :type object_label: string
+        """
+        try:
+            goal = ArmControlGoal()
+            goal.action = 'LookingXYZ'
+            goal.coord_x = coord_x
+            goal.coord_y = coord_y
+            goal.coord_z = coord_z
+            self._action_client_arm_control.send_goal(goal)
+            rospy.loginfo("{class_name}: SENDING LOOKING XYZ GOAL".format(class_name=self.__class__.__name__))
+            self._action_client_arm_control.wait_for_result()
+            result = self._action_client_arm_control.get_result()
+            return GoalStatus.SUCCEEDED, result
+
+        except Exception as e:
+            rospy.logerr("{class_name}: Action look_at_object XYZ could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
 
