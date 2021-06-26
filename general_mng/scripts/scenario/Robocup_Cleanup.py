@@ -118,7 +118,6 @@ class Robocup_Cleanup(AbstractScenario):
                 self.go_To('Table_Grasp')
                 result = self.catch_object()
                 if result['status'] == 'Success':
-                    result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], 'Plate', self._nav_strategy['timeout'])
                     self.droppin_action()
 
             self.perception_phase('Perception_2')
@@ -232,6 +231,7 @@ class Robocup_Cleanup(AbstractScenario):
 
     def droppin_action(self):
         rospy.logwarn("DROPPING OBJECT")
+        result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], 'Plate', self._nav_strategy['timeout'])
         dropping_achieved = False
         while not dropping_achieved:
             result = self._lt_motion.dropping(self.plate_places[0])
@@ -276,13 +276,11 @@ class Robocup_Cleanup(AbstractScenario):
 
     def grasping_pondere(self):
         for obj in self.detection_result:
-            
             if obj.type in self.objets_ponderes:
                 self.actualise_detected_obj(obj)
                 result = self.catch_object()
                 if result['status'] == 'Success':
-                    return True
-        return False
+                    self.droppin_action()
 
     def NAMO(self):
         free = False
