@@ -630,9 +630,15 @@ class LTMotionPalbator(LTAbstract):
         try:
             goal = ArmControlGoal()
             goal.action = 'DroppingXYZ'
-            goal.coord_x = coord_x
-            goal.coord_y = coord_y
-            goal.coord_z = coord_z
+            pose = Pose()
+            pose.position.x = coord_x
+            pose.position.y = coord_y
+            pose.position.z = coord_z
+            pose.orientation.x = 0.0
+            pose.orientation.y = 0.0
+            pose.orientation.z = 0.0
+            pose.orientation.w = 1.0
+            goal.pose = pose
             self._action_client_arm_control.send_goal(goal)
             rospy.loginfo("{class_name}: SENDING DROPPING XYZ GOAL".format(class_name=self.__class__.__name__))
             self._action_client_arm_control.wait_for_result()

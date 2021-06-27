@@ -98,7 +98,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.detection_result = []
         self.grasp_message = False
         self.detected_object = ''
-        self.plate_places = ['Plate_0', 'Plate_1','Plate_2', 'Plate_3']
+        self.plate_places = [[1.97,-0.68,0.45], [1.54,-0.68,0.45],[1.97,-0.52,0.45], [1.54,-0.52,0.45]]
 
 
         self.configuration_ready = True
@@ -233,7 +233,7 @@ class Robocup_Cleanup(AbstractScenario):
         result = self._lt_navigation.send_nav_order(self._nav_strategy['action'], self._nav_strategy['mode'], 'Plate', self._nav_strategy['timeout'])
         dropping_achieved = False
         while not dropping_achieved:
-            result = self._lt_motion.dropping_label(self.plate_places[0])
+            result = self._lt_motion.dropping_XYZ(self.plate_places[0][0],self.plate_places[0][1],self.plate_places[0][2])
             result = json.loads(result.result.action_output)
             rospy.logwarn("DROPPING RESULT : %s", result)
             if result['action'] == 'Success':
@@ -276,6 +276,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.detected_object_coord_z = detected_obj.pose.position.z
 
     def grasping_pondere(self):
+        self.return_objects()
         for obj in self.detection_result:
             if obj.type in self.objets_ponderes:
                 self.actualise_detected_obj(obj)
