@@ -98,7 +98,7 @@ class Robocup_Cleanup(AbstractScenario):
         self.detection_result = []
         self.grasp_message = False
         self.detected_object = ''
-        self.plate_places = [[1.97,-0.68,0.45], [1.54,-0.68,0.45],[1.97,-0.52,0.45], [1.54,-0.52,0.45]]
+        self.plate_places = [[1.97,-0.68,0.55], [1.54,-0.68,0.55],[1.97,-0.52,0.55], [1.54,-0.52,0.55]]
 
 
         self.configuration_ready = True
@@ -124,7 +124,7 @@ class Robocup_Cleanup(AbstractScenario):
             self.perception_phase('Perception_0')
 
             self.grasping_pondere()
-            self.scenario_end = True
+            # self.scenario_end = True
 
     
     def go_To(self, Itp):
