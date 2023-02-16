@@ -1,0 +1,29 @@
+{
+    "duration": 300,
+    "variables": {
+        "scenarioInfos": "cleanup/scenarioInfos.json",
+        "path_to_objects": "../../../../../../data/world_mng"
+    },
+    "parameters":{
+        "LTHri_action_server_name": "action_GmToHri",
+        "nav_strategy_parameters":{
+            "action": "NP",
+            "mode": "CRRCloseToGoal",
+            "timeout": 90.0
+        },
+        "debug_variables":{
+            "allow_navigation": true,
+            "allow_simulation": true,
+            "allow_perception": true,
+            "allow_highbehaviour": true,
+            "allow_motion": true
+        },
+        "path_folder_to_save_imgs": "../../../../robocup_palbator-hri_js/public"
+      },
+    "guestsInfos": "receptionist/guestsInfos.json",
+    "imports":{
+        "locations": "cleanup/locations_wrs.json",
+        "objects": "cleanup/objects.json"
+    },
+    "name": "Robocup_Cleanup"
+}

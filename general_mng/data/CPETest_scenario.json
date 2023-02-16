@@ -1,0 +1,218 @@
+{
+    "duration": 300,
+    "variables": {
+        "known_person": {
+            "John": {
+                "age":"23",
+                "drink": "Coke",
+                "name": "John_simu",
+                "pathOnTablet": "img/drinks/coke.png",
+                "guestPhotoPath": "img/people/John_simu.png"
+            }
+        },
+        "scenarioInfos": "cleanup/scenarioInfos.json",
+        "path_to_objects": "../../../../../../data/world_mng"
+    },
+    "parameters":{
+        "LTHri_action_server_name": "action_GmToHri",
+        "nav_strategy_parameters":{
+            "action": "NP",
+            "mode": "CRRCloseToGoal",
+            "timeout": 90.0
+        },
+        "debug_variables":{
+            "allow_navigation": true,
+            "allow_simulation": true,
+            "allow_perception": true,
+            "allow_highbehaviour": true,
+            "allow_motion": true
+        },
+        "path_folder_to_save_imgs": "../../../../robocup_palbator-hri_js/public"
+      },
+    "guestsInfos": "receptionist/guestsInfos.json",
+    "imports":{
+        "locations": "cleanup/locations_wrs.json",
+        "objects": "cleanup/objects.json"
+    },
+    "steps": [
+        {
+            "name": "Scenario beginning",
+            "order": 1,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "Beginning"
+        },
+        {
+            "name": "Going to find object",
+            "order": 2,
+            "eta": 60,
+            "arguments": {},
+            "action": "",
+            "id": "Travel1"
+        },
+        {
+            "name": "Travel to first object",
+            "order": 3,
+            "eta": 0,
+            "speech": {
+                "said": "Travel to first object",
+                "title": "Travel to first object"
+                },
+            "arguments": {
+                "where": "Perception_3_1",
+                "location": {
+                    "pathOnTablet" : "img/locations/person.png",
+                    "name": "Perception_3_1"
+                  }
+            },
+            "action": "goTo",
+            "id": "goTo1"
+        },
+        {
+            "name": "Ask room where to find object",
+            "order": 2,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "FindLoc1"
+        },
+        {
+            "name": "Choose room where to find object",
+            "order": 3,
+            "eta": 0,
+            "speech": {
+                "said": "Choose room where to find object",
+                "title": "Choose room where to find object"
+            },
+            "arguments": {
+                "what": "location",
+                "rooms": ""
+            },
+            "action": "askRoom",
+            "id": "chooseLoc2"
+        },
+        {
+            "name": "Confirm room",
+            "order": 4,
+            "eta": 0,
+            "speech": {
+                "said": "Did you choose the location_name ?",
+                "title": "Did you choose the location_name ?"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_2"
+            },
+            "action": "confirm",
+            "id": "chooseLoc2_confirm"
+        },
+        {
+            "name": "Going to find object",
+            "order": 5,
+            "eta": 40,
+            "arguments": {},
+            "action": "",
+            "id": "Travel2"
+        },
+        {
+            "name": "Travel to room",
+            "order": 6,
+            "eta": 0,
+            "speech": {
+                "said": "I am travelling to the ChoosenRoom_2_name",
+                "title": "I am travelling to the ChoosenRoom_2_name"
+            },
+            "arguments": {
+                "where": "ChoosenRoom_2",
+                "location": {
+                    "pathOnTablet" : "ChoosenRoom_2_pathOnTablet",
+                    "name": "ChoosenRoom_2_name"
+                } 
+            },
+            "action": "goTo",
+            "id": "goTo1"
+        },
+        {
+            "name": "Find first object",
+            "order": 7,
+            "eta": 100,
+            "arguments": {},
+            "action": "",
+            "id": "FindObject1"
+        },
+        {
+            "name": "Find the first object",
+            "order": 8,
+            "eta": 0,
+            "speech": {
+                "said": "I am looking for objects in the ChoosenRoom_2_name",
+                "title": "I am looking for objects in the ChoosenRoom_2_name"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_2",
+                "location": {
+                    "pathOnTablet" : "ChoosenRoom_2_pathOnTablet",
+                    "name": "ChoosenRoom_2_name"
+                  },
+                "objectKey": "Object_1"
+
+            },
+            "action": "findObject",
+            "id": "findObj1"
+        },
+        {
+            "name": "Catching the kitchen object",
+            "order": 9,
+            "eta": 40,
+            "arguments": {},
+            "action": "",
+            "id": "Catch1"
+        },
+        {
+            "name": "Catch Label the first object",
+            "order": 10,
+            "eta": 0,
+            "speech": {
+                "said": "I am catching the Object_1_name",
+                "title": "I am catching the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_pathOnTablet",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "catchObj1"
+        },
+        {
+            "name": "Dropping Label the first object",
+            "order": 11,
+            "eta": 0,
+            "speech": {
+                "said": "I am dropping the Object_1_name",
+                "title": "I am dropping the Object_1_name"
+            },
+            "arguments": {
+                "what": "Object_1",
+                "object": {
+                    "pathOnTablet": "Object_1_pathOnTablet",
+                    "name": "Object_1_name"
+                }
+            },
+            "action": "objectAction",
+            "id": "dropObj1"
+        },
+        {
+            "name": "Finish Scenario",
+            "order": 12,
+            "eta": 0,
+            "arguments": {},
+            "action": "",
+            "id": "FinishScenario"
+        }
+    ],
+    "name": "CPETest_scenario"
+}
+  

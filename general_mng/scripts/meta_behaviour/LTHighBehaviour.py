@@ -87,14 +87,23 @@ class LTHighBehaviour(LTAbstract):
                 rospy.loginfo("{class_name}: ROTATION %s of %s radians".format(class_name=self.__class__.__name__),str(i),str(rotation_angle))
                 response_nav = self._lt_navigation.send_nav_rotation_order("NT", rotation_angle , nav_timeout)
                 rospy.sleep(4)
+                #Filtre pour le retour en simulation
+                category_filter = ['mustard', 'tomatosoup', 'pottedmeat', 'sugar', 'coffee', 'cracker', 'apple']
+                response = self._lt_perception.get_object_in_room(room_to_inspect, category_filter)
+                response_list = response.payload
+                # objects_list = []
+                # indesirables = ['Itp', 'lemon', 'apple', 'orange', 'peach', 'banana', 'strawberry', 'plum', 'pear']
+                # for obj in response_list:
+                #     if obj.type in indesirables:
+                #         response_list.remove(obj)
+                #     else:
+                #         objects_list.append(obj.type)
+                rospy.logwarn("{class_name}: GRASPABLE OBJECTS IN ROOM AFTER FILTER %s".format(class_name=self.__class__.__name__),str(response_list))
 
-            response = self._lt_perception.get_object_in_room(room_to_inspect)
-            objects_list = response.payload
-            rospy.logwarn("{class_name}: OBJECTS IN ROOM %s".format(class_name=self.__class__.__name__),str(objects_list))
-
-            if len(objects_list) != 0:
-                closest_object = self.get_closest_object(objects_list)
-                return closest_object
+            if len(response_list) != 0:
+                return response_list
+                # closest_object = self.get_closest_object(response_list)
+                # return closest_object
             else:
                 return None
 
@@ -126,10 +135,9 @@ class LTHighBehaviour(LTAbstract):
             minimum_distance = 0
             choosen_item = None
             for item in objects_list:
-                data_item = json.loads(item)
 
-                x_data_item = data_item["pose"]["position"]["x"]
-                y_data_item = data_item["pose"]["position"]["y"]
+                x_data_item = item.pose.position.x
+                y_data_item = item.pose.position.y
 
                 item_distance = math.sqrt(pow(x_data_item-trans[0],2)+pow(y_data_item-trans[1],2))
                 

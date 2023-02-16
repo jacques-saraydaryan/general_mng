@@ -1,0 +1,86 @@
+[
+    {
+        "id": "Room1", 
+        "pathOnTablet": "img/locations/bedroom.png",
+        "name": "Room1",
+        "interestPoint": "place_room1",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Room2",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Room2",
+        "interestPoint": "place_room2",
+        "zone": "Room_2"
+    },
+    {
+        "id": "GreenBac",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "GreenBac",
+        "interestPoint": "place_bac",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Plate",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Plate",
+        "interestPoint": "place_plate",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Perception_1",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_1",
+        "interestPoint": "place_perception_1",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Perception_2",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_2",
+        "interestPoint": "place_perception_2",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Perception_3_1",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_3_1",
+        "interestPoint": "place_perception_3",
+        "zone": "Room_2"
+    },
+    {
+        "id": "Perception_3_2",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_3_2",
+        "interestPoint": "place_perception_3",
+        "zone": "Room_2"
+    },
+    {
+        "id": "Perception_3_3",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_3_3",
+        "interestPoint": "place_perception_3",
+        "zone": "Room_2"
+    },
+    {
+        "id": "Perception_0",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Perception_0",
+        "interestPoint": "place_perception_0",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Table_Perception",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Table_Perception",
+        "interestPoint": "place_table_perception",
+        "zone": "Room_1"
+    },
+    {
+        "id": "Table_Grasp",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Table_Grasp",
+        "interestPoint": "place_table_grasp",
+        "zone": "Room_1"
+    }
+]

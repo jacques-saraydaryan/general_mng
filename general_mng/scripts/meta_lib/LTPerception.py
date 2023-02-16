@@ -12,6 +12,7 @@ from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFrom
 from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
 from ros_people_mng_srvs.srv import TakePictureService
 
+from robocup_msgs.msg import EntityList
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from cv_bridge import CvBridge, CvBridgeError
 from actionlib_msgs.msg import GoalStatus
@@ -20,7 +21,7 @@ from rospy.exceptions import ROSException, ROSInterruptException
 from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
-
+from world_manager.srv import select_object_in_room_service
 from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom, ResetObjects
 from tf import TransformListener
 import math
@@ -105,6 +106,15 @@ class LTPerception(LTAbstract):
                 rospy.loginfo("{class_name}: get_objects_in_room server connected".format(class_name=self.__class__.__name__))
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("{class_name}: Unable to connect to the get_objects_in_room service.".format(class_name=self.__class__.__name__))
+        
+        if self._enableCheckForObjectsInRoom:
+            service_name = 'search_Entity_in_room'
+            self.get_entity_in_room_proxy = rospy.ServiceProxy(service_name,select_object_in_room_service)
+            try:
+                rospy.wait_for_service(service_name,timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: search_Entity_in_room server connected".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the search_Entity_in_room service.".format(class_name=self.__class__.__name__))
 
         if self._enableCheckForPeopleInRoom:
             service_name = 'get_people_list_in_room'
@@ -295,7 +305,7 @@ class LTPerception(LTAbstract):
                 return response
         return response
 
-    def get_object_in_room(self,room,service_mode=LTAbstract.SERVICE):
+    def get_object_in_room(self,room, category_filter, service_mode=LTAbstract.SERVICE):
         """
         Will send a perception order with a specific room in order to get the list of objects from that room. 
         Returns a response containing the result, the status and the feedback of the executed action.
@@ -320,7 +330,7 @@ class LTPerception(LTAbstract):
             response.msg = " is not available for get_object_in_room" % (service_mode)
             return response
         else:
-            feedback, result = fct(room)
+            feedback, result = fct(room, category_filter)
             response.process_state(feedback)
 
             if response.status == LTServiceResponse.FAILURE_STATUS:
@@ -1030,7 +1040,7 @@ class LTPerception(LTAbstract):
             rospy.logerr("{class_name}: Service get_people_in_room could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
 
-    def __get_object_in_room(self,room):
+    def __get_object_in_room(self,room,category_filter):
         """
         Service client which will send a perception order with a specific room in order to get the list of objects from that room. 
         Returns a GoalStatus and an objects list
@@ -1039,10 +1049,21 @@ class LTPerception(LTAbstract):
         :type room: string
         """
         try:
-            result = self.get_object_in_room_proxy(room)
-            objects_list = result.objects_list
-
-            return GoalStatus.SUCCEEDED, objects_list
+            room = room
+            if category_filter == None:
+                category_filter = "*"
+            last_update_filter = None
+            min_confidence_filter = 0.0
+            result = self.get_entity_in_room_proxy(room,category_filter,last_update_filter,min_confidence_filter)
+            rospy.logwarn("Entity in room result: %s", result)
+            # objects_list = result.objects_list
+            # return GoalStatus.SUCCEEDED, objects_list
+            objects_list = result.entity_list
+            returned_list = []
+            for obj in objects_list.entityList:
+                if obj.type != "Itp":
+                    returned_list.append(obj)
+            return GoalStatus.SUCCEEDED, returned_list
 
         except rospy.ServiceException as e:
             rospy.logerr("{class_name}: Service get_object_in_room could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
