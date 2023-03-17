@@ -22,7 +22,8 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 from world_manager.srv import select_object_in_room_service
-from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom, ResetObjects
+#FIXME to enable
+#from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom, ResetObjects
 from tf import TransformListener
 import math
 
@@ -54,10 +55,10 @@ class LTPerception(LTAbstract):
     _enableResetPersonMetaInfoMapService = True
     _enableTakePictureService = True
 
-    _enableCheckForObjectsInRoom = True
-    _enableTakePicturePalbator = True
-    _enableCheckForPeopleInRoom = True
-    _enableResetObjects = True
+    _enableCheckForObjectsInRoom = False
+    _enableTakePicturePalbator = False
+    _enableCheckForPeopleInRoom = False
+    _enableResetObjects = False
 
 
 

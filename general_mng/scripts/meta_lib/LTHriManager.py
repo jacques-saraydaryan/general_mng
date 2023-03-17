@@ -73,7 +73,7 @@ class LTHriManagerPalbator(LTAbstract):
 
 
         except Exception as e:
-            rospy.logerr("{class_name}: Could not receive result: {error}. ABORT !".format(
+            rospy.logwarn("{class_name}: Could not receive result: {error}. ABORT !".format(
                 class_name=self.__class__.__name__, error=e))
             return GoalStatus.ABORTED, None
 
@@ -156,6 +156,59 @@ class LTHriManagerPalbator(LTAbstract):
         status, result = self._execute_request(payload, timeout)
         return status, result
 
+    def generic_global(self,step_id,name,timeout,speech,
+                        type="info",
+                        wait_answer=False,
+                        need_confirmation=False,
+                        need_validation=False,
+                        title=None,
+                        description=None,
+                        media_src=None,
+                        media_type=None,
+                        options=[]):
+        response = LTServiceResponse()
+
+        data = {
+                'id': str(uuid.uuid4()),
+                'name' : str(name),
+                'action': "currentStep",
+                'step_id':step_id,
+                'timestamp': time.time(),
+                'confirmation':need_confirmation,
+                'need_validation':need_validation,
+                'wait_answer':wait_answer,
+                'args': {'type': type}
+                }
+
+        
+        if speech:
+            data['args']['speech'] = speech
+        if title:
+            data['args']['title'] = title
+        if description:
+            data['args']['description'] = description
+
+        if media_src!=None:
+            data['args']['media_src'] = media_src
+        
+        if media_type!=None:
+            data['args']['media_type'] = media_type
+
+        # options (set of [value,media_src,media_type])
+        # if options and type(options) == list:
+        if options :
+            data['args']['options'] = options
+        rospy.loginfo(json.dumps(data))
+        status, result = self._execute_request(json.dumps(data), timeout)
+        
+        response.process_state(status)
+        response.payload = result
+        return response
+
+
+    def cancel_all_actions_HRI_mng(self):
+        self.client_action_GmToHri.cancel_all_goals()
+
 
 class LTHriManager(LTAbstract):
     
@@ -227,6 +280,10 @@ class LTHriManager(LTAbstract):
     #######################################
     # HRI MANAGEMENT API
     ######################################
+
+
+
+
     def generic(self, timeout, speech, image=None, video=None, p_list=None):
         """
         :param timeout: maximum time to wait for a reaction from the local manager

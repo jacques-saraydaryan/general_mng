@@ -1,0 +1,83 @@
+{
+    "name": "TestHRIScenarioV1",
+    "duration": 300,
+    "parameters":{
+        "LTHri_action_server_name": "action_GmToHri",
+        "nav_strategy_parameters":{
+            "action": "NP",
+            "mode": "CRRCloseToGoal",
+            "timeout": 90.0
+        },
+        "debug_variables":{
+            "allow_perception": true,
+            "allow_navigation": true,
+            "allow_highbehaviour": true,
+            "allow_motion": false,
+            "allow_simulation": false
+        }
+      },
+    "imports":{
+        "locations": "TestHRIScenarioV1/locations.json",
+        "objects": "TestHRIScenarioV1/objects.json",
+        "videos": "TestHRIScenarioV1/videos.json"
+    },
+    "variables":{
+        "scenarioInfos": "TestHRIScenarioV1/scenarioInfos.json"
+    },
+    "steps": [
+        {
+            "name": "Scenario beginning",
+            "order": 1,
+            "eta": 60,
+            "arguments": {},
+            "action": "",
+            "id": "Beginning"
+        },
+        {
+            "name": "Ask room to clean",
+            "order": 2,
+            "eta": 10,
+            "arguments": {},
+            "action": "",
+            "id": "FindLoc1"
+        },
+        {
+            "name": "Go to location",
+            "order": 2,
+            "eta": 90,
+            "arguments": {},
+            "action": "",
+            "id": "Goto1"
+        },
+        {
+            "name": "Choose room to clean",
+            "order": 4,
+            "eta": 0,
+            "speech": {
+                "said": "In which room do I have to go ?",
+                "title": "In which room do I have to go ?"
+            },
+            "arguments": {
+                "what": "location",
+                "rooms": ""
+            },
+            "action": "askRoom",
+            "id": "chooseLoc1"
+        },
+        {
+            "name": "Confirm room",
+            "order": 5,
+            "eta": 0,
+            "speech": {
+                "said": "Did you choose the location_name ?",
+                "title": "Did you choose the location_name ?"
+            },
+            "arguments": {
+                "what": "ChoosenRoom_1"
+            },
+            "action": "confirm",
+            "id": "chooseLoc1_confirm"
+        }      
+    ]
+}
+  
