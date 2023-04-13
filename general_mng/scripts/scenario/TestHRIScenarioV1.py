@@ -88,9 +88,19 @@ class TestHRIScenarioV1(AbstractScenario):
         #rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
+        result = self._lm_wrapper.generic_global("Beginning","Visual wait info Name",30,"Visual wait info Speech",
+                        description="Visual wait info Description",
+                        wait_answer=False,
+                        need_confirmation=False,
+                        need_validation=False,
+                        media_src="/img/hri/landscape1.gif",
+                        media_type="img"
+                        )
+
+        rospy.sleep(10)
 
         # start navigation
-        result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
+        #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
 
         rospy.loginfo("{class_name} ACTION Wait confirmation")
         #self._lm_wrapper.timeboard_set_current_step("Beginning",self.NO_TIMEOUT)
@@ -101,18 +111,9 @@ class TestHRIScenarioV1(AbstractScenario):
                         need_validation=True
                         )
 
-        result = self._lm_wrapper.generic_global("Beginning","Go to Location",90,"I'm going to the location",
-                        description="I'm going to the location",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="https://i0.wp.com/post.healthline.com/wp-content/uploads/2020/09/full-moon-night-landscape-1296x728-header-1.jpg?w=1155&h=1528",
-                        media_type="img",
-                        )
-
         # start navigation
-        result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.9, -2.25, 60.0)
-        self.print_result(result)
+        #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.9, -2.25, 60.0)
+        #self.print_result(result)
 
 
         result = self._lm_wrapper.generic_global("Beginning","Start Action",60,"Tell me when you are ready to continue (tell me again)",
@@ -122,16 +123,7 @@ class TestHRIScenarioV1(AbstractScenario):
                         need_validation=True
                         )
 
-        result = self._lm_wrapper.generic_global("Beginning","Go to Location",90,"I'm going to the location",
-                        description="I'm going to the location",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="https://i0.wp.com/post.healthline.com/wp-content/uploads/2020/09/full-moon-night-landscape-1296x728-header-1.jpg?w=1155&h=1528",
-                        media_type="img",
-                        )
-
-        result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
+        #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
         
         result = self._lm_wrapper.generic_global("FindLoc1","Info 1",60,"Tell me when you are ready to continue 2",
                         description="Tell me when you are ready to continue 2",
@@ -140,27 +132,9 @@ class TestHRIScenarioV1(AbstractScenario):
                         need_validation=True
                         )
 
-        result = self._lm_wrapper.generic_global("FindLoc1","Go to Location",90,"I'm going to the location",
-                        description="I'm going to the location",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="https://i0.wp.com/post.healthline.com/wp-content/uploads/2020/09/full-moon-night-landscape-1296x728-header-1.jpg?w=1155&h=1528",
-                        media_type="img",
-                        )
-
-        result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -1.68, 0.314, 60.0)
-
-        result = self._lm_wrapper.generic_global("Goto1","Go to Location",90,"I'm going to the location",
-                        description="I'm going to the location",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="https://i0.wp.com/post.healthline.com/wp-content/uploads/2020/09/full-moon-night-landscape-1296x728-header-1.jpg?w=1155&h=1528",
-                        media_type="img",
-                        )
+        #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -1.68, 0.314, 60.0)
         #Fake move simulation
-        rospy.sleep(10)
+        #rospy.sleep(10)
 
         # options (set of [value,media_src,media_type])
         result = self._lm_wrapper.generic_global("Goto1","Drink Selection",90,"Choose your favorite drink",
@@ -170,6 +144,16 @@ class TestHRIScenarioV1(AbstractScenario):
                         need_confirmation=True,
                         need_validation=True,
                         options=[{'value': 'coca','media_src': 'https://www.lemoulindecaro.fr/wp-content/uploads/2020/05/coca.jpg','media_type': 'img'},{'value': 'water'}]
+                        )
+
+
+        result = self._lm_wrapper.generic_global("chooseLoc1","The End Name",30,"The End Speech",
+                        description="The End Description",
+                        wait_answer=False,
+                        need_confirmation=False,
+                        need_validation=False,
+                        media_src="/img/hri/theend.gif",
+                        media_type="img"
                         )
 
     def auto_scenarion(self):

@@ -64,7 +64,7 @@ class InspectionScenarioV1(AbstractScenario):
         rospy.loginfo("{class_name} : WAITING FOR HRI ACTION SERVER ACTIVATION".format(class_name=self.__class__.__name__))
         self._lm_wrapper.client_action_GmToHri.wait_for_server()
 
-        #self._lm_wrapper.restart_hri(self.NO_TIMEOUT)
+        self._lm_wrapper.restart_hri(self.NO_TIMEOUT)
 
         self.steps = [
                         {'action': '', 'arguments': {}, 'eta': 30, 'id': 'DoorOpen', 'name': 'Wait an opened door', 'order': 1},
