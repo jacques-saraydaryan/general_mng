@@ -82,13 +82,13 @@ class TestHRIScenarioV1(AbstractScenario):
         self._lm_wrapper.restart_hri(self.NO_TIMEOUT)
 
         #Way Door Opened
-        result = self._lt_perception.wait_for_door_to_open()
-        self.print_result(result)
+        #result = self._lt_perception.wait_for_door_to_open()
+        #self.print_result(result)
 
         #rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
-        result = self._lm_wrapper.generic_global("Beginning","Visual wait info Name",30,"Visual wait info Speech",
+        result = self._lm_wrapper.generic_global("A1","A11 - Visual wait info Name",30,"Visual wait info Speech",
                         description="Visual wait info Description",
                         wait_answer=False,
                         need_confirmation=False,
@@ -97,14 +97,14 @@ class TestHRIScenarioV1(AbstractScenario):
                         media_type="img"
                         )
 
-        rospy.sleep(10)
+        rospy.sleep(3)
 
         # start navigation
         #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
 
         rospy.loginfo("{class_name} ACTION Wait confirmation")
         #self._lm_wrapper.timeboard_set_current_step("Beginning",self.NO_TIMEOUT)
-        result = self._lm_wrapper.generic_global("Beginning","Start Action",60,"Tell me when you are ready to continue",
+        result = self._lm_wrapper.generic_global("A1","A12 -  Start Action",60,"Tell me when you are ready to continue",
                         description="Tell me when you are ready to continue",
                         wait_answer=True,
                         need_confirmation=True,
@@ -116,7 +116,7 @@ class TestHRIScenarioV1(AbstractScenario):
         #self.print_result(result)
 
 
-        result = self._lm_wrapper.generic_global("Beginning","Start Action",60,"Tell me when you are ready to continue (tell me again)",
+        result = self._lm_wrapper.generic_global("A1","A13 - Start Action",60,"Tell me when you are ready to continue (tell me again)",
                         description="Tell me when you are ready to continue (tell me again)",
                         wait_answer=True,
                         need_confirmation=False,
@@ -125,7 +125,7 @@ class TestHRIScenarioV1(AbstractScenario):
 
         #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 60.0)
         
-        result = self._lm_wrapper.generic_global("FindLoc1","Info 1",60,"Tell me when you are ready to continue 2",
+        result = self._lm_wrapper.generic_global("B1","B1 - Info 1",60,"Tell me when you are ready to continue 2",
                         description="Tell me when you are ready to continue 2",
                         wait_answer=True,
                         need_confirmation=False,
@@ -137,17 +137,18 @@ class TestHRIScenarioV1(AbstractScenario):
         #rospy.sleep(10)
 
         # options (set of [value,media_src,media_type])
-        result = self._lm_wrapper.generic_global("Goto1","Drink Selection",90,"Choose your favorite drink",
+        result = self._lm_wrapper.generic_global("C1","C1 - Drink Selection",90,"Choose your favorite drink",
                         description="Choose your favorite drink",
                         type="question",
                         wait_answer=True,
                         need_confirmation=True,
                         need_validation=True,
-                        options=[{'value': 'coca','media_src': 'https://www.lemoulindecaro.fr/wp-content/uploads/2020/05/coca.jpg','media_type': 'img'},{'value': 'water'}]
+                        options=[{'value': 'coca','media_src': 'https://www.lemoulindecaro.fr/wp-content/uploads/2020/05/coca.jpg', 'type':'drink','media_type': 'img'},{'value': 'water',  'type':'drink'}]
                         )
 
+        rospy.loginfo("[GENERAL_MANAGER] Result after selection" + str(result))
 
-        result = self._lm_wrapper.generic_global("chooseLoc1","The End Name",30,"The End Speech",
+        result = self._lm_wrapper.generic_global("D1","D1 - The End Name",30,"The End Speech",
                         description="The End Description",
                         wait_answer=False,
                         need_confirmation=False,

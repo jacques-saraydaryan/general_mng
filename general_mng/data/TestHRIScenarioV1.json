@@ -31,7 +31,7 @@
             "eta": 60,
             "arguments": {},
             "action": "",
-            "id": "Beginning"
+            "id": "A1"
         },
         {
             "name": "Ask room to clean",
@@ -39,7 +39,7 @@
             "eta": 10,
             "arguments": {},
             "action": "",
-            "id": "FindLoc1"
+            "id": "B1"
         },
         {
             "name": "Go to location",
@@ -47,7 +47,7 @@
             "eta": 90,
             "arguments": {},
             "action": "",
-            "id": "Goto1"
+            "id": "C1"
         },
         {
             "name": "Choose room to clean",
@@ -62,7 +62,7 @@
                 "rooms": ""
             },
             "action": "askRoom",
-            "id": "chooseLoc1"
+            "id": "D1"
         },
         {
             "name": "Confirm room",
@@ -76,7 +76,7 @@
                 "what": "ChoosenRoom_1"
             },
             "action": "confirm",
-            "id": "chooseLoc1_confirm"
+            "id": "E1"
         }      
     ]
 }
