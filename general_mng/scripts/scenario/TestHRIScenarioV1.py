@@ -145,6 +145,11 @@ class TestHRIScenarioV1(AbstractScenario):
                         need_validation=True,
                         options=[{'value': 'coca','media_src': 'https://www.lemoulindecaro.fr/wp-content/uploads/2020/05/coca.jpg', 'type':'drink','media_type': 'img'},{'value': 'water',  'type':'drink'}]
                         )
+        try:
+            data = result.payload['drink'][0]
+        except KeyError:
+            rospy.WARN("Unable to get name from result")
+        self.print_result(result)
 
         rospy.loginfo("[GENERAL_MANAGER] Result after selection" + str(result))
 

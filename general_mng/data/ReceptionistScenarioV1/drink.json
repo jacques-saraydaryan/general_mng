@@ -1,0 +1,32 @@
+[
+    {
+        "id": "coca",
+        "pathOnTablet": "/img/hri/drink/coca.jpg",
+        "name": "Coca"
+    },
+    {
+        "id": "fanta",
+        "pathOnTablet": "/img/hri/drink/fanta.jpg",
+        "name": "Fanta"
+    },
+    {
+        "id": "beer",
+        "pathOnTablet": "/img/hri/drink/beer.jpg",
+        "name": "Beer"
+    },
+    {
+        "id": "water",
+        "pathOnTablet": "/img/hri/drink/water.jpg",
+        "name": "Water"
+    },
+    {
+        "id": "coffee",
+        "pathOnTablet": "/img/hri/drink/coffee.sjpg",
+        "name": "coffee"
+    },
+    {
+        "id": "tea",
+        "pathOnTablet": "/img/hri/drink/tea.jpg",
+        "name": "tea"
+    }
+]

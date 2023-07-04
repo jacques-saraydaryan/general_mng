@@ -87,7 +87,7 @@ class InspectionScenarioV1(AbstractScenario):
                         media_type="img"
                         )
         result = self._lt_perception.wait_for_door_to_open()
-        rospy.sleep(10)
+        #rospy.sleep(10)
         self.print_result(result)
         
         
@@ -97,7 +97,10 @@ class InspectionScenarioV1(AbstractScenario):
                         media_type="img",
                         )
         # start navigation
-        result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 30.0)
+        #result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 30.0)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","It1",30)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","It2",30)
+
 
         result = self._lm_wrapper.generic_global("WaitReferee","Wait Referee Action",60,"Tell me when you are ready to continue ",
                         description="Tell me when you are ready to continue ",

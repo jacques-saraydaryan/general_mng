@@ -2,6 +2,8 @@
 # scenarios_data_folder: '/home/nao/ros_robocup_ws/data/scenarios'
 # THIS FOLLOWING PATH SHOULD FIT WITH EVERY WORKSPACE
 scenarios_data_folder: '../data'
-default_scenario_name: 'TestHRIScenarioV1'
+#default_scenario_name: 'TestHRIScenarioV1'
 #default_scenario_name: 'InspectionScenarioV1'
+default_scenario_name: 'ReceptionistScenarioV1'
+
 

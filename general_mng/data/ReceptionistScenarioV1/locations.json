@@ -1,0 +1,65 @@
+[
+    {
+        "id": "Bedroom", 
+        "pathOnTablet": "img/locations/bedroom.png",
+        "name": "Bedroom",
+        "interestPoint": "place_bedroom",
+        "zone": "Bedroom"
+    },
+    {
+        "id": "Living_Room",
+        "pathOnTablet": "img/locations/livingRoom.png",
+        "name": "Living_Room",
+        "interestPoint": "place_livingRoom",
+        "zone": "LivingRoom"
+    },
+    {
+        "id": "Entrance",
+        "pathOnTablet": "img/locations/entrance.png",
+        "name": "Entrance",
+        "interestPoint": "place_entrance_cleanup",
+        "zone": "Corridor"
+    },
+    {
+        "id": "Kitchen",
+        "pathOnTablet": "img/locations/kitchen.png",
+        "name": "Kitchen",
+        "interestPoint": "place_kitchen",
+        "zone": "Kitchen"
+    },
+    {
+        "id": "diningRoom",
+        "pathOnTablet": "img/locations/dining_room.png",
+        "name": "Dining Room",
+        "interestPoint": "place_diningRoom",
+        "zone": "LivingRoom"
+    },
+    {
+        "id": "Person",
+        "pathOnTablet": "img/locations/person.png",
+        "name": "Person",
+        "interestPoint": "person",
+        "zone": "LivingRoom"
+    },
+    {
+        "id": "Pringles",
+        "pathOnTablet": "img/locations/etagere.png",
+        "name": "Pringles",
+        "interestPoint": "pringles",
+        "zone": "Corridor"
+    },
+    {
+        "id": "Pringles_2",
+        "pathOnTablet": "img/locations/etagere.png",
+        "name": "Pringles_2",
+        "interestPoint": "pringles",
+        "zone": "Kitchen"
+    },
+    {
+        "id": "Tomato",
+        "pathOnTablet": "img/locations/etagere.png",
+        "name": "Tomato",
+        "interestPoint": "tomato",
+        "zone": "Corridor"
+    }
+]
