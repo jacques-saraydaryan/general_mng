@@ -17,7 +17,7 @@ import time
 import math
 
 
-class ReceptionistScenarioV1(AbstractScenario):
+class ReceptionistScenarioV0(AbstractScenario):
     DEFAULT_TIMEOUT = 5.0
     NO_TIMEOUT = -1.0
     YOLO_CLASS_CHAIR= 'chair'
@@ -30,7 +30,7 @@ class ReceptionistScenarioV1(AbstractScenario):
         self.init_scenario(config,scenario_path_folder)
 
         # get odometry
-        rospy.Subscriber("/odom", Odometry, self.odomCallback)
+        #rospy.Subscriber("/odom", Odometry, self.odomCallback)
         rospy.on_shutdown(self.onShutDown)
         
 
@@ -84,12 +84,12 @@ class ReceptionistScenarioV1(AbstractScenario):
 
         self.steps = [
                         {'action': '', 'arguments': {}, 'eta': 30, 'id': 'WaitToStarts', 'name': 'Wait to start', 'order': 1},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'MoveLoc1', 'name': 'Move to the door', 'order': 2},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc1', 'name': 'Move to the door', 'order': 2},
                         {'action': '', 'arguments': {}, 'eta': 30, 'id': 'CheckPeople1', 'name': 'Check People presence', 'order': 3},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'AskPeople1', 'name': 'Ask people name and preference', 'order': 4},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'MoveLoc2', 'name': 'Move to the party', 'order': 5},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'PresentTheGuest', 'name': 'Present new member', 'order': 6},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'FindOtherAndPlace', 'name': 'Ask new member to sit', 'order': 7},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'AskPeople1', 'name': 'Ask people name and preference', 'order': 4},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc2', 'name': 'Move to the party', 'order': 5},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'PresentTheGuest', 'name': 'Present new member', 'order': 6},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'FindOtherAndPlace', 'name': 'Ask new member to sit', 'order': 7},
 
         ]
 
@@ -106,57 +106,38 @@ class ReceptionistScenarioV1(AbstractScenario):
                         media_src="/img/hri/rob2.jpg",
                         media_type="img"
                         )
-        #result = self._lt_perception.wait_for_door_to_open()
-        rospy.sleep(10)
+        result = self._lt_perception.wait_for_door_to_open()
+        #rospy.sleep(10)
 
-        # Fake test to move at the end of this scenario
-        #result = self._lt_perception.get_object_Boxes3D_from_yolo(classes=[0])
-        #person_to_focus_on = self._selectPersonToPointAt(result)
-        #angle = 0.0
-        #if person_to_focus_on != None:
-        #    angle = self._ask_angle_to_point_at_pose(person_to_focus_on["pose"])
-        #    rospy.loginfo("[ReceptionistScenarioV1] people selected ask to turn and point at this person")
-        #else:
-        #    rospy.logwarn("[ReceptionistScenarioV1] no people with valid pose has been detected")
-#
-        ## Ask robot to turn from the given angle
-        #self._lt_navigation.send_nav_rotation_order("NT", angle ,20)
-#
-#
-        ## Fake 2 test to move at the end of this scenario
-        #result = self._lt_perception.get_object_Boxes3D_from_yolo(classes=[56,57])
-        #person_to_focus_on = self._selectFreeSitToPointAt(result)
-        #angle = 0.0        
-        #
-        #result = self._lm_wrapper.generic_global("MoveLoc1","Move to Loc1",60,"I'm going to the location",
-        #                description="I'm going to the location",
-        #                media_src="/img/hri/rob1.jpg",
-        #                media_type="img",
-        #                )
-        ## start navigation
-        ##result = self._lt_navigation.send_nav_order_to_pt("NP", "CRRCloseToGoal", -11.8, 2.45, 30.0)
-        #result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","It1",20)
+        # Go to the party area
+        result = self._lm_wrapper.generic_global("MoveLoc0","Move to entrance",60,"I am going to the entrance",
+                        description="I am going to the entrance",
+                        media_src="/img/hri/rob1.jpg", 
+                        media_type="img", 
+                        )
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L_To_E",60)
+
         
         
         #Check People presence 
-        result = self._lm_wrapper.generic_global("CheckPeople1","Check People presence",60,"I'm looking for a new guest",
-                        description="I'm looking for a new guest",
+        result = self._lm_wrapper.generic_global("CheckPeople1","Check People presence",60,"I'm looking for a new guest !",
+                        description="I'm looking for a new guest!",
                         media_src="/img/hri/robot-lookingat2.jpeg",
                         media_type="img",
                         )
-        result = self._checkPeopleIsHere()
+        result = self._checkPeopleIsHere(timeout=2)
         if(result.status == result.FAILURE_STATUS):
             self.print_result(result)
 
         rospy.sleep(2)
         #Learn People Meta (far learn) 
-        result = self._lm_wrapper.generic_global("AskPeople1","Ask people name and preference",30,"Hi ! Please wait some seconds I am going to memorise some information",
-                        description="Please wait some seconds I am going to memorise some information",
+        result = self._lm_wrapper.generic_global("AskPeople1","Ask people name and preference",30,"Hi ! Please wait some seconds I am going to memorize some information",
+                        description="Please wait some seconds I am going to memorize some information",
                         media_src="/img/hri/learning-robot.jpg",
                         media_type="img",
                         )
         guest_info_list={}      
-        result = self._lt_perception.learn_people_meta_from_img_topic("guest1",30)
+        result = self._lt_perception.learn_people_meta_from_img_topic("guest1",2)
         guest_info_list["guest1"]={}
         guest_info_list["guest1"]["MetaInfo"] = result
         rospy.sleep(5)
@@ -201,40 +182,48 @@ class ReceptionistScenarioV1(AbstractScenario):
 
         # Go to the party area
         result = self._lm_wrapper.generic_global("MoveLoc2","Move to the party",60,"Please follow me, I will present you other guests",
-                        description="I'm going to the location to meet other guests",
+                        description="Please follow me,I'm going to the location to meet other guests",
                         media_src="/img/hri/rob1.jpg", 
                         media_type="img", 
                         )
-        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","It2",20)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L4",60)
 
-        #Find Other Guest
-        #TODO TODO BOXE3D to find people
-        #result = self._lt_perception.get_object_from_yolo(model='yolov8m-pose.pt',classes=[0])
-        #self._computeRotationToClosestPerson()
-
-        #Face to the present Guest
-        #TODO Turn the base in direction to the present guest
-
-        #Present the Guest
+        #Present the Guest 2 to Guest1
         result = self._lm_wrapper.generic_global("PresentTheGuest","Present new member",60,"Hi john, here a new guest " + guest_info_list["guest1"]["name"]+", his prefer drink is "+guest_info_list["guest1"]["drink"],
                         description="Hi john, here a new guest " + guest_info_list["guest1"]["name"]+", his prefer drink is "+guest_info_list["guest1"]["drink"],
                         media_src="/img/hri/person/user.png", 
                         media_type="img", 
                         )
-    
         rospy.sleep(10)
+        #FIXME need to check the rotation direction
+        self._lt_navigation.send_nav_rotation_order("NT", math.pi / float(2) ,20)
         
-        #Find Other Chair, sofa 
-        #TODO BOXE3D to find object for free space
-        #result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[])
-        #rot_in_rad= self._computeRotationToPointAtObject(result[LTPerception.RESPONSE_LABEL_DETAILS],result[LTPerception.RESPONSE_LABEL_SUMUP])
+        #Present the Guest 1 to Guest2
+        result = self._lm_wrapper.generic_global("PresentTheGuest","Present new member",60,guest_info_list["guest1"]["name"] +" , Here it is John, his prefer drink is milk",
+                        description=guest_info_list["guest1"]["name"] +" , Here it is John, his prefer drink is milk",
+                        media_src="/img/hri/person/user.png", 
+                        media_type="img", 
+                        )
+        
+        rospy.sleep(10)
+        #FIXME need to check the rotation direction
+        self._lt_navigation.send_nav_rotation_order("NT", - math.pi / float(2) ,20)
+        #OR navigate to point close to the couch
 
-        #Face to the free space
-        #TODO Turn the base in direction to the free Space
+        rospy.sleep(2)
 
-         #Present the free Space
-        result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",30, guest_info_list["guest1"]["name"]+", you can sit a the free place here" ,
-                        description=guest_info_list["guest1"]["name"]+", you can sit a the free place here",
+        # Go to the couch point at pose
+        #result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",60," localize free space",
+        #                description="localize free space",
+        #                media_src="/img/hri/rob1.jpg", 
+        #                media_type="img", 
+        #                )
+        #result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L5",20)
+        
+
+        #Present the free Space
+        result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",30, guest_info_list["guest1"]["name"]+", you can sit on the couch here" ,
+                        description=guest_info_list["guest1"]["name"]+", you can sit on the couch here",
                         media_src="/img/hri/person/user.png", 
                         media_type="img", 
                         )
@@ -276,92 +265,4 @@ class ReceptionistScenarioV1(AbstractScenario):
         for item in json_people_list:
             options.append({'value': item['name'],'media_src': '/img/hri/person/user.png', 'type':'person','media_type': 'img'})
         return options
-    
-    def _selectFreeSitToPointAt(self, result, choose_couch_if_exist = False):
-        chair_and_couch_list = result[LTPerception.RESPONSE_LABEL_DETAILS]
-        selected_free_sit = None 
-        chair_list = []
-        couch_list = []
-        distance = 9999
-        for free_space in chair_and_couch_list:
-            if free_space["class"] == self.YOLO_CLASS_CHAIR:
-                chair_list.append(free_space)
-            elif free_space["class"] == self.YOLO_CLASS_COUCH:
-                if choose_couch_if_exist:
-                    return free_space
-                couch_list.append(free_space)
-        
-        #select suitable chair
-        for chair in chair_list:
-            pass
-            
-        return chair_list
-    
-    def _selectPersonToPointAt(self, result):
-        people_list = result[LTPerception.RESPONSE_LABEL_DETAILS]
-        selected_people = None
-        distance = 9999
-        for people in people_list:
-            if people["pose"] != None:
-                if people["pose"].pose.position.x <distance:
-                    distance = people["pose"].pose.position.x
-                    selected_people = people
-        return selected_people
-    
-    def _ask_angle_to_point_at_pose(self,pose):
-        """
-        Get angle in rad between current robot pose in odom
-        and given pose
-        - params
-          - pose: PoseStamped with the frame_id set (use for tf transform into odom)
-        - return:
-          - angle: Angle in rad.
-        """
-        angle = 0.0
-        try:
-            #transform given pose to Odom
-            transformed_pose = transform_pose(pose,pose.header.frame_id,'odom')
-
-            angleCurTarget = math.atan2( transformed_pose.pose.y - self.curPose2D.y , transformed_pose.pose.x - self.curPose2D.x )
-            angle = self.shortestAngleDiff(angleCurTarget, self.curPose2D.theta)
-        except Exception as e:
-            rospy.logwarn("[ReceptionistScenarioV1] Error occured when finding point at angle "+ str(e))
-        return angle
-
-    def shortestAngleDiff(self, th1, th2):
-        """
-            Returns the shortest angle between 2 angles in the trigonometric circle
-        """        
-        anglediff = math.fmod( (th1 - th2), 2*math.pi)
-
-        if anglediff < 0.0:
-            if math.fabs(anglediff) > (2*math.pi + anglediff) :
-                anglediff = 2*math.pi + anglediff
-        else:
-            if anglediff > math.fabs(anglediff - 2*math.pi) :
-                anglediff = anglediff - 2*math.pi
-
-        return anglediff
-    
-
-#******************************************************************************************
-#*************************************   CALLBACK   **************************************
-#******************************************************************************************
-
-    def odomCallback(self, odom):
-        """
-            Odometry callback
-            Set curPose2D with current robot x y theta
-        """
-        o = deepcopy(odom.pose.pose.orientation)
-
-        orientation_list = [o.x, o.y, o.z, o.w]
-        (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
-
-        self.curPose2D.x = odom.pose.pose.position.x
-        self.curPose2D.y = odom.pose.pose.position.y
-        self.curPose2D.theta = yaw  
-        rospy.loginfo("Odom => X: %.2f \t Y: %.2f \t theta: %.2f"  % (self.curPose2D.x, self.curPose2D.y, self.curPose2D.theta ) )
-
-
     

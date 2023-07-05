@@ -12,6 +12,7 @@ from ros_people_mng_actions.msg import LearnPeopleFromImgAction, LearnPeopleFrom
 from ros_people_mng_actions.msg import GetPeopleNameFromImgAction, GetPeopleNameFromImgGoal
 from ros_people_mng_srvs.srv import TakePictureService
 
+
 from robocup_msgs.msg import EntityList
 from object_management.msg import ObjectDetectionAction, ObjectDetectionGoal
 from cv_bridge import CvBridge, CvBridgeError
@@ -21,6 +22,12 @@ from rospy.exceptions import ROSException, ROSInterruptException
 from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
+from yolov8_ros.srv import Yolov8Request, Yolov8
+from boxes_3D.srv import boxes3D, boxes3DRequest
+
+from sensor_msgs.msg import Image
+
+
 #from world_manager.srv import select_object_in_room_service
 #FIXME to enable
 #from tf_broadcaster.srv import GetObjectsInRoom, GetPeopleInRoom, ResetObjects
@@ -45,6 +52,8 @@ class LTPerception(LTAbstract):
 
     OPEN_DOOR_MIN_DISTANCE = 0.8
     CHECK_DISTANCE_FREQUENCY = 10
+    RESPONSE_LABEL_DETAILS ="details"
+    RESPONSE_LABEL_SUMUP ="sumup"
 
     _enableObjectDetectionMngAction = True
     _enableLearnPeopleMetaAction = True
@@ -55,6 +64,7 @@ class LTPerception(LTAbstract):
     _enableResetPersonMetaInfoMapService = True
     _enableTakePictureService = True
     _enableObjectDetectionYoloService = True
+    _enableObjectDetectionYoloPose3DService = True
 
     _enableCheckForObjectsInRoom = False
     _enableTakePicturePalbator = False
@@ -195,7 +205,27 @@ class LTPerception(LTAbstract):
                 rospy.loginfo("{class_name}: Connected to the take_picture_service service.".format(class_name=self.__class__.__name__))
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("{class_name}: Unable to connect to the take_picture_service service.".format(class_name=self.__class__.__name__))
+        
+        if self._enableObjectDetectionYoloService:
+            rospy.loginfo("{class_name}: Connecting to the yolov8_on_unique_frame service...".format(class_name=self.__class__.__name__))
+            try:
+                self._getObjectYoloSP = rospy.wait_for_service('yolov8_on_unique_frame', timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: Connected to the yolov8_on_unique_frame service.".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the yolov8_on_unique_frame service.".format(class_name=self.__class__.__name__))
 
+        ##FIXME TODOs
+        if self._enableObjectDetectionYoloPose3DService:
+            rospy.loginfo("{class_name}: Connecting to the yolov8 boxes_3d_services service...".format(class_name=self.__class__.__name__))
+            self._boxes3dYoloSP = rospy.ServiceProxy('boxes_3d_service', boxes3D)
+            try:
+                self._boxes3dYoloSP_is_up = rospy.wait_for_service('boxes_3d_service', timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: Connected to the yolov8 boxes_3d_services service.".format(class_name=self.__class__.__name__))
+            except (ROSException, ROSInterruptException) as e:
+                rospy.logwarn("{class_name}: Unable to connect to the yolov8 boxes_3d_services service.".format(class_name=self.__class__.__name__))
+
+            
+        
         self._bridge = CvBridge()
 
     def reset(self):
@@ -1005,6 +1035,96 @@ class LTPerception(LTAbstract):
                 response.payload = result
                 return response
         return response
+    
+
+    def get_object_from_yolo(self, service_mode=LTAbstract.SERVICE,img=None, model='yolov8m.pt', classes=[]):
+        """
+        Service client which will ask object in img through Yolov8 model, if img ==None service will take current img as source
+        params: 
+        - img
+        - model - "yolov8m.pt" # Basic detection, all classes if no filter
+                     - "yolov8m-seg.pt" # Detect and create a list of segmentations, all classes if no filter
+                     - "yolov8m-pose.pt" # Detect and create a list ok skeletons, detect only persons
+
+        - classes : detect only classes mention here , if classes=[] all classes are considered
+              0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane', 5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light', 10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack', 25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee', 30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat', 35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket', 39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife', 44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich', 49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza', 54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant', 59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop', 64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave', 69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book', 74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier', 79: 'toothbrush'
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__get_object_from_yolo,
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for get_object_from_yolo" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(img,model=model,classes=classes)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during get_object_from_yolo "
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success get_object_from_yolo "
+                response.payload = result
+                return response
+        return response
+
+    def get_object_Boxes3D_from_yolo(self, service_mode=LTAbstract.SERVICE,image=None, depth_image=None, model='yolov8m.pt', classes=[]):
+        """
+        Get the 3D boxes of objects detected by Yolov8
+        - params:
+            - image : rgb image
+            - depth_image : image of the camera depth
+        - model - "yolov8m.pt" # Basic detection, all classes if no filter
+                     - "yolov8m-seg.pt" # Detect and create a list of segmentations, all classes if no filter
+                     - "yolov8m-pose.pt" # Detect and create a list ok skeletons, detect only persons
+
+        - classes : detect only classes mention here , if classes=[] all classes are considered
+              0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane', 5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light', 10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack', 25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee', 30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat', 35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket', 39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife', 44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich', 49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza', 54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant', 59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop', 64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave', 69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book', 74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier', 79: 'toothbrush'
+        """
+        response = LTServiceResponse()
+
+        # Check different service mode
+        switcher = {
+            LTAbstract.ACTION: None,
+            LTAbstract.BUS: None,
+            LTAbstract.SERVICE: self.__get_object_Boxes3D_from_yolo,
+        }
+
+        fct = switcher[service_mode]
+
+        # if service mode not available return an Failure
+        if fct is None:
+            response.status = LTServiceResponse.FAILURE_STATUS
+            response.msg = " is not available for get_object_from_yolo" % (service_mode)
+            return response
+        else:
+            feedback, result = fct(image = image, depth_image = depth_image, model=model, classes=classes)
+            response.process_state(feedback)
+
+            if response.status == LTServiceResponse.FAILURE_STATUS:
+                response.msg = " Failure during get_object_from_yolo "
+                return response
+            else:
+                # FIXME to be completed with all ACTION status in GoalStatus
+                response.msg = " Operation success get_object_from_yolo "
+                response.payload = result
+                return response
+        return response
+
+
+
+
 
     #######################################
     # PERCEPTION ACTION
@@ -1335,7 +1455,7 @@ class LTPerception(LTAbstract):
         Returns a GoalStatus and an action result
 
         :param goalPeopleName: ActionGoal containing the image to analyze
-        :type goalPeopleName: ros_people_mng_actions.msg/GetPeopleNameFromImgGoal
+        :type goalP/boxes_3d_serviceeopleName: ros_people_mng_actions.msg/GetPeopleNameFromImgGoal
         :param timeout: maximum time to execute the detection procedure
         :type timeout: float
         """
@@ -1399,3 +1519,100 @@ class LTPerception(LTAbstract):
         except Exception as e:
             rospy.logerr("{class_name}: Service min_front_value_srv could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
             return GoalStatus.ABORTED, None
+    
+    def __get_object_from_yolo(self,img,model='yolov8m.pt', classes=[]):
+        """
+        Service client which will ask object in img through Yolov8 model, if img ==None service will take current img as source
+        params: 
+        - img
+        - model - "yolov8m.pt" # Basic detection, all classes if no filter
+                     - "yolov8m-seg.pt" # Detect and create a list of segmentations, all classes if no filter
+                     - "yolov8m-pose.pt" # Detect and create a list ok skeletons, detect only persons
+
+        - classes : detect only classes mention here , if classes=[] all classes are considered
+              0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane', 5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light', 10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack', 25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee', 30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat', 35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket', 39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife', 44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich', 49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza', 54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant', 59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop', 64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave', 69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book', 74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier', 79: 'toothbrush'
+        return a set of boxes
+        """
+        try:
+
+            _getObjectYoloSP = rospy.ServiceProxy('yolov8_on_unique_frame', Yolov8)
+
+            request = Yolov8Request()
+            if( img!='' and img!=[] and img!=None):
+                request.image = img
+            request.classes =classes
+            request.model_name =model
+            # model_name, classes, image
+            #result = self._getObjectYoloSP(model, classes, img)
+            # create a question response
+            result = {}
+            result_yolo = _getObjectYoloSP(request)
+            result[self.RESPONSE_LABEL_DETAILS] = result_yolo
+            result[self.RESPONSE_LABEL_SUMUP] = self._sumupYoloResult(result_yolo)
+            return GoalStatus.SUCCEEDED, result
+        except rospy.ServiceException as e:
+            rospy.logerr("{class_name}: Service get_object_from_yolo could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("{class_name}: Service get_object_from_yolo could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+    
+    def _sumupYoloResult(self,result):
+        formated_result={}
+        try:
+            for box in result.boxes:
+                formated_result[box.bbox_class] = box.probability
+        except:
+            rospy.logwarn("{class_name}: Service yolov8_on_unique_frame could not process response (parsing): {error}".format(class_name=self.__class__.__name__,error=e))
+
+        return formated_result
+    
+
+    def __get_object_Boxes3D_from_yolo(self,image = None, depth_image = None, model='yolov8m.pt', classes=[]):
+        try:
+            request = boxes3DRequest()
+            if( image!='' and image!=[] and image!=None):
+                request.image = image
+            else:
+                request.image = Image()
+            if( depth_image!='' and depth_image!=[] and depth_image!=None):
+                request.depth = depth_image
+            else:
+                request.depth = Image()
+
+            request.classes = classes
+            request.model_name = model
+            # model_name, classes, image
+            #result = self._getObjectYoloSP(model, classes, img)
+            # create a question response
+            result = {}
+            result_boxes3D_yolo = self._boxes3dYoloSP(request)
+            result[self.RESPONSE_LABEL_DETAILS] = result_boxes3D_yolo
+            result[self.RESPONSE_LABEL_SUMUP] = self._sumupYolo3DResult(result_boxes3D_yolo)
+
+
+
+            return GoalStatus.SUCCEEDED, result
+        except rospy.ServiceException as e:
+            rospy.logerr("{class_name}: Service boxes_3d_service could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        except Exception as e:
+            rospy.logerr("{class_name}: Service boxes_3d_service could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+            return GoalStatus.ABORTED, None
+        
+
+    def _sumupYolo3DResult(self,result):
+        formated_result=[]
+        try:
+            for box in result.boxes3D_pose:
+                current_pose = box.pose
+                try:
+                    if box.pose.pose.position.x == 0 and box.pose.pose.position.y == 0:
+                        current_pose = None
+                except:
+                    current_pose = None
+                formated_result.append({'class': box.bbox_class, 'proba':box.probability,'pose':current_pose})
+        except:
+            rospy.logwarn("{class_name}: Service yolov8_on_unique_frame could not process response (parsing): {error}".format(class_name=self.__class__.__name__,error=e))
+
+        return formated_result

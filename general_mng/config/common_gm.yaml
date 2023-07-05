@@ -4,6 +4,7 @@
 scenarios_data_folder: '../data'
 #default_scenario_name: 'TestHRIScenarioV1'
 #default_scenario_name: 'InspectionScenarioV1'
-default_scenario_name: 'ReceptionistScenarioV1'
+#default_scenario_name: 'ReceptionistScenarioV1'
+default_scenario_name: 'ReceptionistScenarioV0'
 
 
