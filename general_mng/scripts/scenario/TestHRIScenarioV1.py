@@ -85,6 +85,25 @@ class TestHRIScenarioV1(AbstractScenario):
         #result = self._lt_perception.wait_for_door_to_open()
         #self.print_result(result)
 
+         # options (set of [value,media_src,media_type])
+        result = self._lm_wrapper.generic_global("C1","C1 - Drink Selection",90,"Choose your favorite drink",
+                        description="Choose your favorite drink",
+                        type="question",
+                        wait_answer=True,
+                        need_confirmation=True,
+                        need_validation=True,
+                        options=[{'value': 'coca','media_src': 'https://www.lemoulindecaro.fr/wp-content/uploads/2020/05/coca.jpg', 'type':'drink','media_type': 'img'},{'value': 'water',  'type':'drink'},{'value': 'juice',  'type':'drink'}]
+                        )
+
+        result = self._lm_wrapper.generic_global("C1","C1 - Drink Selection",90,"Choose your favorite drink",
+                        description="Choose your favorite drink",
+                        type="question",
+                        wait_answer=True,
+                        need_confirmation=True,
+                        need_validation=True,
+                        options=[{'value': 'john', 'type':'person'},{'value': 'maria', 'type':'person'},{'value': 'jo', 'type':'person'},{'value': 'eric', 'type':'person'}]
+                        )
+
         #rospy.loginfo("{class_name} : LOADING CONFIG FOR SCENARIO".format(class_name=self.__class__.__name__))
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 

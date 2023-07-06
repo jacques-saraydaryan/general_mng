@@ -25,6 +25,7 @@ from dialogue_hri_srvs.srv import TakePicture
 from yolov8_ros.srv import Yolov8Request, Yolov8
 from boxes_3D.srv import boxes3D, boxes3DRequest
 
+
 from sensor_msgs.msg import Image
 
 
@@ -65,6 +66,7 @@ class LTPerception(LTAbstract):
     _enableTakePictureService = True
     _enableObjectDetectionYoloService = True
     _enableObjectDetectionYoloPose3DService = True
+    #_enableMicManagerService = False
 
     _enableCheckForObjectsInRoom = False
     _enableTakePicturePalbator = False
@@ -223,6 +225,15 @@ class LTPerception(LTAbstract):
                 rospy.loginfo("{class_name}: Connected to the yolov8 boxes_3d_services service.".format(class_name=self.__class__.__name__))
             except (ROSException, ROSInterruptException) as e:
                 rospy.logwarn("{class_name}: Unable to connect to the yolov8 boxes_3d_services service.".format(class_name=self.__class__.__name__))
+
+        #if self._enableMicManagerService:
+        #    rospy.loginfo("{class_name}: Connecting to the mic_capture service...".format(class_name=self.__class__.__name__))
+        #    try:
+        #        self._boxes3dYoloSP_is_up = rospy.wait_for_service('mic_capture', timeout = self.SERVICE_WAIT_TIMEOUT)
+        #        rospy.loginfo("{class_name}: Connected to the yolov8 mic_capture service.".format(class_name=self.__class__.__name__))
+        #        self._micCaptureSP = rospy.ServiceProxy('mic_capture', SetBool)
+        #    except (ROSException, ROSInterruptException) as e:
+        #        rospy.logwarn("{class_name}: Unable to connect to the yolov8 mic_capture service.".format(class_name=self.__class__.__name__))
 
             
         
@@ -1122,6 +1133,41 @@ class LTPerception(LTAbstract):
                 return response
         return response
 
+    #def set_mic_capture_status(self, ismicOn):
+    #    """
+    #    Enable or disable sound capture
+    #    ismicOn: True mic in On, False mic is off
+    #    """
+    #    response = LTServiceResponse()
+#
+    #    # Check different service mode
+    #    switcher = {
+    #        LTAbstract.ACTION: None,
+    #        LTAbstract.BUS: None,
+    #        LTAbstract.SERVICE: self.__micCapture,
+    #    }
+#
+    #    fct = switcher[service_mode]
+#
+    #    # if service mode not available return an Failure
+    #    if fct is None:
+    #        response.status = LTServiceResponse.FAILURE_STATUS
+    #        response.msg = " is not available for mic_capture" % (service_mode)
+    #        return response
+    #    else:
+    #        feedback, result = fct(ismicOn=ismicOn)
+    #        response.process_state(feedback)
+#
+    #        if response.status == LTServiceResponse.FAILURE_STATUS:
+    #            response.msg = " Failure during get_object_from_yolo "
+    #            return response
+    #        else:
+    #            # FIXME to be completed with all ACTION status in GoalStatus
+    #            response.msg = " Operation success get_object_from_yolo "
+    #            response.payload = result
+    #            return response
+    #    return response
+
 
 
 
@@ -1616,3 +1662,16 @@ class LTPerception(LTAbstract):
             rospy.logwarn("{class_name}: Service yolov8_on_unique_frame could not process response (parsing): {error}".format(class_name=self.__class__.__name__,error=e))
 
         return formated_result
+    
+
+    #def __micCapture(self,ismicOn = True):
+    #    try:
+    #       
+    #        result = self._micCaptureSP(ismicOn)
+    #        return GoalStatus.SUCCEEDED, result
+    #    except rospy.ServiceException as e:
+    #        rospy.logerr("{class_name}: Service mic_capture could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+    #        return GoalStatus.ABORTED, None
+    #    except Exception as e:
+    #        rospy.logerr("{class_name}: Service mic_capture could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
+    #        return GoalStatus.ABORTED, None

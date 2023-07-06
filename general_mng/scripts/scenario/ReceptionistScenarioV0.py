@@ -19,6 +19,8 @@ import math
 
 class ReceptionistScenarioV0(AbstractScenario):
     DEFAULT_TIMEOUT = 5.0
+    NAVIGATION_TIMEOUT = 60
+    NAVIGATION_ROTATION_TIMEOUT = 30
     NO_TIMEOUT = -1.0
     YOLO_CLASS_CHAIR= 'chair'
     YOLO_CLASS_COUCH= 'couch'
@@ -84,19 +86,20 @@ class ReceptionistScenarioV0(AbstractScenario):
 
         self.steps = [
                         {'action': '', 'arguments': {}, 'eta': 30, 'id': 'WaitToStarts', 'name': 'Wait to start', 'order': 1},
-                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc1', 'name': 'Move to the door', 'order': 2},
-                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'CheckPeople1', 'name': 'Check People presence', 'order': 3},
-                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'AskPeople1', 'name': 'Ask people name and preference', 'order': 4},
-                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc2', 'name': 'Move to the party', 'order': 5},
-                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'PresentTheGuest', 'name': 'Present new member', 'order': 6},
-                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'FindOtherAndPlace', 'name': 'Ask new member to sit', 'order': 7},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc0', 'name': 'Move to entrance', 'order': 3},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc1', 'name': 'Move to the door', 'order': 4},
+                        {'action': '', 'arguments': {}, 'eta': 30, 'id': 'CheckPeople1', 'name': 'Check People presence', 'order': 5},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'AskPeople1', 'name': 'Ask people name and preference', 'order': 6},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'MoveLoc2', 'name': 'Move to the party', 'order': 7},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'PresentTheGuest', 'name': 'Present new member', 'order': 8},
+                        {'action': '', 'arguments': {}, 'eta': 60, 'id': 'FindOtherAndPlace', 'name': 'Ask new member to sit', 'order': 9},
 
         ]
 
         #Update HRI Board with tasks list
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
-
+        
         #Way Door Opened
         result = self._lm_wrapper.generic_global("WaitToStarts","Wait an opened door",30,"I am waiting an opened door to start",
                         description="I am waiting an opened door to start",
@@ -115,7 +118,8 @@ class ReceptionistScenarioV0(AbstractScenario):
                         media_src="/img/hri/rob1.jpg", 
                         media_type="img", 
                         )
-        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L_To_E",60)
+        #result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L_To_E",60)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L1",self.NAVIGATION_TIMEOUT)
 
         
         
@@ -147,7 +151,7 @@ class ReceptionistScenarioV0(AbstractScenario):
         options_user= self._computePeopleNameOptionFromJson(self._person_list)
 
         result = self._lm_wrapper.generic_global("AskPeople1","Ask people name and preference",30," Please can you come closer and say your name ?",
-                        description="Please can you come clother and say your name ?",
+                        description="Please can you come closer and say your name ?",
                         type="question",
                         wait_answer=True,
                         need_confirmation=True,
@@ -160,7 +164,7 @@ class ReceptionistScenarioV0(AbstractScenario):
             rospy.WARN("Unable to get name from result")
         self.print_result(result)
 
-        result = self._lm_wrapper.generic_global("AskPeople1","Ask people name and preference",30,"I register your data",
+        result = self._lm_wrapper.generic_global("AskPeople1","Ask people name and preference",30,"I'm registering your data",
                         description="Data Registration",
                         media_src="/img/hri/learning-robot.jpg",
                         media_type="img",
@@ -180,13 +184,13 @@ class ReceptionistScenarioV0(AbstractScenario):
         except KeyError:
             rospy.WARN("Unable to get drink from result")
 
-        # Go to the party area
-        result = self._lm_wrapper.generic_global("MoveLoc2","Move to the party",60,"Please follow me, I will present you other guests",
-                        description="Please follow me,I'm going to the location to meet other guests",
+        # Go to the party area 
+        result = self._lm_wrapper.generic_global("MoveLoc2","Move to the party",60,"Please follow me, I'll introduce you to some more guests.",
+                        description="Please follow me, I'll introduce you to some more guests.",
                         media_src="/img/hri/rob1.jpg", 
                         media_type="img", 
                         )
-        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L4",60)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L4",self.NAVIGATION_TIMEOUT)
 
         #Present the Guest 2 to Guest1
         result = self._lm_wrapper.generic_global("PresentTheGuest","Present new member",60,"Hi john, here a new guest " + guest_info_list["guest1"]["name"]+", his prefer drink is "+guest_info_list["guest1"]["drink"],
@@ -196,7 +200,7 @@ class ReceptionistScenarioV0(AbstractScenario):
                         )
         rospy.sleep(10)
         #FIXME need to check the rotation direction
-        self._lt_navigation.send_nav_rotation_order("NT", math.pi / float(2) ,20)
+        self._lt_navigation.send_nav_rotation_order("NT", math.pi / float(2) ,self.NAVIGATION_ROTATION_TIMEOUT)
         
         #Present the Guest 1 to Guest2
         result = self._lm_wrapper.generic_global("PresentTheGuest","Present new member",60,guest_info_list["guest1"]["name"] +" , Here it is John, his prefer drink is milk",
@@ -207,23 +211,23 @@ class ReceptionistScenarioV0(AbstractScenario):
         
         rospy.sleep(10)
         #FIXME need to check the rotation direction
-        self._lt_navigation.send_nav_rotation_order("NT", - math.pi / float(2) ,20)
+        #self._lt_navigation.send_nav_rotation_order("NT", - math.pi / float(2) ,20)
         #OR navigate to point close to the couch
 
         rospy.sleep(2)
 
         # Go to the couch point at pose
-        #result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",60," localize free space",
-        #                description="localize free space",
-        #                media_src="/img/hri/rob1.jpg", 
-        #                media_type="img", 
-        #                )
-        #result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L5",20)
+        result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",60,"I am  going to identify the free spaces",
+                        description="I am  going to identify the free spaces",
+                        media_src="/img/hri/rob1.jpg", 
+                        media_type="img", 
+                        )
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L2",self.NAVIGATION_TIMEOUT)
         
 
         #Present the free Space
-        result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",30, guest_info_list["guest1"]["name"]+", you can sit on the couch here" ,
-                        description=guest_info_list["guest1"]["name"]+", you can sit on the couch here",
+        result = self._lm_wrapper.generic_global("FindOtherAndPlace","Ask new member to sit",30, guest_info_list["guest1"]["name"]+",You can have a seat on the sofa here" ,
+                        description=guest_info_list["guest1"]["name"]+", You can have a seat on the sofa here.",
                         media_src="/img/hri/person/user.png", 
                         media_type="img", 
                         )
