@@ -107,7 +107,8 @@ class CarryMyLuggageV0(AbstractScenario):
         #Update HRI Board with tasks list
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
-        
+        self._callPointAt()
+
         #Check People presence 
         result = self._lm_wrapper.generic_global("CheckPeople1","Check People presence",self.SIMPLE_SPEECH_TIMEOUT," I am looking for the operator !",
                         description="I am looking for the operator!",
@@ -140,6 +141,8 @@ class CarryMyLuggageV0(AbstractScenario):
                         media_type="img", 
                         )
         rospy.sleep(2)
+
+        self._callPointAt()
 
 
         # Point at confirmation
@@ -338,3 +341,15 @@ class CarryMyLuggageV0(AbstractScenario):
             options.append({'value': item['name'],'media_src': '/img/hri/person/user.png', 'type':'person','media_type': 'img'})
         return options
     
+    
+    def _callPointAt(self):
+            from boxes_3D.srv import boxes3D, boxes3DRequest
+            rospy.loginfo("{class_name}: Connecting to the yolov8 boxes_3d_services service...".format(class_name=self.__class__.__name__))
+            self._boxToCarryYoloSP = rospy.ServiceProxy('box_to_carry_service', boxes3D)
+            try:
+                self._boxes3dYoloSP_is_up = rospy.wait_for_service('box_to_carry_service', timeout = self.SERVICE_WAIT_TIMEOUT)
+                rospy.loginfo("{class_name}: Connected to the box_to_carry_service service.".format(class_name=self.__class__.__name__))
+                request = boxes3DRequest()
+                self._boxToCarryYoloSP(request)
+            except Exception as e:
+                rospy.logwarn("{class_name}: Unable to connect to the box_to_carry_service service.".format(class_name=self.__class__.__name__))
