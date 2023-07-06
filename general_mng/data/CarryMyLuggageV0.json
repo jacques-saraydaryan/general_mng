@@ -1,0 +1,29 @@
+{
+    "name": "CarryMyLuggageV0",
+    "duration": 300,
+    "parameters":{
+        "LTHri_action_server_name": "action_GmToHri",
+        "nav_strategy_parameters":{
+            "action": "NP",
+            "mode": "CRRCloseToGoal",
+            "timeout": 90.0
+        },
+        "debug_variables":{
+            "allow_perception": true,
+            "allow_navigation": true,
+            "allow_highbehaviour": true,
+            "allow_motion": false,
+            "allow_simulation": false
+        }
+      },
+    "imports":{
+        "person": "CarryMyLuggageV0/person.json"
+    },
+    "variables":{
+        "scenarioInfos": "CarryMyLuggageV0/scenarioInfos.json"
+    },
+    "steps": [
+        
+    ]
+}
+  
