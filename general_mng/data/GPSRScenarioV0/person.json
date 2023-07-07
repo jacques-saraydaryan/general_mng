@@ -1,0 +1,68 @@
+[
+    {
+        "id": "1",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Adel",
+        "drink": "coffee"
+    },
+    {
+        "id": "2",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Angel",
+        "drink": "beer"
+    },
+    {
+        "id": "3",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Axel",
+        "drink": "coffee"
+    },
+    {
+        "id": "4",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Charlie",
+        "drink": "coffee"
+    },
+    {
+        "id": "5",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Charlie",
+        "drink": "coffee"
+    },
+    {
+        "id": "6",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Jane",
+        "drink": "coffee"
+    },
+    {
+        "id": "7",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "John",
+        "drink": "coffee"
+    },
+    {
+        "id": "8",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Morgan",
+        "drink": "coffee"
+    },
+    {
+        "id": "9",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Paris",
+        "drink": "coffee"
+    },
+    {
+        "id": "10",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Robin",
+        "drink": "coffee"
+    },
+    {
+        "id": "11",
+        "pathOnTablet": "/img/hri/person/john.jpg",
+        "name": "Simone",
+        "drink": "coffee"
+    }
+]
