@@ -279,7 +279,7 @@ class ReceptionistScenarioV1(AbstractScenario):
     
     def _selectFreeSitToPointAt(self, result, choose_couch_if_exist = False):
         chair_and_couch_list = result[LTPerception.RESPONSE_LABEL_DETAILS]
-        selected_free_sit = None 
+         
         chair_list = []
         couch_list = []
         distance = 9999
@@ -292,10 +292,14 @@ class ReceptionistScenarioV1(AbstractScenario):
                 couch_list.append(free_space)
         
         #select suitable chair
+        closest_distance = 9999
+        selected_free_sit = None
+
         for chair in chair_list:
-            pass
-            
-        return chair_list
+            if chair.pose != None:
+                if chair.pose.pose.position.x < closest_distance:
+                    selected_free_sit = chair
+        return selected_free_sit
     
     def _selectPersonToPointAt(self, result):
         people_list = result[LTPerception.RESPONSE_LABEL_DETAILS]

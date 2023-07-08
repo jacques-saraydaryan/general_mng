@@ -5,6 +5,7 @@ import json
 from copy import deepcopy
 from AbstractScenario import AbstractScenario
 from nav_msgs.msg import Path, Odometry
+from geometry_msgs.msg import PoseStamped
 import tf
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from tools.tf_tools import transform_pose
@@ -24,6 +25,7 @@ class ReceptionistScenarioV3(AbstractScenario):
     TIMEOUT_SIMPLE_SPEECH = 1  #10
     TIMEOUT_SIMPLE_ACTION = 3  #30
     TIMEOUT_COMPLEX_ACTION = 6  #60
+    TOPIC_NAME_ODOM = '/mobile_base_controller/odom'
     NO_TIMEOUT = -1.0
     YOLO_CLASS_CHAIR= 'chair'
     YOLO_CLASS_COUCH= 'couch'
@@ -35,7 +37,9 @@ class ReceptionistScenarioV3(AbstractScenario):
         self.init_scenario(config,scenario_path_folder)
 
         # get odometry
-        #rospy.Subscriber("/odom", Odometry, self.odomCallback)
+        self.curPose2D={}
+        rospy.Subscriber(self.TOPIC_NAME_ODOM, Odometry, self.odomCallback)
+        self.pose_pub = rospy.Publisher('/bboxes/object',PoseStamped, queue_size=1)
         rospy.on_shutdown(self.onShutDown)
         
 
@@ -117,9 +121,14 @@ class ReceptionistScenarioV3(AbstractScenario):
         #Find Other Chair, sofa 
         #TODO BOXE3D to find object for free space
         ## CAUTION result payload would be Boxes (header + boxes)
-        result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[56,67])
-        #rot_in_rad= self._computeRotationToPointAtObject(result[LTPerception.RESPONSE_LABEL_DETAILS],result[LTPerception.RESPONSE_LABEL_SUMUP])
-
+        result = self._lt_perception.get_object_Boxes3D_from_yolo(model='yolov8m.pt',classes=[56,67])
+        rospy.loginfo(result.payload)
+        #result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[56,67])
+        selected_free_space = self._selectFreeSitToPointAt(result.payload,choose_couch_if_exist=False)
+        
+        if(selected_free_space != None):
+            selected_free_space['pose'].header.frame_id="kinect"
+            self._ask_angle_to_point_at_pose(selected_free_space['pose'])
 
         # Go to the party area
         result = self._lm_wrapper.generic_global("MoveLoc0","Move to entrance",self.TIMEOUT_NAVIGATION,"I am going to the entrance",
@@ -290,4 +299,101 @@ class ReceptionistScenarioV3(AbstractScenario):
         for item in json_people_list:
             options.append({'value': item['name'],'media_src': '/img/hri/person/user.png', 'type':'person','media_type': 'img'})
         return options
+    
+    def _computeRotationToPointAtObject(self, detailed_result,sumup_result):
+        pass
+        LTPerception.RESPONSE_LABEL_DETAILS
+    def _selectFreeSitToPointAt(self, result, choose_couch_if_exist = False):
+        #chair_and_couch_list = result[LTPerception.RESPONSE_LABEL_DETAILS]
+        chair_and_couch_list = result["sumup"]
+        
+        chair_list = []
+        couch_list = []
+        distance = 9999
+        for free_space in chair_and_couch_list:
+            if free_space["class"] == self.YOLO_CLASS_CHAIR:
+                chair_list.append(free_space)
+            elif free_space["class"] == self.YOLO_CLASS_COUCH:
+                if choose_couch_if_exist:
+                    return free_space
+                couch_list.append(free_space)
+        
+        #select suitable chair
+        closest_distance = 9999
+        selected_free_sit = None
+
+        for chair in chair_list:
+            if chair['pose'] != None:
+                if chair['pose'].pose.position.y < closest_distance:
+                    selected_free_sit = chair
+                    closest_distance = chair['pose'].pose.position.y
+        return selected_free_sit
+    
+    def _selectPersonToPointAt(self, result):
+        people_list = result[LTPerception.RESPONSE_LABEL_DETAILS]
+        selected_people = None
+        distance = 9999
+        for people in people_list:
+            if people["pose"] != None:
+                if people["pose"].pose.position.y <distance:
+                    distance = people["pose"].pose.position.y
+                    selected_people = people
+        return selected_people
+    
+    def _ask_angle_to_point_at_pose(self,pose):
+        """
+        Get angle in rad between current robot pose in odom
+        and given pose
+        - params
+          - pose: PoseStamped with the frame_id set (use for tf transform into odom)
+        - return:
+          - angle: Angle in rad.
+        """
+        angle = 0.0
+        try:
+            #transform given pose to Odom
+            transformed_pose = transform_pose(pose,pose.header.frame_id,'odom')
+            self.pose_pub.publish(transformed_pose)
+            angleCurTarget = math.atan2( transformed_pose.pose.position.y - self.curPose2D['y'] , transformed_pose.pose.position.x - self.curPose2D['x'] )
+            angle = self.shortestAngleDiff(angleCurTarget, self.curPose2D['theta'])
+        except Exception as e:
+            rospy.logwarn("[ReceptionistScenarioV1] Error occured when finding point at angle "+ str(e))
+        return angle
+
+    def shortestAngleDiff(self, th1, th2):
+        """
+            Returns the shortest angle between 2 angles in the trigonometric circle
+        """        
+        anglediff = math.fmod( (th1 - th2), 2*math.pi)
+
+        if anglediff < 0.0:
+            if math.fabs(anglediff) > (2*math.pi + anglediff) :
+                anglediff = 2*math.pi + anglediff
+        else:
+            if anglediff > math.fabs(anglediff - 2*math.pi) :
+                anglediff = anglediff - 2*math.pi
+
+        return anglediff
+    
+
+#******************************************************************************************
+#*************************************   CALLBACK   **************************************
+#******************************************************************************************
+
+    def odomCallback(self, odom):
+        """
+            Odometry callback
+            Set curPose2D with current robot x y theta
+        """
+        o = deepcopy(odom.pose.pose.orientation)
+
+        orientation_list = [o.x, o.y, o.z, o.w]
+        (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
+        
+        self.curPose2D['x'] = odom.pose.pose.position.x
+        self.curPose2D['y'] = odom.pose.pose.position.y
+        self.curPose2D['theta'] = yaw  
+        #rospy.loginfo("Odom => X: %.2f \t Y: %.2f \t theta: %.2f"  % (self.curPose2D.x, self.curPose2D.y, self.curPose2D.theta ) )
+
+
     

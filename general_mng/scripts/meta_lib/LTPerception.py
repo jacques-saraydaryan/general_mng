@@ -23,8 +23,7 @@ from std_srvs.srv import Trigger
 from pepper_door_open_detector.srv import MinFrontValue
 from dialogue_hri_srvs.srv import TakePicture
 from yolov8_ros.srv import Yolov8Request, Yolov8
-from boxes_3D.srv import boxes3D, boxes3DRequest
-
+from bbox3D_msgs.srv import bbox3D_srv, bbox3D_srvRequest
 
 from sensor_msgs.msg import Image
 
@@ -219,7 +218,7 @@ class LTPerception(LTAbstract):
         ##FIXME TODOs
         if self._enableObjectDetectionYoloPose3DService:
             rospy.loginfo("{class_name}: Connecting to the yolov8 boxes_3d_services service...".format(class_name=self.__class__.__name__))
-            self._boxes3dYoloSP = rospy.ServiceProxy('boxes_3d_service', boxes3D)
+            self._boxes3dYoloSP = rospy.ServiceProxy('boxes_3d_service', bbox3D_srv)
             try:
                 self._boxes3dYoloSP_is_up = rospy.wait_for_service('boxes_3d_service', timeout = self.SERVICE_WAIT_TIMEOUT)
                 rospy.loginfo("{class_name}: Connected to the yolov8 boxes_3d_services service.".format(class_name=self.__class__.__name__))
@@ -1593,8 +1592,8 @@ class LTPerception(LTAbstract):
             # create a question response
             result = {}
             result_yolo = _getObjectYoloSP(request)
-            result[self.RESPONSE_LABEL_DETAILS] = result_yolo
-            result[self.RESPONSE_LABEL_SUMUP] = self._sumupYoloResult(result_yolo)
+            result[self.RESPONSE_LABEL_DETAILS] = result_yolo.boxes
+            result[self.RESPONSE_LABEL_SUMUP] = self._sumupYoloResult(result_yolo.boxes)
             return GoalStatus.SUCCEEDED, result
         except rospy.ServiceException as e:
             rospy.logerr("{class_name}: Service get_object_from_yolo could not process request: {error}".format(class_name=self.__class__.__name__,error=e))
@@ -1616,7 +1615,7 @@ class LTPerception(LTAbstract):
 
     def __get_object_Boxes3D_from_yolo(self,image = None, depth_image = None, model='yolov8m.pt', classes=[]):
         try:
-            request = boxes3DRequest()
+            request = bbox3D_srvRequest()
             if( image!='' and image!=[] and image!=None):
                 request.image = image
             else:

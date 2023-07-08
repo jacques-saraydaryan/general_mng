@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tts_hri
   dialogue_hri_actions
   object_management
+  bbox3D_msgs
 )
 
 

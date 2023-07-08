@@ -17,6 +17,8 @@
   <build_depend>tts_hri</build_depend>
   <build_depend>dialogue_hri_actions</build_depend>
   <build_depend>object_management</build_depend>
+  <build_depend>bbox3D_msgs</build_depend>
+  
 
   
   
@@ -28,6 +30,9 @@
   <run_depend>tts_hri</run_depend>
   <run_depend>dialogue_hri_actions</run_depend>
   <run_depend>object_management</run_depend>
+
+    <run_depend>bbox3D_msgs</run_depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
