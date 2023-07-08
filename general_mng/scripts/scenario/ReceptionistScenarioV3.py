@@ -118,17 +118,15 @@ class ReceptionistScenarioV3(AbstractScenario):
                         )
         result = self._lt_perception.wait_for_door_to_open()
         #rospy.sleep(10)
-        #Find Other Chair, sofa 
-        #TODO BOXE3D to find object for free space
-        ## CAUTION result payload would be Boxes (header + boxes)
-        result = self._lt_perception.get_object_Boxes3D_from_yolo(model='yolov8m.pt',classes=[56,67])
-        rospy.loginfo(result.payload)
-        #result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[56,67])
-        selected_free_space = self._selectFreeSitToPointAt(result.payload,choose_couch_if_exist=False)
-        
-        if(selected_free_space != None):
-            selected_free_space['pose'].header.frame_id="kinect"
-            self._ask_angle_to_point_at_pose(selected_free_space['pose'])
+        ##Find Other Chair, sofa 
+        #result = self._lt_perception.get_object_Boxes3D_from_yolo(model='yolov8m.pt',classes=[56,67])
+        #rospy.loginfo(result.payload)
+        ##result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[56,67])
+        #selected_free_space = self._selectFreeSitToPointAt(result.payload,choose_couch_if_exist=False)
+        #
+        #if(selected_free_space != None):
+        #    selected_free_space['pose'].header.frame_id="kinect"
+        #    self._ask_angle_to_point_at_pose(selected_free_space['pose'])
 
         # Go to the party area
         result = self._lm_wrapper.generic_global("MoveLoc0","Move to entrance",self.TIMEOUT_NAVIGATION,"I am going to the entrance",
@@ -253,6 +251,22 @@ class ReceptionistScenarioV3(AbstractScenario):
                         media_type="img", 
                         )
         result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L2",self.TIMEOUT_NAVIGATION_ROTATION)
+
+        #ask for chair and sofa detection
+        result = self._lt_perception.get_object_Boxes3D_from_yolo(model='yolov8m.pt',classes=[56,67])
+        rospy.loginfo(result.payload)
+        #result = self._lt_perception.get_object_from_yolo(model='yolov8m.pt',classes=[56,67])
+        #Select suitable free chair or sofa
+        selected_free_space = self._selectFreeSitToPointAt(result.payload,choose_couch_if_exist=False)
+        
+        if(selected_free_space != None):
+            #get angle for robot rotation
+            selected_free_space['pose'].header.frame_id="kinect"
+            #compute angle to rotate (odom)
+            angle = self._ask_angle_to_point_at_pose(selected_free_space['pose'])
+
+            #Rotation the robot according the computed angle
+            self._lt_navigation.send_nav_rotation_order("NT", angle ,self.TIMEOUT_NAVIGATION_ROTATION)
         
 
         #Present the free Space
