@@ -24,9 +24,24 @@ class GPSRScenarioV0(AbstractScenario):
     TIMEOUT_NAVIGATION_ROTATION = 3 #30
     TIMEOUT_SIMPLE_SPEECH = 1  #10
     TIMEOUT_SIMPLE_ACTION = 3  #30
+    STT_KEY_WORDS = ["person", "object", "location", "action", "drink", "ack" ]
+    STT_KEY_ACTION_NAVIGATE = "navigate"
+    STT_KEY_ACTION_NAVIGATE_WORDS = ["navigate","go","move"]
+    STT_KEY_ACTION_FIND ="find"
+    STT_KEY_ACTION_ASK ="ask"
+    STT_KEY_ACTION_MOVE_WAVE ="wave"
+    STT_KEY_ACTION_MOVE_POINTAT ="point at"
+    STT_KEY_ACTION_MOVE_RAISE ="raise"
+    STT_KEY_ACTION_WORDS = []
+    for txt in STT_KEY_ACTION_NAVIGATE_WORDS:
+       STT_KEY_ACTION_WORDS.append(txt)
 
-    INSTRUCTION_NAVIGATION = "navigation"
-    INSTRUCTION_ASK = "ask"
+    STT_KEY_ACTION_WORDS.append(STT_KEY_ACTION_FIND)
+    STT_KEY_ACTION_WORDS.append(STT_KEY_ACTION_ASK)
+    STT_KEY_ACTION_WORDS.append(STT_KEY_ACTION_MOVE_WAVE)
+    STT_KEY_ACTION_WORDS.append(STT_KEY_ACTION_MOVE_POINTAT)
+    STT_KEY_ACTION_WORDS.append(STT_KEY_ACTION_MOVE_RAISE)
+
     NO_TIMEOUT = -1.0
     YOLO_CLASS_CHAIR= 'chair'
     YOLO_CLASS_COUCH= 'couch'
@@ -150,7 +165,7 @@ class GPSRScenarioV0(AbstractScenario):
         #      Listen operator
         #
         # -----------------------------------
-        self._listenAndExecuteInstruction()
+        self._listenAndExecuteInstruction(timeout=20)
 
 
 
@@ -204,20 +219,28 @@ class GPSRScenarioV0(AbstractScenario):
         return options
     
 
-    def _listenAndExecuteInstruction(self):
-
+    def _listenAndExecuteInstruction(self,timeout=10):
         choice_list={}
         choice_list['location'] = ['kitchen','livingroom']
-        #TOCOMMENT
-        #self._listen(choice_list,12)
+        choice_list['action'] = self.STT_KEY_ACTION_WORDS
 
-        instruction= ""
-
-        action_list = {}
-        action_list[self.INSTRUCTION_NAVIGATION] = self._navigate_to_point
-        action_list[self.INSTRUCTION_ASK] = self._answerToOperator
-
-        action_list[self.INSTRUCTION_ASK](" here is my answer to you question, 42")
+        LOCATION_TO_IT={'kitchen':"L_To_E",'livingroom': 'L4'}
+     
+        #TODO et correctly id
+        result  = self._listen(choice_list,12,timeout=timeout)
+        if result == None:
+           rospy.logwarn("[GENERAL MANAGER] Unable to get answer from STT")
+           return None
+           
+        result = result.answer
+        current_action = self._getMostProbableData(result.action)
+        if current_action in self.STT_KEY_ACTION_NAVIGATE_WORDS:
+           current_location = self._getMostProbableData(result.location )
+           if current_location in LOCATION_TO_IT.keys():
+            #Execute action
+            self._navigate_to_point(LOCATION_TO_IT[current_location])
+        elif current_action == self.STT_KEY_ACTION_ASK:
+            self._answerToOperator("This is a fake answer")
 
 
     def _navigate_to_point(self, it_name):
@@ -240,7 +263,7 @@ class GPSRScenarioV0(AbstractScenario):
         self.print_result(result)
 
 
-    def _listen(self, choice_list,step_id):
+    def _listen(self, choice_list,step_id, timeout = 10):
         from stt_nlu_actions.msg import NLExpectationsAction, NLExpectationsGoal, NLExpectationsResult 
 
         action_stt_client = actionlib.SimpleActionClient("nl_expectations",NLExpectationsAction)
@@ -250,30 +273,47 @@ class GPSRScenarioV0(AbstractScenario):
         
         nul_goal=NLExpectationsGoal()
     
-        nul_goal.waitfor.goal_group = step_id;
+        nul_goal.waitfor.goal_group = str(step_id);
+        nul_goal.expected_timeout.data = timeout
         for item in choice_list:
             try:
-              if item.keys()[0] in self.STT_KEY_WORDS:
+              if item in self.STT_KEY_WORDS:
                 #fixme too dependent of goal message... need to find a way to update dynamically value
                 #nul_goal.waitfor.__dict__[item.keys()[0]]=choice_list[0][item.keys()[0]]
-                if item.keys() =='person':
-                  nul_goal.waitfor.person=choice_list[0][item.keys()[0]]
-                elif item.keys() =='object':
-                  nul_goal.waitfor.object=choice_list[0][item.keys()[0]]
-                elif item.keys() =='drink':
-                  nul_goal.waitfor.drink=choice_list[0][item.keys()[0]]
-                elif item.keys() =='location':
-                  nul_goal.waitfor.location=choice_list[0][item.keys()[0]]
-                elif item.keys() =='action':
-                  nul_goal.waitfor.action=choice_list[0][item.keys()[0]]
+                if item =='person':
+                  nul_goal.waitfor.person=choice_list[item]
+                elif item =='object':
+                  nul_goal.waitfor.object=choice_list[item]
+                elif item =='drink':
+                  nul_goal.waitfor.drink=choice_list[item]
+                elif item =='location':
+                  nul_goal.waitfor.location=choice_list[item]
+                elif item =='action':
+                  nul_goal.waitfor.action=choice_list[item]
 
             except KeyError as e:
               rospy.logwarn("{class_name} : STT malformed choice list "+str(choice_list).format(class_name=self.__class__.__name__))
          
         action_stt_client.send_goal(nul_goal)
-        self.action_stt_client.wait_for_result()
-        self.action_stt_client.get_result() 
+        finished = action_stt_client.wait_for_result(timeout = rospy.Duration(timeout))
+        if(finished is False):
+           rospy.logwarn("[General Manager] timeout calling STT")
+
+        return action_stt_client.get_result() 
         #nul_goal.waitfor.ack.data =True
+
+    def _getMostProbableData(self, list):
+       value_max_prob = ""
+       max_prob = ""
+       for elt in list:
+          if max_prob > elt.confidence:
+            value_max_prob = elt.confidenceelt.data
+       return value_max_prob
+
+          
+       
+     
+    
         
         
     

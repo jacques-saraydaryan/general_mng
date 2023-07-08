@@ -1,0 +1,37 @@
+[
+    {
+        "id": "cola",
+        "pathOnTablet": "/img/hri/drink/cola.JPG",
+        "name": "cola"
+    },
+    {
+        "id": "iced tea",
+        "pathOnTablet": "/img/hri/drink/iced_tea.JPG",
+        "name": "iced tea"
+    },
+    {
+        "id": "juice pack",
+        "pathOnTablet": "/img/hri/drink/juice_pack.JPG",
+        "name": "juice pack"
+    },
+    {
+        "id": "milk",
+        "pathOnTablet": "/img/hri/drink/milk.JPG",
+        "name": "milk"
+    },
+    {
+        "id": "orange juice",
+        "pathOnTablet": "/img/hri/drink/orange_juice.JPG",
+        "name": "orange juice"
+    },
+    {
+        "id": "red wine",
+        "pathOnTablet": "/img/hri/drink/red_wine.JPG",
+        "name": "red wine"
+    },
+    {
+        "id": "tropical juice",
+        "pathOnTablet": "/img/hri/drink/tropical_juice.JPG",
+        "name": "tropical juice"
+    }
+]
