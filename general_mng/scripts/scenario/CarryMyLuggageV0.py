@@ -14,9 +14,16 @@ import math
 
 class CarryMyLuggageV0(AbstractScenario):
     DEFAULT_TIMEOUT = 5.0
-    NAVIGATION_TIMEOUT = 60
-    NAVIGATION_ROTATION_TIMEOUT = 30
-    SIMPLE_SPEECH_TIMEOUT = 10
+    NAVIGATION_TIMEOUT = 6
+    NAVIGATION_ROTATION_TIMEOUT = 3
+    SIMPLE_SPEECH_TIMEOUT = 1
+
+    # DEFAULT_TIMEOUT = 5.0
+    TIMEOUT_NAVIGATION = 6 #60
+    TIMEOUT_NAVIGATION_ROTATION = 3 #30
+    TIMEOUT_SIMPLE_SPEECH = 1  #10
+    TIMEOUT_SIMPLE_ACTION = 3  #30
+    TIMEOUT_COMPLEX_ACTION = 6  #60
     NO_TIMEOUT = -1.0
     YOLO_CLASS_CHAIR= 'chair'
     YOLO_CLASS_COUCH= 'couch'
@@ -107,7 +114,25 @@ class CarryMyLuggageV0(AbstractScenario):
         #Update HRI Board with tasks list
         self._lm_wrapper.timeboard_send_steps_list(self.steps, self._scenario["name"], self.NO_TIMEOUT)
 
-        self._callPointAt()
+        # self._callPointAt()
+
+        #Way Door Opened
+        result = self._lm_wrapper.generic_global("WaitToStarts","Wait an opened door",30,"I am waiting an opened door to start",
+                        description="I am waiting an opened door to start",
+                        wait_answer=False,
+                        need_confirmation=False,
+                        need_validation=False,
+                        media_src="/img/hri/rob2.jpg",
+                        media_type="img"
+                        )
+        result = self._lt_perception.wait_for_door_to_open()
+
+        # Navigate to living room
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L_inspect",self.TIMEOUT_NAVIGATION)
+
+        # Navigate to the bedroom
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","B_inspect",self.TIMEOUT_NAVIGATION)
+
 
         #Check People presence 
         result = self._lm_wrapper.generic_global("CheckPeople1","Check People presence",self.SIMPLE_SPEECH_TIMEOUT," I am looking for the operator !",
@@ -163,58 +188,60 @@ class CarryMyLuggageV0(AbstractScenario):
                         media_src="/img/hri/rob1.jpg", 
                         media_type="img", 
                         )
-        # result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L1",self.NAVIGATION_TIMEOUT)
+        result = self._lt_navigation.send_nav_order("NP","CRRCloseToGoal","L1",self.NAVIGATION_TIMEOUT)
         rospy.sleep(2)
         
             # Deux Machina
 
                 # Arm Warning
-        result = self._lm_wrapper.generic_global("ArmWarning0","Warn of arm movement Deux Machina ",self.SIMPLE_SPEECH_TIMEOUT,"Please step back while I deploy my arm.",
-                        description="Please step back while I deploy my arm.",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="/img/hri/rob2.jpg",
-                        media_type="img"
-                        )
-        rospy.sleep(5)
-        result = self._lm_wrapper.generic_global("ArmDeuxMachina","Take bag from operator",self.SIMPLE_SPEECH_TIMEOUT,"I need your help : please give me the bag by passing the handle through my gripper ?  Tell me OK when done.",
-                        description="I need tour help : can you give me the bag by passing the handle through my gripper ? Tell me OK when done.",
-                        wait_answer=True,
-                        need_confirmation=True,
-                        need_validation=True,
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
-        # TODO : deploy the arm "deployed pose"
-        result = self._lm_wrapper.generic_global("ArmParking0","Parking the arm for following",self.SIMPLE_SPEECH_TIMEOUT,"I need your help : please give me the bag by passing the handle through my gripper ?",
-                        description="I need tour help : can you give me the bag by passing the handle through my gripper ?",
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
+        # result = self._lm_wrapper.generic_global("ArmWarning0","Warn of arm movement Deux Machina ",self.SIMPLE_SPEECH_TIMEOUT,"Please step back while I deploy my arm.",
+        #                 description="Please step back while I deploy my arm.",
+        #                 wait_answer=False,
+        #                 need_confirmation=False,
+        #                 need_validation=False,
+        #                 media_src="/img/hri/rob2.jpg",
+        #                 media_type="img"
+        #                 )
+        # rospy.sleep(5)
+        # result = self._lm_wrapper.generic_global("ArmDeuxMachina","Take bag from operator",self.SIMPLE_SPEECH_TIMEOUT,"I need your help : please give me the bag by passing the handle through my gripper ?  Tell me OK when done.",
+        #                 description="I need tour help : can you give me the bag by passing the handle through my gripper ? Tell me OK when done.",
+        #                 wait_answer=True,
+        #                 need_confirmation=True,
+        #                 need_validation=True,
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
+        # # TODO : deploy the arm "deployed pose"
+        # result = self._lm_wrapper.generic_global("ArmParking0","Parking the arm for following",self.SIMPLE_SPEECH_TIMEOUT,"I need your help : please give me the bag by passing the handle through my gripper ?",
+        #                 description="I need tour help : can you give me the bag by passing the handle through my gripper ?",
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
         # TODO : park the arm "parked pose"
 
         rospy.sleep(2)
 
 
-        # Following instruction
-        result = self._lm_wrapper.generic_global("PrepareFollowing ","Prepare the Following",self.SIMPLE_SPEECH_TIMEOUT,"I am ready to follow you. Please don't move too fast. Say drop the bag when arrived. Say yes to start.",
-                        description="I am ready to follow you. Please don't move too fast. Say drop the bag when arrived. Say yes to start.",
-                        wait_answer=True,
-                        need_confirmation=True,
-                        need_validation=True,
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
+        # # Following instruction
+        # result = self._lm_wrapper.generic_global("PrepareFollowing ","Prepare the Following",self.SIMPLE_SPEECH_TIMEOUT,"I am ready to follow you. Please don't move too fast. Say drop the bag when arrived. Say yes to start.",
+        #                 description="I am ready to follow you. Please don't move too fast. Say drop the bag when arrived. Say yes to start.",
+        #                 wait_answer=True,
+        #                 need_confirmation=True,
+        #                 need_validation=True,
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
+        
+        # rospy.sleep(5)
 
 
-        # Following
-        result = self._lm_wrapper.generic_global("Following","Following operator",self.SIMPLE_SPEECH_TIMEOUT,"We can go. I follow you.",
-                        description="We can go. I follow you.",
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
-        # TODO : Following
+        # # Following
+        # result = self._lm_wrapper.generic_global("Following","Following operator",self.SIMPLE_SPEECH_TIMEOUT,"We can go. I follow you.",
+        #                 description="We can go. I follow you.",
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
+        # # TODO : Following
 
 
         rospy.sleep(2)
@@ -242,47 +269,47 @@ class CarryMyLuggageV0(AbstractScenario):
 
 
         # Arm warning
-        result = self._lm_wrapper.generic_global("ArmWarning1","Warn of arm movement",self.SIMPLE_SPEECH_TIMEOUT,"I will give you your bag back. Please step back while I deploy my arm.",
-                        description="I will give you your bag back. Please step back while I deploy my arm.",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="/img/hri/rob2.jpg",
-                        media_type="img"
-                        )
-        rospy.sleep(5)
+        # result = self._lm_wrapper.generic_global("ArmWarning1","Warn of arm movement",self.SIMPLE_SPEECH_TIMEOUT,"I will give you your bag back. Please step back while I deploy my arm.",
+        #                 description="I will give you your bag back. Please step back while I deploy my arm.",
+        #                 wait_answer=False,
+        #                 need_confirmation=False,
+        #                 need_validation=False,
+        #                 media_src="/img/hri/rob2.jpg",
+        #                 media_type="img"
+        #                 )
+        # rospy.sleep(5)
 
 
         # Arm extension
-        result = self._lm_wrapper.generic_global("ArmDeployment1","Give back arm movement",self.SIMPLE_SPEECH_TIMEOUT,"I give you back your bag.",
-                        description="I give you back your bag.",
-                        wait_answer=False,
-                        need_confirmation=False,
-                        need_validation=False,
-                        media_src="/img/hri/rob2.jpg",
-                        media_type="img"
-                        )
+        # result = self._lm_wrapper.generic_global("ArmDeployment1","Give back arm movement",self.SIMPLE_SPEECH_TIMEOUT,"I give you back your bag.",
+        #                 description="I give you back your bag.",
+        #                 wait_answer=False,
+        #                 need_confirmation=False,
+        #                 need_validation=False,
+        #                 media_src="/img/hri/rob2.jpg",
+        #                 media_type="img"
+        #                 )
         # TODO : deploy the arm "deployed pose"
 
-        rospy.sleep(2)
+        # rospy.sleep(2)
 
 
-        # Giving back the bag
-        result = self._lm_wrapper.generic_global("ReturnBag","Return the bag to the operator",self.SIMPLE_SPEECH_TIMEOUT,"Here is your bag. Say 'thank you' when you get your bag back. You can also confirm on my tablet.",
-                        description="Here is your bag. Say 'thank you' when you get your bag back. You can also confirm on my tablet.",
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
+        # # Giving back the bag
+        # result = self._lm_wrapper.generic_global("ReturnBag","Return the bag to the operator",self.SIMPLE_SPEECH_TIMEOUT,"Here is your bag. Say 'thank you' when you get your bag back. You can also confirm on my tablet.",
+        #                 description="Here is your bag. Say 'thank you' when you get your bag back. You can also confirm on my tablet.",
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
         
-        rospy.sleep(2)
+        # rospy.sleep(2)
 
 
         # Goodbye
-        result = self._lm_wrapper.generic_global("Goodbye","Say Goodbye",self.SIMPLE_SPEECH_TIMEOUT,"Have a nice day ! ",
-                        description="Goodbye !",
-                        media_src="/img/hri/rob1.jpg", 
-                        media_type="img", 
-                        )
+        # result = self._lm_wrapper.generic_global("Goodbye","Say Goodbye",self.SIMPLE_SPEECH_TIMEOUT,"Have a nice day ! ",
+        #                 description="Goodbye !",
+        #                 media_src="/img/hri/rob1.jpg", 
+        #                 media_type="img", 
+        #                 )
         # TODO : park the arm "parked pose"
 
 
